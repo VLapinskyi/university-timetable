@@ -1,4 +1,4 @@
-package ua.com.foxminded.domain.periods;
+package ua.com.foxminded.domain;
 
 import java.time.LocalTime;
 

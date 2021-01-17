@@ -1,9 +1,6 @@
-package ua.com.foxminded.domain.university_structure;
+package ua.com.foxminded.domain;
 
 import java.util.List;
-
-import ua.com.foxminded.domain.persons.Student;
-import ua.com.foxminded.domain.studying_process.Lesson;
 
 public class Group {
     private int id;

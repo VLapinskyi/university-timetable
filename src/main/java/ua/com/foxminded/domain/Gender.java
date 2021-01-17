@@ -1,4 +1,4 @@
-package ua.com.foxminded.domain.persons;
+package ua.com.foxminded.domain;
 
 public enum Gender {
     FEMALE,

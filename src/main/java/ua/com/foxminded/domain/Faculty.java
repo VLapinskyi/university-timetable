@@ -1,4 +1,4 @@
-package ua.com.foxminded.domain.university_structure;
+package ua.com.foxminded.domain;
 
 import java.util.List;
 
