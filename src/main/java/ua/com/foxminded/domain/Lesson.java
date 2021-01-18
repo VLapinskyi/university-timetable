@@ -120,7 +120,5 @@ public class Lesson {
         } else if (!time.equals(other.time))
             return false;
         return true;
-    } 
-    
-    
+    }
 }

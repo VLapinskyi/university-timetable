@@ -78,7 +78,5 @@ public class Group {
         } else if (!lessons.equals(other.lessons))
             return false;
         return true;
-    }
-    
-    
+    }   
 }

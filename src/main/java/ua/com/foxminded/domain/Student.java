@@ -35,6 +35,4 @@ public class Student extends Person {
             return false;
         return true;
     }
-    
-    
 }
