@@ -5,11 +5,11 @@ import java.time.DayOfWeek;
 public class Lesson {
     private int id;
     private String name;
-    private Lecturer lecture;
+    private Lecturer lecturer;
     private Group group;
     private String audience;
     private DayOfWeek day;
-    private Time time;
+    private LessonTime lessonTime;
     
     public int getId() {
         return id;
@@ -27,12 +27,12 @@ public class Lesson {
         this.name = name;
     }
     
-    public Lecturer getLecture() {
-        return lecture;
+    public Lecturer getLecturer() {
+        return lecturer;
     }
     
-    public void setLecture(Lecturer lecture) {
-        this.lecture = lecture;
+    public void setLecturer(Lecturer lecturer) {
+        this.lecturer = lecturer;
     }
     
     public Group getGroup() {
@@ -59,12 +59,12 @@ public class Lesson {
         this.day = day;
     }
     
-    public Time getTime() {
-        return time;
+    public LessonTime getLessonTime() {
+        return lessonTime;
     }
     
-    public void setTime(Time time) {
-        this.time = time;
+    public void setLessonTime(LessonTime lessonTime) {
+        this.lessonTime = lessonTime;
     }
 
     @Override
@@ -75,9 +75,9 @@ public class Lesson {
         result = prime * result + ((day == null) ? 0 : day.hashCode());
         result = prime * result + ((group == null) ? 0 : group.hashCode());
         result = prime * result + id;
-        result = prime * result + ((lecture == null) ? 0 : lecture.hashCode());
+        result = prime * result + ((lecturer == null) ? 0 : lecturer.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((time == null) ? 0 : time.hashCode());
+        result = prime * result + ((lessonTime == null) ? 0 : lessonTime.hashCode());
         return result;
     }
 
@@ -104,20 +104,20 @@ public class Lesson {
             return false;
         if (id != other.id)
             return false;
-        if (lecture == null) {
-            if (other.lecture != null)
+        if (lecturer == null) {
+            if (other.lecturer != null)
                 return false;
-        } else if (!lecture.equals(other.lecture))
+        } else if (!lecturer.equals(other.lecturer))
             return false;
         if (name == null) {
             if (other.name != null)
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (time == null) {
-            if (other.time != null)
+        if (lessonTime == null) {
+            if (other.lessonTime != null)
                 return false;
-        } else if (!time.equals(other.time))
+        } else if (!lessonTime.equals(other.lessonTime))
             return false;
         return true;
     }
