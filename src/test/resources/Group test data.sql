@@ -1,3 +1,0 @@
-INSERT INTO GROUPS (name) VALUES ('TestGroup1');
-INSERT INTO GROUPS (name) VALUES ('TestGroup2');
-INSERT INTO GROUPS (name) VALUES ('TestGroup3');

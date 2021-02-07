@@ -17,38 +17,40 @@ public class LessonMapper implements RowMapper<Lesson> {
 
     @Override
     public Lesson mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Lesson lesson = new Lesson();
-        Lecturer lecturer = new Lecturer();
-        Group group = new Group();
         Faculty faculty = new Faculty();
-        LessonTime lessonTime = new LessonTime();
-        lesson.setId(rs.getInt("lesson_id"));
-        lesson.setName(rs.getString("lesson_name"));
+        faculty.setId(rs.getInt("faculty_id"));
+        faculty.setName(rs.getString("faculty_name"));
         
+        Group group = new Group();
+        group.setId(rs.getInt("group_id"));
+        group.setName(rs.getString("group_name"));
+        group.setFaculty(faculty);
+        
+        Lecturer lecturer = new Lecturer();
         lecturer.setId(rs.getInt("lecturer_id"));
         lecturer.setFirstName(rs.getString("first_name"));
         lecturer.setLastName(rs.getString("last_name"));
         lecturer.setGender(Gender.valueOf(rs.getString("gender")));
-        lecturer.setPhoneNumber(rs.getString("phone_number"));
-        lecturer.setEmail(rs.getString("email"));
-        lesson.setLecturer(lecturer);
+        if (rs.getString("phone_number") != null) {
+            lecturer.setPhoneNumber(rs.getString("phone_number"));
+        }
+        if (rs.getString("email") != null) {
+            lecturer.setEmail(rs.getString("email"));
+        }
         
-        group.setId(rs.getInt("group_id"));
-        group.setName(rs.getString("group_name"));
-        faculty.setId(rs.getInt("faculty_id"));
-        faculty.setName(rs.getString("faculty_name"));
-        group.setFaculty(faculty);
-        lesson.setGroup(group);
-        
-        lesson.setAudience(rs.getString("audience"));
-        
+        LessonTime lessonTime = new LessonTime();
         lessonTime.setId(rs.getInt("lesson_time_id"));
         lessonTime.setStartTime(rs.getTime("start_time").toLocalTime());
         lessonTime.setEndTime(rs.getTime("end_time").toLocalTime());
-        lesson.setLessonTime(lessonTime);
         
-        lesson.setDay(DayOfWeek.of(rs.getInt("week_day")));
-        
+        Lesson lesson = new Lesson();
+        lesson.setId(rs.getInt("lesson_id"));
+        lesson.setName(rs.getString("lesson_name"));        
+        lesson.setLecturer(lecturer);       
+        lesson.setGroup(group);        
+        lesson.setAudience(rs.getString("audience"));        
+        lesson.setLessonTime(lessonTime);        
+        lesson.setDay(DayOfWeek.of(rs.getInt("week_day")));        
         return lesson;
     }
 

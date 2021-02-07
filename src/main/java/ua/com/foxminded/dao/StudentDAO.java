@@ -24,7 +24,8 @@ public class StudentDAO implements GenericDAO<Student> {
     public void create(Student student) {
       jdbcTemplate.update(environment.getProperty("create.student"), 
               student.getFirstName(), student.getLastName(), student.getGender().name(),
-              student.getPhoneNumber(), student.getEmail(), student.getGroup().getId());
+              student.getPhoneNumber(), student.getEmail(),
+              student.getGroup() == null ? null : student.getGroup().getId());
     }
 
     @Override

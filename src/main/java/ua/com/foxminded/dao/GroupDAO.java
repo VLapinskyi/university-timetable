@@ -23,7 +23,8 @@ public class GroupDAO implements GenericDAO<Group> {
     
     @Override
     public void create(Group group) {
-        jdbcTemplate.update(environment.getProperty("create.group"), group.getName());        
+        jdbcTemplate.update(environment.getProperty("create.group"), group.getName(),
+                group.getFaculty() == null ? null : group.getFaculty().getId());        
     }
 
     @Override
@@ -39,7 +40,8 @@ public class GroupDAO implements GenericDAO<Group> {
 
     @Override
     public void update(int id, Group group) {
-        jdbcTemplate.update(environment.getProperty("update.group"), group.getName(), group.getFaculty().getId(), id);
+        jdbcTemplate.update(environment.getProperty("update.group"), group.getName(),
+                (group.getFaculty() == null ? null : group.getFaculty().getId()), id);
     }
 
     @Override

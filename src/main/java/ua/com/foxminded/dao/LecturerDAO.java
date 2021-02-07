@@ -23,7 +23,7 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
     @Override
     public void create(Lecturer lecturer) {
         jdbcTemplate.update(environment.getProperty("create.lecturer"),
-                lecturer.getFirstName(), lecturer.getLastName(), lecturer.getGender().name(),
+                lecturer.getFirstName(), lecturer.getLastName(), lecturer.getGender().toString(),
                 lecturer.getPhoneNumber(), lecturer.getEmail());
     }
 

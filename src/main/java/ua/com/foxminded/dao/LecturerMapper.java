@@ -21,5 +21,4 @@ public class LecturerMapper implements RowMapper<Lecturer> {
         lecturer.setEmail(rs.getString("email"));
         return lecturer;
     }
-
 }

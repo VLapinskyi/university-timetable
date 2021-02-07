@@ -2,6 +2,7 @@ package ua.com.foxminded.dao;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,14 +30,17 @@ class FacultyDAOTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private ArrayList<Faculty> expectedFaculties;
+    private Connection connection;
     
-    private static final String TABLES_CREATOR_SCRIPT = "/Creating tables.sql";
-    private static final String TABLES_CLEANER_SCRIPT = "/Clearing database.sql";
-    private static final String FACULTY_TABLE_DATA = "/Faculty test data.sql";
+    private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
+    private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
+    private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
     
     @BeforeEach
     void setUp() throws ScriptException, SQLException {
-        ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new ClassPathResource(TABLES_CREATOR_SCRIPT));
+        connection = jdbcTemplate.getDataSource().getConnection();
+        ScriptUtils.executeSqlScript(connection, testTablesCreator);
+        
         expectedFaculties = new ArrayList<> (Arrays.asList(
                 new Faculty(), new Faculty(), new Faculty()));
         ArrayList<String> facultyNames = new ArrayList<>(Arrays.asList(
@@ -51,18 +55,16 @@ class FacultyDAOTest {
     
     @AfterEach
     void tearDown() throws ScriptException, SQLException {
-        ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new ClassPathResource(TABLES_CLEANER_SCRIPT));
+        ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
     @Test
     void shouldCreateFaculty() {
-        int id = 1;
-        String name = "TestFaculty";
         Faculty expectedFaculty = new Faculty();
-        expectedFaculty.setId(id);
-        expectedFaculty.setName(name);
+        expectedFaculty.setId(1);
+        expectedFaculty.setName("TestFaculty");
         Faculty testFaculty = new Faculty();
-        testFaculty.setName(name);
+        testFaculty.setName("TestFaculty");
         facultyDAO.create(testFaculty);
         Faculty actualFaculty = facultyDAO.findAll().stream().findFirst().get();
         assertEquals(expectedFaculty, actualFaculty);
@@ -70,48 +72,46 @@ class FacultyDAOTest {
 
     @Test
     void shouldFindAllFaculties() throws ScriptException, SQLException {
-        ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new ClassPathResource(FACULTY_TABLE_DATA));
+        ScriptUtils.executeSqlScript(connection, testData);
         ArrayList<Faculty> actualFaculties = (ArrayList<Faculty>) facultyDAO.findAll();
         assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
     }
 
     @Test
-    void testFindById() throws ScriptException, SQLException {
-        ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new ClassPathResource(FACULTY_TABLE_DATA));
-        int id = 2;
-        String name = "TestFaculty2";
+    void shouldFindFacultyById() throws ScriptException, SQLException {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int checkedId = 2;
         Faculty expectedFaculty = new Faculty();
-        expectedFaculty.setId(id);
-        expectedFaculty.setName(name);
-        assertEquals(expectedFaculty, facultyDAO.findById(id));
+        expectedFaculty.setId(checkedId);
+        expectedFaculty.setName("TestFaculty2");
+        assertEquals(expectedFaculty, facultyDAO.findById(checkedId));
     }
 
     @Test
-    void testUpdate() throws ScriptException, SQLException {
-        ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new ClassPathResource(FACULTY_TABLE_DATA));
-        int id = 2;
-        String name = "TestFacultyUpdated";
+    void shouldUpdateFaculty() throws ScriptException, SQLException {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int testId = 2;
         Faculty testFaculty = new Faculty();
-        testFaculty.setName(name);
-        facultyDAO.update(id, testFaculty);
+        testFaculty.setName("TestFacultyUpdated");
+        facultyDAO.update(testId, testFaculty);
         Faculty expectedFaculty = new Faculty();
-        expectedFaculty.setId(id);
-        expectedFaculty.setName(name);
-        assertEquals(expectedFaculty, facultyDAO.findById(id));
+        expectedFaculty.setId(testId);
+        expectedFaculty.setName("TestFacultyUpdated");
+        assertEquals(expectedFaculty, facultyDAO.findById(testId));
     }
 
     @Test
-    void testDeleteById() throws ScriptException, SQLException {
-        ScriptUtils.executeSqlScript(jdbcTemplate.getDataSource().getConnection(), new ClassPathResource(FACULTY_TABLE_DATA));
-        int deletedFacultyId = 2;
+    void shouldDeleteFacultyById() throws ScriptException, SQLException {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int deletedId = 2;
         for (int i = 0; i < expectedFaculties.size(); i++) {
-            if (expectedFaculties.get(i).getId() == deletedFacultyId) {
+            if (expectedFaculties.get(i).getId() == deletedId) {
                 expectedFaculties.remove(i);
+                i--;
             }
         }
-        facultyDAO.deleteById(deletedFacultyId);
+        facultyDAO.deleteById(deletedId);
         ArrayList<Faculty> actualFaculties = (ArrayList<Faculty>) facultyDAO.findAll();
         assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
     }
-
 }

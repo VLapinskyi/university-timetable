@@ -13,7 +13,7 @@ public class LessonTimeMapper implements RowMapper<LessonTime> {
     public LessonTime mapRow(ResultSet rs, int rowNum) throws SQLException {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(rs.getInt("id"));
-        lessonTime.setStartTime(rs.getTime("start_date").toLocalTime());
+        lessonTime.setStartTime(rs.getTime("start_time").toLocalTime());
         lessonTime.setEndTime(rs.getTime("end_time").toLocalTime());
         return lessonTime;
     }

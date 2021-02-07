@@ -11,7 +11,7 @@ DROP TYPE IF EXISTS
     week_day CASCADE;
     
 CREATE TYPE gender AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE week_day AS ENUM ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY');
+CREATE TYPE week_day AS ENUM (1, 2, 3, 4, 5, 6, 7);
 
 CREATE TABLE faculties (
     id serial NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE faculties (
 CREATE TABLE groups (
     id serial NOT NULL,
     name character varying NOT NULL,
-    faculty_id integer,
+    faculty_id integer NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (faculty_id) REFERENCES public.faculties (id) ON DELETE CASCADE
 );
