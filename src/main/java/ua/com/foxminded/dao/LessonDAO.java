@@ -8,8 +8,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import ua.com.foxminded.domain.Group;
-import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.mapper.LessonMapper;
 
@@ -26,8 +24,8 @@ public class LessonDAO implements GenericDAO<Lesson> {
     
     @Override
     public void create(Lesson lesson) {
-     jdbcTemplate.update(environment.getProperty("create.lesson"), lesson.getName(), lesson.getLecturer().getId(),
-             lesson.getGroup().getId(), lesson.getAudience(), lesson.getDay().getValue(), lesson.getLessonTime().getId());
+     jdbcTemplate.update(environment.getProperty("create.lesson"), lesson.getName(), lesson.getAudience(),
+             lesson.getDay().getValue());
     }
 
     @Override
@@ -37,14 +35,14 @@ public class LessonDAO implements GenericDAO<Lesson> {
 
     @Override
     public Lesson findById(int id) {
-        return jdbcTemplate.queryForStream(environment.getProperty("find.lesson.by.id"), new LessonMapper(), id).findAny().orElse(null);
+        return jdbcTemplate.queryForStream(environment.getProperty("find.lesson.by.id"), new LessonMapper(), id)
+                .findAny().orElse(null);
     }
 
     @Override
     public void update(int id, Lesson lesson) {
-        jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(), lesson.getLecturer().getId(),
-                lesson.getGroup().getId(), lesson.getAudience(), lesson.getDay().getValue(),
-                lesson.getLessonTime().getId(), id);
+        jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(),
+                lesson.getAudience(), lesson.getDay().getValue(), id);
         
     }
 
@@ -53,13 +51,13 @@ public class LessonDAO implements GenericDAO<Lesson> {
         jdbcTemplate.update(environment.getProperty("delete.lesson"), id);
     }
     
-    public List<Lesson> getDayLessonsForGroup(Group group, DayOfWeek weekDay) {
+    public List<Lesson> getDayLessonsForGroup(int groupId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(),
-                group.getId(), weekDay.getValue());
+                groupId, weekDay.getValue());
     }
     
-    public List<Lesson> getDayLessonsForLecturer(Lecturer lecturer, DayOfWeek weekDay) {
+    public List<Lesson> getDayLessonsForLecturer(int lecturerId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.lecturer"), new LessonMapper(),
-                lecturer.getId(), weekDay.getValue());
+                lecturerId, weekDay.getValue());
     }
 }

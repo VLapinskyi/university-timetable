@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Connection;
 import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -19,12 +18,7 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import ua.com.foxminded.domain.Faculty;
-import ua.com.foxminded.domain.Gender;
-import ua.com.foxminded.domain.Group;
-import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
-import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 
 @ContextConfiguration(classes = {SpringTestConfiguration.class})
@@ -32,14 +26,6 @@ import ua.com.foxminded.settings.SpringTestConfiguration;
 class LessonDAOTest {
     @Autowired
     private LessonDAO lessonDAO;
-    @Autowired
-    private LecturerDAO lectureDAO;
-    @Autowired
-    private FacultyDAO facultyDAO;
-    @Autowired
-    private GroupDAO groupDAO;
-    @Autowired
-    private LessonTimeDAO lessonTimeDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private ArrayList<Lesson> expectedLessons;
@@ -54,13 +40,13 @@ class LessonDAOTest {
         connection = jdbcTemplate.getDataSource().getConnection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);        
         expectedLessons = new ArrayList<>(Arrays.asList(
-                new Lesson(), new Lesson(), new Lesson()));
-        ArrayList<Integer> lessonIndexes = new ArrayList<>(Arrays.asList(1, 2, 3));
+                new Lesson(), new Lesson(), new Lesson(), new Lesson()));
+        ArrayList<Integer> lessonIndexes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
         ArrayList<String> lessonNames = new ArrayList<>(Arrays.asList(
-                "Ukranian", "Music", "Physical Exercises"));
-        ArrayList<String> audiences = new ArrayList<>(Arrays.asList("101", "102", "103"));
+                "Ukranian", "Music", "Physical Exercises", "Physical Exercises"));
+        ArrayList<String> audiences = new ArrayList<>(Arrays.asList("101", "102", "103", "103"));
         ArrayList<DayOfWeek> weekDays = new ArrayList<>(Arrays.asList(
-                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY));
+                DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.THURSDAY));
         for (int i = 0; i < expectedLessons.size(); i++) {
             expectedLessons.get(i).setId(lessonIndexes.get(i));
             expectedLessons.get(i).setName(lessonNames.get(i));
@@ -149,41 +135,24 @@ class LessonDAOTest {
     @Test
     void shouldGetDayLessonsForGroup() {
         ScriptUtils.executeSqlScript(connection, testData);
-        
+        int groupId = 1;
         DayOfWeek testDay = DayOfWeek.MONDAY;
-        for (int i = 0; i < expectedLessons.size(); i++) {
-            if (expectedLessons.get(i).getDay().getValue() != testDay.getValue() ||
-                    !(expectedLessons.get(i).getGroup().equals(group))) {
-                expectedLessons.remove(i);
-                i--;
-            }
-        }
-        
-        ArrayList<Lesson> actualLessons = (ArrayList<Lesson>) lessonDAO.getDayLessonsForGroup(group, testDay);
-        assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
+        Lesson expectedLesson = expectedLessons.get(0);
+        ArrayList<Lesson> actualLessons = (ArrayList<Lesson>) lessonDAO.getDayLessonsForGroup(groupId, testDay);
+        assertTrue(actualLessons.contains(expectedLesson) && actualLessons.size() == 1);
     }
 
     @Test
     void shouldGetDayLessonsForLecturer() {
         ScriptUtils.executeSqlScript(connection, testData);
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(3);
-        lecturer.setFirstName("Vasyl");
-        lecturer.setLastName("Dudchenko");
-        lecturer.setGender(Gender.MALE);
-        
+        int lecturerId = 3;
         DayOfWeek testDay = DayOfWeek.THURSDAY;
-        for (int i = 0; i < expectedLessons.size(); i++) {
-            if (expectedLessons.get(i).getDay().getValue() != testDay.getValue() ||
-                    !(expectedLessons.get(i).getLecturer().equals(lecturer))) {
-                expectedLessons.remove(i);
-                i--;
-            }
-        }
+        ArrayList<Lesson> expectedLessons = new ArrayList<> (Arrays.asList(
+                this.expectedLessons.get(2), this.expectedLessons.get(3)));
         
         ArrayList<Lesson> actualLessons = (ArrayList<Lesson>)
-                lessonDAO.getDayLessonsForLecturer(lecturer, testDay);
+                lessonDAO.getDayLessonsForLecturer(lecturerId, testDay);
+        
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
-
 }

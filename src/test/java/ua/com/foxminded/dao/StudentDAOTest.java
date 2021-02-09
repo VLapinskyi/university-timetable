@@ -17,9 +17,7 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
-import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 @ContextConfiguration(classes = {SpringTestConfiguration.class})
@@ -27,10 +25,6 @@ import ua.com.foxminded.settings.SpringTestConfiguration;
 class StudentDAOTest {
     @Autowired
     private StudentDAO studentDAO;
-    @Autowired
-    private GroupDAO groupDAO;
-    @Autowired
-    private FacultyDAO facultyDAO;
     @Autowired
     JdbcTemplate jdbcTemplate;
     private ArrayList<Student> expectedStudents;
@@ -66,36 +60,7 @@ class StudentDAOTest {
             expectedStudents.get(i).setGender(gendersForLecturers.get(i));
             expectedStudents.get(i).setPhoneNumber(phoneNumbers.get(i));
             expectedStudents.get(i).setEmail(emails.get(i));
-        }
-        
-        ArrayList<Group> groups = new ArrayList<>(Arrays.asList(
-                new Group(), new Group()));
-        ArrayList<Integer> groupIndexes = new ArrayList<>(Arrays.asList(1, 2));
-        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList(
-                "TestGroup1", "TestGroup2"));
-        for(int i = 0; i < groups.size(); i++) {
-            groups.get(i).setId(groupIndexes.get(i));
-            groups.get(i).setName(groupNames.get(i));
-        }
-        
-        ArrayList<Faculty> faculties = new ArrayList<>(Arrays.asList(
-                new Faculty(), new Faculty()));
-        ArrayList<Integer> facultyIndexes = new ArrayList<>(Arrays.asList(1, 2));
-        ArrayList<String> facultyNames = new ArrayList<>(Arrays.asList(
-                "TestFaculty1", "TestFaculty2"));
-        for(int i = 0; i < faculties.size(); i++) {
-            faculties.get(i).setId(facultyIndexes.get(i));
-            faculties.get(i).setName(facultyNames.get(i));
-        }
-        
-        groups.get(0).setFaculty(faculties.get(0));
-        groups.get(1).setFaculty(faculties.get(1));
-        
-        expectedStudents.get(0).setGroup(groups.get(0));
-        expectedStudents.get(1).setGroup(groups.get(0));
-        expectedStudents.get(2).setGroup(groups.get(1));
-        
-        
+        }        
     }
 
     @AfterEach
@@ -105,31 +70,18 @@ class StudentDAOTest {
 
     @Test
     void shouldCreateStudent() {
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty");
-        facultyDAO.create(faculty);
-        
-        Group group = new Group();
-        group .setId(1);
-        group .setName("TestGroup");
-        group.setFaculty(faculty);
-        groupDAO.create(group);
-        
         Student expectedStudent = new Student();
         expectedStudent.setId(1);
         expectedStudent.setFirstName("First-name");
         expectedStudent.setLastName("Last-name");
         expectedStudent.setGender(Gender.MALE);
         expectedStudent.setPhoneNumber("1233");
-        expectedStudent.setGroup(group);
         
         Student testStudent = new Student();
         testStudent.setFirstName("First-name");
         testStudent.setLastName("Last-name");
         testStudent.setGender(Gender.MALE);
-        testStudent.setPhoneNumber("1233");
-        testStudent.setGroup(group);       
+        testStudent.setPhoneNumber("1233");    
         studentDAO.create(testStudent);
         
         Student actualStudent = studentDAO.findAll().stream().findFirst().get();
@@ -146,15 +98,6 @@ class StudentDAOTest {
     @Test
     void shouldFindStudentById() {
         ScriptUtils.executeSqlScript(connection, testData);
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty1");;
-        
-        Group group = new Group();
-        group.setId(1);
-        group.setName("TestGroup1");
-        group.setFaculty(faculty);
-        
         int checkedId = 5;
         Student expectedStudent = new Student();
         expectedStudent.setId(checkedId);
@@ -162,36 +105,23 @@ class StudentDAOTest {
         expectedStudent.setLastName("Misiats");
         expectedStudent.setGender(Gender.MALE);
         expectedStudent.setEmail("illiamisiats@gmail.com");
-        expectedStudent.setGroup(group);
         assertEquals(expectedStudent, studentDAO.findById(checkedId));
     }
 
     @Test
     void shouldUpdateStudent() {
         ScriptUtils.executeSqlScript(connection, testData);
-        Faculty expectedFaculty = new Faculty();
-        expectedFaculty.setId(1);
-        expectedFaculty.setName("TestFaculty1");
-        
-        Group expectedGroup = new Group();
-        expectedGroup.setId(3);       
-        expectedGroup.setName("TestGroup3");
-        expectedGroup.setFaculty(expectedFaculty);
-        
         int testId = 5;
         Student testStudent = new Student();
         testStudent.setFirstName("Tetiana");
         testStudent.setLastName("Lytvynenko");
         testStudent.setGender(Gender.FEMALE);
-        testStudent.setGroup(expectedGroup);
         
         Student expectedStudent = new Student();
         expectedStudent.setId(testId);
         expectedStudent.setFirstName("Tetiana");
         expectedStudent.setLastName("Lytvynenko");
-        expectedStudent.setGender(Gender.FEMALE);
-        expectedStudent.setGroup(expectedGroup);
-        
+        expectedStudent.setGender(Gender.FEMALE);  
         studentDAO.update(testId, testStudent);
         assertEquals(expectedStudent, studentDAO.findById(testId));
     }

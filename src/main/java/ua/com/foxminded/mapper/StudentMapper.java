@@ -13,7 +13,7 @@ public class StudentMapper implements RowMapper<Student> {
     @Override
     public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
         Student student = new Student();
-        student.setId(rs.getInt("student_id"));
+        student.setId(rs.getInt("id"));
         student.setFirstName(rs.getString("first_name"));
         student.setLastName(rs.getString("last_name"));
         student.setGender(Gender.valueOf(rs.getString("gender")));

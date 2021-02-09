@@ -9,9 +9,12 @@ DROP TYPE IF EXISTS
     gender CASCADE;
 DROP TYPE IF EXISTS
     week_day CASCADE;
+DROP TYPE IF EXISTS
+    role CASCADE;
     
 CREATE TYPE gender AS ENUM ('MALE', 'FEMALE');
 CREATE TYPE week_day AS ENUM (1, 2, 3, 4, 5, 6, 7);
+CREATE TYPE role AS ENUM ('student', 'lecturer');
 
 CREATE TABLE faculties (
     id serial NOT NULL,
@@ -29,6 +32,7 @@ CREATE TABLE groups (
 
 CREATE TABLE people (
     id serial NOT NULL,
+    role role NOT NULL,
     first_name character varying NOT NULL,
     last_name character varying NOT NULL,
     gender gender NOT NULL,

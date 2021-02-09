@@ -12,6 +12,7 @@ import ua.com.foxminded.mapper.StudentMapper;
 
 @Repository
 public class StudentDAO implements GenericDAO<Student> {
+    private static final String ROLE = "student";
     private final JdbcTemplate jdbcTemplate;
     private Environment environment;
     
@@ -23,33 +24,32 @@ public class StudentDAO implements GenericDAO<Student> {
 
     @Override
     public void create(Student student) {
-      jdbcTemplate.update(environment.getProperty("create.student"), 
+      jdbcTemplate.update(environment.getProperty("create.person"), ROLE, 
               student.getFirstName(), student.getLastName(), student.getGender().name(),
-              student.getPhoneNumber(), student.getEmail(),
-              student.getGroup() == null ? null : student.getGroup().getId());
+              student.getPhoneNumber(), student.getEmail());
     }
 
     @Override
     public List<Student> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.students"), new StudentMapper());
+        return jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new StudentMapper(), ROLE);
     }
 
     @Override
     public Student findById(int id) {
-        return jdbcTemplate.queryForStream(environment.getProperty("find.student.by.id"),
-                new StudentMapper(), id).findAny().orElse(null);
+        return jdbcTemplate.queryForStream(environment.getProperty("find.person.by.id"),
+                new StudentMapper(), id, ROLE).findAny().orElse(null);
     }
 
     @Override
     public void update(int id, Student student) {
-        jdbcTemplate.update(environment.getProperty("update.student"),
+        jdbcTemplate.update(environment.getProperty("update.person"),
                 student.getFirstName(), student.getLastName(), student.getGender().toString(),
-                student.getPhoneNumber(), student.getEmail(), student.getGroup().getId(),  id);
+                student.getPhoneNumber(), student.getEmail(),  id, ROLE);
         
     }
 
     @Override
     public void deleteById(int id) {
-        jdbcTemplate.update(environment.getProperty("delete.person"), id);
+        jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
     } 
 }
