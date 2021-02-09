@@ -8,17 +8,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import ua.com.foxminded.domain.Faculty;
+import ua.com.foxminded.mapper.FacultyMapper;
 
 @Repository
 public class FacultyDAO implements GenericDAO<Faculty> {
     private final JdbcTemplate jdbcTemplate;
-    
-    @Autowired
     private Environment environment;
     
     @Autowired
-    public FacultyDAO(JdbcTemplate jdbcTemplate) {
+    public FacultyDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
+        this.environment = environment;
     }
     
     @Override

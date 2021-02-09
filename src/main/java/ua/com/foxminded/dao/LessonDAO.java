@@ -11,17 +11,17 @@ import org.springframework.stereotype.Repository;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
+import ua.com.foxminded.mapper.LessonMapper;
 
 @Repository
 public class LessonDAO implements GenericDAO<Lesson> {
     private JdbcTemplate jdbcTemplate;
-    
-    @Autowired
     private Environment environment;
     
     @Autowired
-    public LessonDAO (JdbcTemplate jdbcTemplate) {
+    public LessonDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
+        this.environment = environment;
     }
     
     @Override

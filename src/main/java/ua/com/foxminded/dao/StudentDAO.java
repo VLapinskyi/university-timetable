@@ -8,16 +8,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import ua.com.foxminded.domain.Student;
+import ua.com.foxminded.mapper.StudentMapper;
 
 @Repository
 public class StudentDAO implements GenericDAO<Student> {
     private final JdbcTemplate jdbcTemplate;
-    @Autowired
     private Environment environment;
     
     @Autowired
-    public StudentDAO (JdbcTemplate jdbcTemplate) {
+    public StudentDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
+        this.environment = environment;
     }
 
     @Override

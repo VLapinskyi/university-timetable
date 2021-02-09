@@ -52,58 +52,7 @@ class LessonDAOTest {
     @BeforeEach
     void setUp() throws Exception {
         connection = jdbcTemplate.getDataSource().getConnection();
-        ScriptUtils.executeSqlScript(connection, testTablesCreator);
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty1");
-        
-        ArrayList<Group> groups = new ArrayList<>(Arrays.asList(
-                new Group(), new Group()));
-        ArrayList<Integer> groupIndexes = new ArrayList<>(Arrays.asList(1, 3));
-        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList(
-                "TestGroup1", "TestGroup3"));
-        for (int i = 0; i < groups.size(); i++) {
-            groups.get(i).setId(groupIndexes.get(i));
-            groups.get(i).setName(groupNames.get(i));
-            groups.get(i).setFaculty(faculty);
-        }
-        
-        ArrayList<Lecturer> lecturers = new ArrayList<>(Arrays.asList(
-                new Lecturer(), new Lecturer(), new Lecturer()));
-        ArrayList<Integer> indexes = new ArrayList<>(Arrays.asList(
-                1, 2, 3));
-        ArrayList<String> firstNames = new ArrayList<>(Arrays.asList(
-                "Olena", "Ihor", "Vasyl"));
-        ArrayList<String> lastNames = new ArrayList<>(Arrays.asList(
-                "Skladenko", "Zakharchuk", "Dudchenko"));
-        ArrayList<Gender> gendersForLecturers = new ArrayList<>(Arrays.asList(
-                Gender.FEMALE, Gender.MALE, Gender.MALE));
-        ArrayList<String> phoneNumbers = new ArrayList<>(Arrays.asList(
-                "+380991111111", null, null));
-        ArrayList<String> emails = new ArrayList<>(Arrays.asList(
-                "oskladenko@gmail.com", "i.zakharchuk@gmail.com", null));
-        for (int i = 0; i < lecturers.size(); i++) {
-            lecturers.get(i).setId(indexes.get(i));
-            lecturers.get(i).setFirstName(firstNames.get(i));
-            lecturers.get(i).setLastName(lastNames.get(i));
-            lecturers.get(i).setGender(gendersForLecturers.get(i));
-            lecturers.get(i).setPhoneNumber(phoneNumbers.get(i));
-            lecturers.get(i).setEmail(emails.get(i));
-        }
-        
-        ArrayList<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(
-                new LessonTime(), new LessonTime()));
-        ArrayList<Integer> lessonTimeIndexes = new ArrayList<>(Arrays.asList(1, 3));
-        ArrayList<LocalTime> startTimes = new ArrayList<>(Arrays.asList(
-                LocalTime.of(9, 0), LocalTime.of(12, 30)));
-        ArrayList<LocalTime> endTimes = new ArrayList<>(Arrays.asList(
-                LocalTime.of(10, 30), LocalTime.of(14, 0)));
-        for (int i = 0; i < lessonTimes.size(); i++) {
-            lessonTimes.get(i).setId(lessonTimeIndexes.get(i));
-            lessonTimes.get(i).setStartTime(startTimes.get(i));
-            lessonTimes.get(i).setEndTime(endTimes.get(i));
-        }
-        
+        ScriptUtils.executeSqlScript(connection, testTablesCreator);        
         expectedLessons = new ArrayList<>(Arrays.asList(
                 new Lesson(), new Lesson(), new Lesson()));
         ArrayList<Integer> lessonIndexes = new ArrayList<>(Arrays.asList(1, 2, 3));
@@ -115,16 +64,9 @@ class LessonDAOTest {
         for (int i = 0; i < expectedLessons.size(); i++) {
             expectedLessons.get(i).setId(lessonIndexes.get(i));
             expectedLessons.get(i).setName(lessonNames.get(i));
-            expectedLessons.get(i).setLecturer(lecturers.get(i));
             expectedLessons.get(i).setAudience(audiences.get(i));
             expectedLessons.get(i).setDay(weekDays.get(i));
         }
-        expectedLessons.get(0).setGroup(groups.get(0));
-        expectedLessons.get(1).setGroup(groups.get(1));
-        expectedLessons.get(2).setGroup(groups.get(0));
-        expectedLessons.get(0).setLessonTime(lessonTimes.get(0));
-        expectedLessons.get(1).setLessonTime(lessonTimes.get(0));
-        expectedLessons.get(2).setLessonTime(lessonTimes.get(1));
     }
 
     @AfterEach
@@ -133,49 +75,17 @@ class LessonDAOTest {
     }
 
     @Test
-    void shouldCreateLesson() {
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty");
-        facultyDAO.create(faculty);
-        
-        Group group = new Group();
-        group.setId(1);
-        group.setName("TestGroup");
-        group.setFaculty(faculty);
-        groupDAO.create(group);
-        
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(1);
-        lecturer.setFirstName("Olena");
-        lecturer.setLastName("Bilous");
-        lecturer.setGender(Gender.FEMALE);
-        lecturer.setPhoneNumber("+380441474852");
-        lectureDAO.create(lecturer);
-        
-        LessonTime lessonTime = new LessonTime();
-        lessonTime.setId(1);
-        lessonTime.setStartTime(LocalTime.of(9, 0));
-        lessonTime.setEndTime(LocalTime.of(10, 30));
-        lessonTimeDAO.create(lessonTime);
-        
+    void shouldCreateLesson() {  
         Lesson testLesson = new Lesson();
         testLesson.setName("Ukranian");
-        testLesson.setLecturer(lecturer);
-        testLesson.setGroup(group);
         testLesson.setAudience("101");
         testLesson.setDay(DayOfWeek.TUESDAY);
-        testLesson.setLessonTime(lessonTime);
-        
         
         Lesson expectedLesson = new Lesson();
         expectedLesson.setId(1);
         expectedLesson.setName("Ukranian");
-        expectedLesson.setLecturer(lecturer);
-        expectedLesson.setGroup(group);
         expectedLesson.setAudience("101");
         expectedLesson.setDay(DayOfWeek.TUESDAY);
-        expectedLesson.setLessonTime(lessonTime);
         
         lessonDAO.create(testLesson);
         assertEquals(expectedLesson, lessonDAO.findAll().stream().findFirst().get());
@@ -191,83 +101,30 @@ class LessonDAOTest {
     @Test
     void shouldFindLessonById() {
         ScriptUtils.executeSqlScript(connection, testData);
-        
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty1");
-        
-        Group group = new Group();
-        group.setId(3);
-        group.setName("TestGroup3");
-        group.setFaculty(faculty);
-        
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(2);
-        lecturer.setFirstName("Ihor");
-        lecturer.setLastName("Zakharchuk");
-        lecturer.setGender(Gender.MALE);
-        lecturer.setEmail("i.zakharchuk@gmail.com");
-        
-        LessonTime lessonTime = new LessonTime();
-        lessonTime.setId(1);
-        lessonTime.setStartTime(LocalTime.of(9, 0));
-        lessonTime.setEndTime(LocalTime.of(10, 30));
-        
         int checkedId = 2;
         Lesson expectedLesson = new Lesson();
         expectedLesson.setId(checkedId);
         expectedLesson.setName("Music");
-        expectedLesson.setLecturer(lecturer);
-        expectedLesson.setGroup(group);
         expectedLesson.setAudience("102");
         expectedLesson.setDay(DayOfWeek.WEDNESDAY);
-        expectedLesson.setLessonTime(lessonTime);
         
         assertEquals(expectedLesson, lessonDAO.findById(checkedId));
     }
 
     @Test
     void shouldUpdateLesson() {
-        ScriptUtils.executeSqlScript(connection, testData);
-        
-        Faculty faculty = new Faculty();
-        faculty.setId(2);
-        faculty.setName("TestFaculty2");
-        
-        Group group = new Group();
-        group.setId(2);
-        group.setName("TestGroup2");
-        group.setFaculty(faculty);
-        
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(3);
-        lecturer.setFirstName("Vasyl");
-        lecturer.setLastName("Dudchenko");
-        lecturer.setGender(Gender.MALE);
-        
-        LessonTime lessonTime = new LessonTime();
-        lessonTime.setId(3);
-        lessonTime.setStartTime(LocalTime.of(12, 30));
-        lessonTime.setEndTime(LocalTime.of(14, 0));
-        
+        ScriptUtils.executeSqlScript(connection, testData);  
         int testId = 2;
-        
         Lesson testLesson = new Lesson();
         testLesson.setName("History");
-        testLesson.setLecturer(lecturer);
-        testLesson.setGroup(group);
         testLesson.setAudience("105");
         testLesson.setDay(DayOfWeek.TUESDAY);
-        testLesson.setLessonTime(lessonTime);
         
         Lesson expectedLesson = new Lesson();
         expectedLesson.setId(testId);
         expectedLesson.setName("History");
-        expectedLesson.setLecturer(lecturer);
-        expectedLesson.setGroup(group);
         expectedLesson.setAudience("105");
         expectedLesson.setDay(DayOfWeek.TUESDAY);
-        expectedLesson.setLessonTime(lessonTime);
         
         lessonDAO.update(testId, testLesson);
         assertEquals(expectedLesson, lessonDAO.findById(testId));
@@ -292,14 +149,6 @@ class LessonDAOTest {
     @Test
     void shouldGetDayLessonsForGroup() {
         ScriptUtils.executeSqlScript(connection, testData);
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty1");
-        
-        Group group = new Group();
-        group.setId(1);
-        group.setName("TestGroup1");
-        group.setFaculty(faculty);
         
         DayOfWeek testDay = DayOfWeek.MONDAY;
         for (int i = 0; i < expectedLessons.size(); i++) {

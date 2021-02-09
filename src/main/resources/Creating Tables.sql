@@ -22,7 +22,7 @@ CREATE TABLE faculties (
 CREATE TABLE groups (
     id serial NOT NULL,
     name character varying NOT NULL,
-    faculty_id integer NOT NULL,
+    faculty_id integer,
     PRIMARY KEY (id),
     FOREIGN KEY (faculty_id) REFERENCES public.faculties (id) ON DELETE CASCADE
 );
@@ -50,11 +50,11 @@ CREATE TABLE lesson_times (
 CREATE TABLE lessons (
     id serial NOT NULL,
     name character varying NOT NULL,
-    lecturer_id integer NOT NULL,
-    group_id integer NOT NULL,
+    lecturer_id integer,
+    group_id integer,
     audience character varying NOT NULL,
     week_day week_day NOT NUll,
-    lesson_time_id integer NOT NULL,
+    lesson_time_id integer,
     PRIMARY KEY (id),
     FOREIGN KEY (lecturer_id) REFERENCES public.people (id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES public.groups (id) ON DELETE CASCADE,

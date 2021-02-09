@@ -9,16 +9,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.mapper.LessonTimeMapper;
 
 @Repository
 public class LessonTimeDAO implements GenericDAO<LessonTime> {
     private final JdbcTemplate jdbcTemplate;
-    @Autowired
     private Environment environment;
     
     @Autowired
-    public LessonTimeDAO(JdbcTemplate jdbcTemplate) {
+    public LessonTimeDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
+        this.environment  = environment;
     }
     
     @Override

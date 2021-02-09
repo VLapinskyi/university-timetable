@@ -19,7 +19,6 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 
@@ -28,8 +27,6 @@ import ua.com.foxminded.settings.SpringTestConfiguration;
 class GroupDAOTest {
     @Autowired
     private GroupDAO groupDAO;
-    @Autowired
-    private FacultyDAO facultyDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private ArrayList<Group> expectedGroups;
@@ -54,20 +51,6 @@ class GroupDAOTest {
             expectedGroups.get(i).setId(groupIndexes.get(i));
             expectedGroups.get(i).setName(groupNames.get(i));
         }
-        
-        ArrayList<Faculty> faculties = new ArrayList<>(Arrays.asList(
-                new Faculty(), new Faculty()));
-        ArrayList<String> facultyNames = new ArrayList<>(Arrays.asList(
-                "TestFaculty1", "TestFaculty2"));
-        ArrayList<Integer> facultyIndexes = new ArrayList<>(Arrays.asList(1, 2));
-        for (int i = 0; i < faculties.size(); i++) {
-            faculties.get(i).setId(facultyIndexes.get(i));
-            faculties.get(i).setName(facultyNames.get(i));
-        }
-        
-        expectedGroups.get(0).setFaculty(faculties.get(0));
-        expectedGroups.get(1).setFaculty(faculties.get(1));
-        expectedGroups.get(2).setFaculty(faculties.get(0));
     }
 
     @AfterEach
@@ -77,18 +60,11 @@ class GroupDAOTest {
 
     @Test
     void shouldCreateGroup() {
-        Faculty faculty = new Faculty();
-        faculty.setId(1);
-        faculty.setName("TestFaculty");
-        facultyDAO.create(faculty);
-        
         Group testGroup = new Group();
         testGroup.setName("TestGroup");
-        testGroup.setFaculty(faculty);
         Group expectedGroup = new Group();
         expectedGroup.setId(1);
         expectedGroup.setName("TestGroup");
-        expectedGroup.setFaculty(faculty);
         groupDAO.create(testGroup);
         Group actualGroup = groupDAO.findAll().stream().findFirst().get();
         assertEquals(expectedGroup, actualGroup);
@@ -109,30 +85,19 @@ class GroupDAOTest {
         expectedGroup.setId(checkedGroupId);
         expectedGroup.setName("TestGroup2");
         
-        Faculty faculty = new Faculty();
-        faculty.setId(2);
-        faculty.setName("TestFaculty2");
-        expectedGroup.setFaculty(faculty);
-        
         assertEquals(expectedGroup, groupDAO.findById(checkedGroupId));
     }
 
     @Test
     void shouldUpdateGroup() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testData);
-        Faculty faculty = new Faculty();
-        faculty.setId(3);
-        faculty.setName("TestFaculty3");
-        
         int testGroupId = 2;        
         Group testGroup = new Group();
         testGroup.setName("TestGroupUpdated");
-        testGroup.setFaculty(faculty);
         groupDAO.update(testGroupId, testGroup);
         Group expectedGroup = new Group();
         expectedGroup.setId(testGroupId);
         expectedGroup.setName("TestGroupUpdated");
-        expectedGroup.setFaculty(faculty);
         assertEquals(expectedGroup, groupDAO.findById(testGroupId));
     }
 

@@ -8,23 +8,22 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.mapper.GroupMapper;
 
 @Repository
 public class GroupDAO implements GenericDAO<Group> {
     private final JdbcTemplate jdbcTemplate;
-    
-    @Autowired
     private Environment environment;
     
     @Autowired
-    public GroupDAO (JdbcTemplate jdbcTemplate) {
+    public GroupDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
+        this.environment = environment;
     }    
     
     @Override
     public void create(Group group) {
-        jdbcTemplate.update(environment.getProperty("create.group"), group.getName(),
-                group.getFaculty() == null ? null : group.getFaculty().getId());        
+        jdbcTemplate.update(environment.getProperty("create.group"), group.getName());        
     }
 
     @Override
@@ -40,8 +39,7 @@ public class GroupDAO implements GenericDAO<Group> {
 
     @Override
     public void update(int id, Group group) {
-        jdbcTemplate.update(environment.getProperty("update.group"), group.getName(),
-                (group.getFaculty() == null ? null : group.getFaculty().getId()), id);
+        jdbcTemplate.update(environment.getProperty("update.group"), group.getName(), id);
     }
 
     @Override
