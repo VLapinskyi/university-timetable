@@ -19,6 +19,7 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 
@@ -114,5 +115,37 @@ class GroupDAOTest {
         groupDAO.deleteById(deletedGroupId);
         ArrayList<Group> actualGroups = (ArrayList<Group>) groupDAO.findAll();
         assertTrue(expectedGroups.containsAll(actualGroups) && actualGroups.containsAll(expectedGroups));
+    }
+    
+    @Test
+    void shouldSetGroupFaculty() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int facultyId = 1;
+	Faculty faculty = new Faculty();
+	faculty.setId(facultyId);
+	faculty.setName("TestFaculty1");
+	
+	int groupId = 2;
+	Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == groupId).findFirst().get();
+	expectedGroup.setFaculty(faculty);
+	
+	groupDAO.setGroupFaculty(facultyId, groupId);
+	Group actualGroup = groupDAO.findById(groupId);
+	actualGroup.setFaculty(groupDAO.getGroupFaculty(groupId));
+	assertEquals(expectedGroup, actualGroup);
+    }
+
+    @Test
+    void shouldGetGroupFaculty() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int facultyId = 2;
+	Faculty expectedFaculty = new Faculty();
+	expectedFaculty.setId(facultyId);
+	expectedFaculty.setName("TestFaculty2");
+	
+	int groupId = 2;
+	groupDAO.setGroupFaculty(facultyId, groupId);
+	Faculty actualFaculty = groupDAO.getGroupFaculty(groupId);
+	assertEquals(expectedFaculty, actualFaculty);
     }
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Connection;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -18,7 +19,11 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import ua.com.foxminded.domain.Gender;
+import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
+import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 
 @ContextConfiguration(classes = {SpringTestConfiguration.class})
@@ -130,6 +135,109 @@ class LessonDAOTest {
         lessonDAO.deleteById(deletedId);
         ArrayList<Lesson> actualLessons = (ArrayList<Lesson>) lessonDAO.findAll();
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
+    }
+    
+    @Test
+    void shouldSetLessonLecturer() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int lecturerId = 2;
+	Lecturer lecturer = new Lecturer();
+	lecturer.setId(lecturerId);
+	lecturer.setFirstName("Ihor");
+	lecturer.setLastName("Zakharchuk");
+	lecturer.setGender(Gender.MALE);
+	lecturer.setEmail("i.zakharchuk@gmail.com");
+	
+	int lessonId = 2;
+	Lesson expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == lessonId).findFirst().get();
+	expectedLesson.setLecturer(lecturer);
+	
+	lessonDAO.setLessonLecturer(lecturerId, lessonId);
+	Lesson actualLesson = lessonDAO.findById(lessonId);
+	actualLesson.setLecturer(lessonDAO.getLessonLecturer(lessonId));
+	assertEquals(expectedLesson, actualLesson);
+    }
+    
+    @Test
+    void shouldGetLessonLecturer() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int lecturerId = 3;
+	Lecturer expectedLecturer = new Lecturer();
+	expectedLecturer.setId(lecturerId);
+	expectedLecturer.setFirstName("Vasyl");
+	expectedLecturer.setLastName("Dudchenko");
+	expectedLecturer.setGender(Gender.MALE);
+	
+	int lessonId = 1;
+	lessonDAO.setLessonLecturer(lecturerId, lessonId);
+	Lecturer actualLecturer = lessonDAO.getLessonLecturer(lessonId);
+	assertEquals(expectedLecturer, actualLecturer);
+    }
+    
+    @Test
+    void shouldSetLessonGroup() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int groupId = 2;
+	Group group = new Group();
+	group.setId(groupId);
+	group.setName("TestGroup2");
+	
+	int lessonId = 2;
+	Lesson expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == lessonId).findFirst().get();
+	expectedLesson.setGroup(group);
+	
+	lessonDAO.setLessonGroup(groupId, lessonId);
+	Lesson actualLesson = lessonDAO.findById(lessonId);
+	actualLesson.setGroup(lessonDAO.getLessonGroup(lessonId));
+	assertEquals(expectedLesson, actualLesson);
+    }
+    
+    @Test
+    void shouldGetLessonGroup() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int groupId = 3;
+	Group expectedGroup = new Group();
+	expectedGroup.setId(groupId);
+	expectedGroup.setName("TestGroup3");
+	
+	int lessonId = 1;
+	lessonDAO.setLessonGroup(groupId, lessonId);
+	Group actualGroup = lessonDAO.getLessonGroup(lessonId);
+	assertEquals(expectedGroup, actualGroup);
+    }
+    
+    @Test
+    void shouldSetLessonTime() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int lessonTimeId = 1;
+	LessonTime lessonTime = new LessonTime();
+	lessonTime.setId(lessonTimeId);
+	lessonTime.setStartTime(LocalTime.of(9, 0));
+	lessonTime.setEndTime(LocalTime.of(10, 30));
+	
+	int lessonId = 2;
+	Lesson expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == lessonId).findFirst().get();
+	expectedLesson.setLessonTime(lessonTime);
+	
+	lessonDAO.setLessonTime(lessonTimeId, lessonId);
+	Lesson actualLesson = lessonDAO.findById(lessonId);
+	actualLesson.setLessonTime(lessonDAO.getLessonTime(lessonId));
+	assertEquals(expectedLesson, actualLesson);
+    }
+    
+    @Test
+    void shouldGetLessonTime() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int lessonTimeId = 2;
+	LessonTime expectedLessonTime = new LessonTime();
+	expectedLessonTime.setId(lessonTimeId);
+	expectedLessonTime.setStartTime(LocalTime.of(10, 45));
+	expectedLessonTime.setEndTime(LocalTime.of(12, 15));
+	
+	int lessonId = 1;
+	lessonDAO.setLessonTime(lessonTimeId, lessonId);
+	LessonTime actualLessonTime = lessonDAO.getLessonTime(lessonId);
+	assertEquals(expectedLessonTime, actualLessonTime);	
     }
 
     @Test

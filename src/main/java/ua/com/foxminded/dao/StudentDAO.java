@@ -7,7 +7,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
+import ua.com.foxminded.mapper.GroupMapper;
 import ua.com.foxminded.mapper.StudentMapper;
 
 @Repository
@@ -51,5 +53,14 @@ public class StudentDAO implements GenericDAO<Student> {
     @Override
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
-    } 
+    }
+    
+    public void setStudentGroup(int groupId, int studentId) {
+	jdbcTemplate.update(environment.getProperty("set.student.group"), groupId, studentId);
+    }
+    
+    public Group getStudentGroup(int studentId) {
+	return jdbcTemplate.queryForStream(environment.getProperty("get.student.group"), new GroupMapper(), studentId)
+		.findFirst().get();
+	}
 }

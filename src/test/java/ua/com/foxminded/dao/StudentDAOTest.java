@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import ua.com.foxminded.domain.Gender;
+import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 @ContextConfiguration(classes = {SpringTestConfiguration.class})
@@ -139,5 +140,37 @@ class StudentDAOTest {
         studentDAO.deleteById(deletedId);
         ArrayList<Student> actualStudents = (ArrayList<Student>) studentDAO.findAll();
         assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
+    }
+    
+    @Test
+    void shouldSetStudentGroup() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int groupId = 2;
+	Group group = new Group();
+	group.setId(groupId);
+	group.setName("TestGroup2");
+	
+	int studentId = 5;
+	Student expectedStudent = expectedStudents.stream().filter(student -> student.getId() == studentId).findFirst().get();
+	expectedStudent.setGroup(group);
+	
+	studentDAO.setStudentGroup(groupId, studentId);
+	Student actualStudent = studentDAO.findById(studentId);
+	actualStudent.setGroup(studentDAO.getStudentGroup(studentId));
+	assertEquals(expectedStudent, actualStudent);
+    }
+    
+    @Test
+    void shouldGetStudentGroup() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int groupId = 3;
+	Group expectedGroup = new Group();
+	expectedGroup.setId(groupId);
+	expectedGroup.setName("TestGroup3");
+	
+	int studentId = 6;
+	studentDAO.setStudentGroup(groupId, studentId);
+	Group actualGroup = studentDAO.getStudentGroup(studentId);
+	assertEquals(expectedGroup, actualGroup);
     }
 }
