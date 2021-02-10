@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,7 @@ class GroupDAOTest {
     private GroupDAO groupDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    private ArrayList<Group> expectedGroups;
+    private List<Group> expectedGroups;
     private Connection connection;
     
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -44,9 +45,9 @@ class GroupDAOTest {
         
         expectedGroups = new ArrayList<>(Arrays.asList(
                 new Group(), new Group(), new Group()));
-        ArrayList<String> groupNames = new ArrayList<>(Arrays.asList(
+        List<String> groupNames = new ArrayList<>(Arrays.asList(
                 "TestGroup1", "TestGroup2", "TestGroup3"));
-        ArrayList<Integer> groupIndexes = new ArrayList<>(Arrays.asList(
+        List<Integer> groupIndexes = new ArrayList<>(Arrays.asList(
                 1, 2, 3));
         for (int i = 0; i < expectedGroups.size(); i++) {
             expectedGroups.get(i).setId(groupIndexes.get(i));
@@ -74,7 +75,7 @@ class GroupDAOTest {
     @Test
     void shouldFindAllGroups() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testData);
-        ArrayList<Group> actualGroups = (ArrayList<Group>) groupDAO.findAll();
+        List<Group> actualGroups = groupDAO.findAll();
         assertTrue(expectedGroups.containsAll(actualGroups) && actualGroups.containsAll(expectedGroups));
     }
 
@@ -113,7 +114,7 @@ class GroupDAOTest {
             }
         }
         groupDAO.deleteById(deletedGroupId);
-        ArrayList<Group> actualGroups = (ArrayList<Group>) groupDAO.findAll();
+        List<Group> actualGroups = groupDAO.findAll();
         assertTrue(expectedGroups.containsAll(actualGroups) && actualGroups.containsAll(expectedGroups));
     }
     

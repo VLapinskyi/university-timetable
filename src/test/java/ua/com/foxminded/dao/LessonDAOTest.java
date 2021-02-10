@@ -7,6 +7,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ class LessonDAOTest {
     private LessonDAO lessonDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    private ArrayList<Lesson> expectedLessons;
+    private List<Lesson> expectedLessons;
     private Connection connection;
     
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -46,11 +47,11 @@ class LessonDAOTest {
         ScriptUtils.executeSqlScript(connection, testTablesCreator);        
         expectedLessons = new ArrayList<>(Arrays.asList(
                 new Lesson(), new Lesson(), new Lesson(), new Lesson()));
-        ArrayList<Integer> lessonIndexes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
-        ArrayList<String> lessonNames = new ArrayList<>(Arrays.asList(
+        List<Integer> lessonIndexes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
+        List<String> lessonNames = new ArrayList<>(Arrays.asList(
                 "Ukranian", "Music", "Physical Exercises", "Physical Exercises"));
-        ArrayList<String> audiences = new ArrayList<>(Arrays.asList("101", "102", "103", "103"));
-        ArrayList<DayOfWeek> weekDays = new ArrayList<>(Arrays.asList(
+        List<String> audiences = new ArrayList<>(Arrays.asList("101", "102", "103", "103"));
+        List<DayOfWeek> weekDays = new ArrayList<>(Arrays.asList(
                 DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.THURSDAY));
         for (int i = 0; i < expectedLessons.size(); i++) {
             expectedLessons.get(i).setId(lessonIndexes.get(i));
@@ -85,7 +86,7 @@ class LessonDAOTest {
     @Test
     void shouldFindAllLessons() {
         ScriptUtils.executeSqlScript(connection, testData);
-        ArrayList<Lesson> actualLessons = (ArrayList<Lesson>) lessonDAO.findAll();
+        List<Lesson> actualLessons = lessonDAO.findAll();
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
 
@@ -133,7 +134,7 @@ class LessonDAOTest {
             }
         }
         lessonDAO.deleteById(deletedId);
-        ArrayList<Lesson> actualLessons = (ArrayList<Lesson>) lessonDAO.findAll();
+        List<Lesson> actualLessons = lessonDAO.findAll();
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
     
@@ -246,7 +247,7 @@ class LessonDAOTest {
         int groupId = 1;
         DayOfWeek testDay = DayOfWeek.MONDAY;
         Lesson expectedLesson = expectedLessons.get(0);
-        ArrayList<Lesson> actualLessons = (ArrayList<Lesson>) lessonDAO.getDayLessonsForGroup(groupId, testDay);
+        List<Lesson> actualLessons = lessonDAO.getDayLessonsForGroup(groupId, testDay);
         assertTrue(actualLessons.contains(expectedLesson) && actualLessons.size() == 1);
     }
 
@@ -255,11 +256,10 @@ class LessonDAOTest {
         ScriptUtils.executeSqlScript(connection, testData);
         int lecturerId = 3;
         DayOfWeek testDay = DayOfWeek.THURSDAY;
-        ArrayList<Lesson> expectedLessons = new ArrayList<> (Arrays.asList(
+        expectedLessons = new ArrayList<> (Arrays.asList(
                 this.expectedLessons.get(2), this.expectedLessons.get(3)));
         
-        ArrayList<Lesson> actualLessons = (ArrayList<Lesson>)
-                lessonDAO.getDayLessonsForLecturer(lecturerId, testDay);
+        List<Lesson> actualLessons = lessonDAO.getDayLessonsForLecturer(lecturerId, testDay);
         
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }

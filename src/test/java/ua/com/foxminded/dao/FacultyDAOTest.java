@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,7 @@ class FacultyDAOTest {
     private FacultyDAO facultyDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    private ArrayList<Faculty> expectedFaculties;
+    private List<Faculty> expectedFaculties;
     private Connection connection;
     
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -43,9 +44,9 @@ class FacultyDAOTest {
         
         expectedFaculties = new ArrayList<> (Arrays.asList(
                 new Faculty(), new Faculty(), new Faculty()));
-        ArrayList<String> facultyNames = new ArrayList<>(Arrays.asList(
+        List<String> facultyNames = new ArrayList<>(Arrays.asList(
                 "TestFaculty1", "TestFaculty2", "TestFaculty3"));
-        ArrayList<Integer> facultyIndexes = new ArrayList<>(Arrays.asList(
+        List<Integer> facultyIndexes = new ArrayList<>(Arrays.asList(
                 1, 2, 3));
         for (int i = 0; i < expectedFaculties.size(); i++) {
             expectedFaculties.get(i).setId(facultyIndexes.get(i));
@@ -73,7 +74,7 @@ class FacultyDAOTest {
     @Test
     void shouldFindAllFaculties() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testData);
-        ArrayList<Faculty> actualFaculties = (ArrayList<Faculty>) facultyDAO.findAll();
+        List<Faculty> actualFaculties = facultyDAO.findAll();
         assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
     }
 
@@ -111,7 +112,7 @@ class FacultyDAOTest {
             }
         }
         facultyDAO.deleteById(deletedId);
-        ArrayList<Faculty> actualFaculties = (ArrayList<Faculty>) facultyDAO.findAll();
+        List<Faculty> actualFaculties = facultyDAO.findAll();
         assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
     }
 }

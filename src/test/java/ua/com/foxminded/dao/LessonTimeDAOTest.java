@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ class LessonTimeDAOTest {
     private LessonTimeDAO lessonTimeDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    private ArrayList<LessonTime> expectedLessonTimes;
+    private List<LessonTime> expectedLessonTimes;
     private Connection connection;
     
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -41,10 +42,10 @@ class LessonTimeDAOTest {
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
         expectedLessonTimes = new ArrayList<>(Arrays.asList(
                 new LessonTime(), new LessonTime(), new LessonTime()));
-        ArrayList<Integer> indexes = new ArrayList<>(Arrays.asList(1, 2, 3));
-        ArrayList<LocalTime> startTimes = new ArrayList<>(Arrays.asList(
+        List<Integer> indexes = new ArrayList<>(Arrays.asList(1, 2, 3));
+        List<LocalTime> startTimes = new ArrayList<>(Arrays.asList(
                 LocalTime.of(9, 0), LocalTime.of(10, 45), LocalTime.of(12, 30)));
-        ArrayList<LocalTime> endTimes = new ArrayList<>(Arrays.asList(
+        List<LocalTime> endTimes = new ArrayList<>(Arrays.asList(
                 LocalTime.of(10, 30), LocalTime.of(12, 15), LocalTime.of(14, 0)));
         for (int i = 0; i < expectedLessonTimes.size(); i++) {
             expectedLessonTimes.get(i).setId(indexes.get(i));
@@ -76,7 +77,7 @@ class LessonTimeDAOTest {
     @Test
     void shouldFindAllLessonTimes() {
         ScriptUtils.executeSqlScript(connection, testData);
-        ArrayList<LessonTime> actualLessonTimes = (ArrayList<LessonTime>) lessonTimeDAO.findAll();
+        List<LessonTime> actualLessonTimes = lessonTimeDAO.findAll();
         assertTrue(expectedLessonTimes.containsAll(actualLessonTimes) && actualLessonTimes.containsAll(expectedLessonTimes));
     }
 
@@ -119,7 +120,7 @@ class LessonTimeDAOTest {
             }
         }
         lessonTimeDAO.deleteById(deletedId);
-        ArrayList<LessonTime> actualLessonTimes = (ArrayList<LessonTime>) lessonTimeDAO.findAll();
+        List<LessonTime> actualLessonTimes = lessonTimeDAO.findAll();
         assertTrue(expectedLessonTimes.containsAll(actualLessonTimes) && actualLessonTimes.containsAll(expectedLessonTimes));
     }
 }

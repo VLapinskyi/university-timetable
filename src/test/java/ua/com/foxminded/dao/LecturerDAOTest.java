@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +29,7 @@ class LecturerDAOTest {
     private LecturerDAO lecturerDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    private ArrayList<Lecturer> expectedLecturers;
+    private List<Lecturer> expectedLecturers;
     private Connection connection;
     
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -42,17 +43,17 @@ class LecturerDAOTest {
         
         expectedLecturers = new ArrayList<>(Arrays.asList(
                 new Lecturer(), new Lecturer(), new Lecturer()));
-        ArrayList<Integer> indexes = new ArrayList<>(Arrays.asList(
+        List<Integer> indexes = new ArrayList<>(Arrays.asList(
                 1, 2, 3));
-        ArrayList<String> firstNames = new ArrayList<>(Arrays.asList(
+        List<String> firstNames = new ArrayList<>(Arrays.asList(
                 "Olena", "Ihor", "Vasyl"));
-        ArrayList<String> lastNames = new ArrayList<>(Arrays.asList(
+        List<String> lastNames = new ArrayList<>(Arrays.asList(
                 "Skladenko", "Zakharchuk", "Dudchenko"));
-        ArrayList<Gender> gendersForLecturers = new ArrayList<>(Arrays.asList(
+        List<Gender> gendersForLecturers = new ArrayList<>(Arrays.asList(
                 Gender.FEMALE, Gender.MALE, Gender.MALE));
-        ArrayList<String> phoneNumbers = new ArrayList<>(Arrays.asList(
+        List<String> phoneNumbers = new ArrayList<>(Arrays.asList(
                 "+380991111111", null, null));
-        ArrayList<String> emails = new ArrayList<>(Arrays.asList(
+        List<String> emails = new ArrayList<>(Arrays.asList(
                 "oskladenko@gmail.com", "i.zakharchuk@gmail.com", null));
         for (int i = 0; i < expectedLecturers.size(); i++) {
             expectedLecturers.get(i).setId(indexes.get(i));
@@ -92,7 +93,7 @@ class LecturerDAOTest {
     @Test
     void shouldFindAllLecturers() {
         ScriptUtils.executeSqlScript(connection, testData);
-        ArrayList<Lecturer> actualLecturers = (ArrayList<Lecturer>) lecturerDAO.findAll();
+        List<Lecturer> actualLecturers = lecturerDAO.findAll();
         assertTrue(expectedLecturers.containsAll(actualLecturers) && actualLecturers.containsAll(expectedLecturers));
     }
 
@@ -144,7 +145,7 @@ class LecturerDAOTest {
             }
         }
         lecturerDAO.deleteById(deletedId);
-        ArrayList<Lecturer> actualLecturers = (ArrayList<Lecturer>) lecturerDAO.findAll();
+        List<Lecturer> actualLecturers = lecturerDAO.findAll();
         assertTrue(expectedLecturers.containsAll(actualLecturers) && actualLecturers.containsAll(expectedLecturers));
     }
 }
