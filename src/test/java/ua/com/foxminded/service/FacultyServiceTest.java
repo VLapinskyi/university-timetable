@@ -83,4 +83,12 @@ class FacultyServiceTest {
 	verify(facultyDAO).update(numberCaptor.capture(), facultyCaptor.capture());
 	assertTrue(testId == numberCaptor.getValue() && testFaculty.equals(facultyCaptor.getValue()));
     }
+    
+    @Test
+    void shouldDeleteFacultyById() {
+        int testId = 1;
+        universityService.deleteFacultyById(testId);
+        verify(facultyDAO).deleteById(numberCaptor.capture());
+        assertTrue(testId == numberCaptor.getValue());
+    }
 }

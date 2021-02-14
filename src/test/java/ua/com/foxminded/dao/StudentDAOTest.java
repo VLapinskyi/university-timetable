@@ -112,7 +112,7 @@ class StudentDAOTest {
     @Test
     void shouldUpdateStudent() {
         ScriptUtils.executeSqlScript(connection, testData);
-        int testId = 5;
+        int testId = 6;
         Student testStudent = new Student();
         testStudent.setFirstName("Tetiana");
         testStudent.setLastName("Lytvynenko");

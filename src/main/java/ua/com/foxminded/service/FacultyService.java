@@ -45,4 +45,8 @@ public class FacultyService {
 	faculty.setName(newFacultyName);
 	facultyDAO.update(facultyId, faculty);
     }
+    
+    public void deleteFacultyById (int facultyId) {
+        facultyDAO.deleteById(facultyId);
+    }
 }
