@@ -49,7 +49,6 @@ public class LessonDAO implements GenericDAO<Lesson> {
     public void update(int id, Lesson lesson) {
         jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(),
                 lesson.getAudience(), lesson.getDay().getValue(), id);
-        
     }
 
     @Override

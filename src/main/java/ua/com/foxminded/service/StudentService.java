@@ -41,15 +41,12 @@ public class StudentService {
         return student;
     }
     
-    public void changePersonalStudentData(int studentId, Student updatedStudent) {
+    public void updateStudent(int studentId, Student updatedStudent) {
         studentDAO.update(studentId, updatedStudent);
+        studentDAO.setStudentGroup(updatedStudent.getGroup().getId(), studentId);
     }
     
     public void deleteStudentById(int studentId) {
         studentDAO.deleteById(studentId);
-    }
-    
-    public void changeStudentGroup(int newGroupId, int studentId) {
-        studentDAO.setStudentGroup(newGroupId, studentId);
     }
 }

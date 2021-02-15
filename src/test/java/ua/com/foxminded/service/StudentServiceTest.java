@@ -140,13 +140,18 @@ class StudentServiceTest {
     
     @Test
     void shouldUpdateStudent() {
-        int testId = 2;
+	int groupId = 1;
+	Group group = new Group();
+	group.setId(groupId);
+        int studentId = 2;
         Student student = new Student();
         student.setFirstName("Ivan");
         student.setLastName("Zakharchuk");
         student.setGender(Gender.MALE);
-        studentService.changePersonalStudentData(testId, student);
-        verify(studentDAO).update(testId, student);
+        student.setGroup(group);
+        studentService.updateStudent(studentId, student);
+        verify(studentDAO).update(studentId, student);
+        verify(studentDAO).setStudentGroup(student.getGroup().getId(), studentId);
     }
     
     @Test
@@ -154,13 +159,5 @@ class StudentServiceTest {
         int testId = 1;
         studentService.deleteStudentById(testId);
         verify(studentDAO).deleteById(testId);
-    }
-    
-    @Test
-    void shouldSetGroupForStudent() {
-        int groupId = 3;
-        int studentId = 1;
-        studentService.changeStudentGroup(groupId, studentId);
-        verify(studentDAO).setStudentGroup(groupId, studentId);
     }
 }
