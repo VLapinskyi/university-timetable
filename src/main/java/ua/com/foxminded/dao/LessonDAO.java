@@ -81,12 +81,12 @@ public class LessonDAO implements GenericDAO<Lesson> {
 		.findFirst().get();
     }
     
-    public List<Lesson> getDayLessonsForGroup(int groupId, DayOfWeek weekDay) {
+    public List<Lesson> getGroupDayLessons(int groupId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(),
                 groupId, weekDay.getValue());
     }
     
-    public List<Lesson> getDayLessonsForLecturer(int lecturerId, DayOfWeek weekDay) {
+    public List<Lesson> getLecturerDayLessons(int lecturerId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.lecturer"), new LessonMapper(),
                 lecturerId, weekDay.getValue());
     }

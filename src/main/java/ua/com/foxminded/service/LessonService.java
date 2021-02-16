@@ -16,12 +16,12 @@ import ua.com.foxminded.domain.Lesson;
 @Service
 public class LessonService {
     private LessonDAO lessonDAO;
-    
+
     @Autowired
     public LessonService(LessonDAO lessonDAO) {
         this.lessonDAO = lessonDAO;
     }
-    
+
     public void createLesson (int lecturerId, int groupId, int lessonTimeId, Lesson lesson) {
         lessonDAO.create(lesson);
         Optional<Lesson> createdLesson = lessonDAO.findAll().stream().max(Comparator.comparing(Lesson::getId));
@@ -33,7 +33,7 @@ public class LessonService {
         lessonDAO.setLessonGroup(groupId, lessonId);
         lessonDAO.setLessonTime(lessonTimeId, lessonId);
     }
-    
+
     public List<Lesson> getAllLessons() {
         List<Lesson> lessons = lessonDAO.findAll();
         lessons.stream().forEach(lesson -> lesson.setGroup(lessonDAO.getLessonGroup(lesson.getId())));
@@ -41,7 +41,7 @@ public class LessonService {
         lessons.stream().forEach(lesson -> lesson.setLessonTime(lessonDAO.getLessonTime(lesson.getId())));
         return lessons;
     }
-    
+
     public Lesson getLessonById (int lessonId) {
         Lesson lesson =  lessonDAO.findById(lessonId);
         lesson.setGroup(lessonDAO.getLessonGroup(lessonId));
@@ -49,34 +49,45 @@ public class LessonService {
         lesson.setLessonTime(lessonDAO.getLessonTime(lessonId));
         return lesson;     
     }
-    
+
     public void updateLesson(int lessonId, Lesson updatedLesson) {
-	lessonDAO.update(lessonId, updatedLesson);
-	lessonDAO.setLessonLecturer(updatedLesson.getLecturer().getId(), lessonId);
-	lessonDAO.setLessonGroup(updatedLesson.getGroup().getId(), lessonId);
-	lessonDAO.setLessonTime(updatedLesson.getLessonTime().getId(), lessonId);
+        lessonDAO.update(lessonId, updatedLesson);
+        lessonDAO.setLessonLecturer(updatedLesson.getLecturer().getId(), lessonId);
+        lessonDAO.setLessonGroup(updatedLesson.getGroup().getId(), lessonId);
+        lessonDAO.setLessonTime(updatedLesson.getLessonTime().getId(), lessonId);
+    }
+
+    public List<Lesson> getGroupWeekLessons (int groupId) {
+        List<Lesson> weekLessons = new ArrayList<>();
+        for (int i = 1; i <= DayOfWeek.values().length; i++) {
+            weekLessons.addAll(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.of(i)));
+        }
+        return weekLessons;
+    }
+
+    public List<Lesson> getGroupMonthLessons(int groupId, YearMonth month) {
+        List<Lesson> lessons = new ArrayList<>();
+        for (int i = 1; i <= month.lengthOfMonth(); i++) {
+            DayOfWeek day = month.atDay(i).getDayOfWeek();
+            lessons.addAll(lessonDAO.getGroupDayLessons(groupId, day));
+        }
+        return lessons;
     }
     
-    public List<Lesson> getWeekLessonsForGroup (int groupId) {
-	List<Lesson> weekLessons = new ArrayList<>();
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.MONDAY));
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.TUESDAY));
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.WEDNESDAY));
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.THURSDAY));
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.FRIDAY));
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.SATURDAY));
-	weekLessons.addAll(lessonDAO.getDayLessonsForGroup(groupId, DayOfWeek.SUNDAY));
-	
-	return weekLessons;
+    public List<Lesson> getLecturerWeekLessons(int lecturerId) {
+        List<Lesson> weekLessons = new ArrayList<>();
+        for (int i = 1; i <= DayOfWeek.values().length; i++) {
+            weekLessons.addAll(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.of(i)));
+        }
+        return weekLessons;
     }
     
-    public List<Lesson> getMonthLessonsForGroup(int groupId, YearMonth month) {
-	List<Lesson> lessons = new ArrayList<>();
-	for (int i = 1; i <= month.lengthOfMonth(); i++) {
-	    DayOfWeek day = month.atDay(i).getDayOfWeek();
-	    List<Lesson> dayLessons = lessonDAO.getDayLessonsForGroup(groupId, day);
-	    lessons.addAll(dayLessons);
-	}
-	return lessons;
+    public List<Lesson> getLecturerMonthLessons(int lecturerId, YearMonth month) {
+        List<Lesson> lessons = new ArrayList<>();
+        for (int i = 1; i <= month.lengthOfMonth(); i++) {
+            DayOfWeek day = month.atDay(i).getDayOfWeek();
+            lessons.addAll(lessonDAO.getLecturerDayLessons(lecturerId, day));
+        }
+        return lessons;
     }
 }

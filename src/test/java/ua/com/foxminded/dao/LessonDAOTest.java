@@ -247,7 +247,7 @@ class LessonDAOTest {
         int groupId = 1;
         DayOfWeek testDay = DayOfWeek.MONDAY;
         Lesson expectedLesson = expectedLessons.get(0);
-        List<Lesson> actualLessons = lessonDAO.getDayLessonsForGroup(groupId, testDay);
+        List<Lesson> actualLessons = lessonDAO.getGroupDayLessons(groupId, testDay);
         assertTrue(actualLessons.contains(expectedLesson) && actualLessons.size() == 1);
     }
 
@@ -259,7 +259,7 @@ class LessonDAOTest {
         expectedLessons = new ArrayList<> (Arrays.asList(
                 this.expectedLessons.get(2), this.expectedLessons.get(3)));
         
-        List<Lesson> actualLessons = lessonDAO.getDayLessonsForLecturer(lecturerId, testDay);
+        List<Lesson> actualLessons = lessonDAO.getLecturerDayLessons(lecturerId, testDay);
         
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
