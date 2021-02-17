@@ -1,8 +1,8 @@
 package ua.com.foxminded.service;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import ua.com.foxminded.dao.GroupDAO;
 import ua.com.foxminded.dao.StudentDAO;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
@@ -27,7 +26,7 @@ class StudentServiceTest {
     @Mock
     private StudentDAO studentDAO;
     @Mock
-    private GroupDAO groupDAO;
+    private GroupService groupService;
 
     @BeforeEach
     void init() {
@@ -53,89 +52,49 @@ class StudentServiceTest {
                 new Group(), new Group()));
         List<Integer> groupIndexes = new ArrayList<>(Arrays.asList(
                 1, 2));
-        List<String> groupNames = new ArrayList<>(Arrays.asList(
-                "Group1", "Group2"));
         for (int i = 0; i < groups.size(); i++) {
             groups.get(i).setId(groupIndexes.get(i));
-            groups.get(i).setName(groupNames.get(i));
         }
 
-        List<Student> testStudents = new ArrayList<>(Arrays.asList(
+        List<Student> students = new ArrayList<>(Arrays.asList(
                 new Student(), new Student(), new Student()));
         List<Integer> studentIndexes = new ArrayList<>(Arrays.asList(
                 1, 2, 3));
-        List<String> firstNames = new ArrayList<>(Arrays.asList(
-                "Valentyn", "Ivan", "Olha"));
-        List<String> lastNames = new ArrayList<>(Arrays.asList(
-                "Lapinskyi", "Zakharchuk", "Skladenko"));
-        List<Gender> studentGenders = new ArrayList<>(Arrays.asList(
-                Gender.MALE, Gender.MALE, Gender.FEMALE));
-        String phoneNumber = "+380445237954";
-        String email =  "test@gmail.com";
-        for (int i = 0; i < testStudents.size(); i++) {
-            testStudents.get(i).setId(studentIndexes.get(i));
-            testStudents.get(i).setFirstName(firstNames.get(i));
-            testStudents.get(i).setLastName(lastNames.get(i));
-            testStudents.get(i).setGender(studentGenders.get(i));
+        for (int i = 0; i < students.size(); i++) {
+            students.get(i).setId(studentIndexes.get(i));
         }
-        testStudents.get(0).setPhoneNumber(phoneNumber);
-        testStudents.get(1).setEmail(email);
 
-        when(studentDAO.findAll()).thenReturn(testStudents);
-        when(studentDAO.getStudentGroup(testStudents.get(0).getId())).thenReturn(groups.get(0));
-        when(studentDAO.getStudentGroup(testStudents.get(1).getId())).thenReturn(groups.get(0));
-        when(studentDAO.getStudentGroup(testStudents.get(2).getId())).thenReturn(groups.get(1));
+        when(studentDAO.findAll()).thenReturn(students);
+        when(studentDAO.getStudentGroup(students.get(0).getId())).thenReturn(groups.get(0));
+        when(studentDAO.getStudentGroup(students.get(1).getId())).thenReturn(groups.get(0));
+        when(studentDAO.getStudentGroup(students.get(2).getId())).thenReturn(groups.get(1));
         
-        List<Student> expectedStudents = new ArrayList<>(Arrays.asList(
-                new Student(), new Student(), new Student()));
-        for(int i = 0; i < expectedStudents.size(); i++) {
-            expectedStudents.get(i).setId(studentIndexes.get(i));
-            expectedStudents.get(i).setFirstName(firstNames.get(i));
-            expectedStudents.get(i).setLastName(lastNames.get(i));
-            expectedStudents.get(i).setGender(studentGenders.get(i));
-        }
-        expectedStudents.get(0).setPhoneNumber(phoneNumber);
-        expectedStudents.get(0).setGroup(groups.get(0));
-        expectedStudents.get(1).setEmail(email);
-        expectedStudents.get(1).setGroup(groups.get(0));
-        expectedStudents.get(2).setGroup(groups.get(1));
-        
-        List<Student> actualStudents = studentService.getAllStudents();
-        assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
+        studentService.getAllStudents();
+        verify(studentDAO).findAll();
+        verify(studentDAO).getStudentGroup(students.get(0).getId());
+        verify(studentDAO).getStudentGroup(students.get(1).getId());
+        verify(studentDAO).getStudentGroup(students.get(2).getId());
+        verify(groupService, times(2)).getGroupById(groups.get(0).getId());
+        verify(groupService).getGroupById(groups.get(1).getId());
     }
     
     @Test
     void shouldGetStudentById() {
+	int groupId = 2;
         Group group = new Group();
-        group.setId(1);
-        group.setName("Group1");
+        group.setId(groupId);
         
         int studentId = 1;
-        String firstName = "Valentyn";
-        String lastName = "Lapinskyi";
-        Gender gender = Gender.MALE;
-        String email = "valentinlapinskiy@gmail.com";
+        Student student = new Student();
+        student.setId(studentId);
         
-        Student testStudent = new Student();
-        testStudent.setId(studentId);
-        testStudent.setFirstName(firstName);
-        testStudent.setLastName(lastName);
-        testStudent.setGender(gender);
-        testStudent.setEmail(email);
-        
-        Student expectedStudent = new Student();
-        expectedStudent.setId(studentId);
-        expectedStudent.setFirstName(firstName);
-        expectedStudent.setLastName(lastName);
-        expectedStudent.setGender(gender);
-        expectedStudent.setEmail(email);
-        expectedStudent.setGroup(group);
-        
-        when(studentDAO.findById(studentId)).thenReturn(testStudent);
+        when(studentDAO.findById(studentId)).thenReturn(student);
         when(studentDAO.getStudentGroup(studentId)).thenReturn(group);
         
-        Student actualStudent = studentService.getStudentById(studentId);
-        assertEquals(expectedStudent, actualStudent);
+        studentService.getStudentById(studentId);
+        verify(studentDAO).findById(studentId);
+        verify(studentDAO).getStudentGroup(studentId);
+        verify(groupService).getGroupById(groupId);
     }
     
     @Test

@@ -13,17 +13,18 @@ import ua.com.foxminded.domain.Student;
 @Service
 public class GroupService {
     private GroupDAO groupDAO;
+    private FacultyService facultyService;
     private StudentService studentService;
     
     @Autowired
-    public GroupService (GroupDAO groupDAO, StudentService studentService) {
+    public GroupService (GroupDAO groupDAO, FacultyService facultyService, StudentService studentService) {
         this.groupDAO = groupDAO;
+        this.facultyService = facultyService;
         this.studentService = studentService;
     }
     
-    public void createGroup(String groupName) {
-        Group group = new Group();
-        group.setName(groupName);
+    public void createGroup(int facultyId, Group group) {
+        
         groupDAO.create(group);
     }
     
@@ -41,5 +42,9 @@ public class GroupService {
             group.setStudents(groupStudents);
         });
         return groups;
+    }
+    
+    public Group getGroupById(int groupId) {
+	return null;
     }
 }
