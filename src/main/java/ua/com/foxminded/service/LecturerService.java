@@ -47,4 +47,12 @@ public class LecturerService {
                 .filter(lesson -> lesson.getLecturer().getId() == lecturer.getId()).collect(Collectors.toList()));
         return lecturer;
     }
+    
+    public void updateLecturer(int lecturerId, Lecturer lecturer) {
+	lecturerDAO.update(lecturerId, lecturer);
+    }
+    
+    public void deleteLecturerById(int lecturerId) {
+	lecturerDAO.deleteById(lecturerId);
+    }
 }

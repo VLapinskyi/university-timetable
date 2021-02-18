@@ -30,10 +30,10 @@ public class GroupService {
     
     public void createGroup(int facultyId, Group group) {
         groupDAO.create(group);
-        Optional<Group> createdStudent = groupDAO.findAll().stream().max(Comparator.comparing(Group :: getId));
+        Optional<Group> createdGroup = groupDAO.findAll().stream().max(Comparator.comparing(Group :: getId));
         int groupId = 0;
-        if(createdStudent.isPresent()) {
-            groupId = createdStudent.get().getId();
+        if(createdGroup.isPresent()) {
+            groupId = createdGroup.get().getId();
         }
         groupDAO.setGroupFaculty(facultyId, groupId);
     }

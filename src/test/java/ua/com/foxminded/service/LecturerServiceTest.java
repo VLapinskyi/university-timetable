@@ -69,25 +69,43 @@ class LecturerServiceTest {
     
     @Test
     void shouldGetLecturerById() {
-        int testLecturerId = 2;
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(testLecturerId);
-        
-        List<Lesson> lessons = new ArrayList<>(Arrays.asList(
-                new Lesson(), new Lesson()));
-        lessons.get(0).setId(1);
-        lessons.get(1).setId(2);
-        lessons.stream().forEach(lesson -> lesson.setLecturer(lecturer));
-        
-        Lecturer expectedLecturer = new Lecturer();
-        lecturer.setId(testLecturerId);
-        lecturer.setLessons(lessons);
-        
-        when(lecturerDAO.findById(testLecturerId)).thenReturn(lecturer);
-        when(lessonService.getAllLessons()).thenReturn(lessons);
-        Lecturer actualLecturer = lecturerService.getLecturerById(testLecturerId);
-        assertEquals(expectedLecturer, actualLecturer);
-        verify(lecturerDAO).findById(testLecturerId);
-        verify(lessonService).getAllLessons();
+	int testLecturerId = 2;
+	Lecturer lecturer = new Lecturer();
+	lecturer.setId(testLecturerId);
+	
+	List<Lesson> lessons = new ArrayList<>(Arrays.asList(
+		new Lesson(), new Lesson()));
+	lessons.get(0).setId(1);
+	lessons.get(1).setId(2);
+	lessons.stream().forEach(lesson -> lesson.setLecturer(lecturer));
+	
+	Lecturer expectedLecturer = new Lecturer();
+	expectedLecturer.setId(testLecturerId);
+	expectedLecturer.setLessons(lessons);
+	
+	when(lecturerDAO.findById(testLecturerId)).thenReturn(lecturer);
+	when(lessonService.getAllLessons()).thenReturn(lessons);
+	
+	Lecturer actualLecturer = lecturerService.getLecturerById(testLecturerId);
+	assertEquals(expectedLecturer, actualLecturer);
+	verify(lecturerDAO).findById(testLecturerId);
+	verify(lessonService).getAllLessons();
+    }
+    
+    @Test
+    void shouldUpdateLecturer() {
+	int testLecturerId = 3;
+	Lecturer lecturer = new Lecturer();
+	lecturer.setFirstName("Valentyn");
+	lecturer.setLastName("Lapinskyi");
+	lecturerService.updateLecturer(testLecturerId, lecturer);
+	verify(lecturerDAO).update(testLecturerId, lecturer);
+    }
+    
+    @Test
+    void shouldDeleteLecturerById() {
+	int testLecturerId = 5;
+	lecturerService.deleteLecturerById(testLecturerId);
+	verify(lecturerDAO).deleteById(testLecturerId);
     }
 }
