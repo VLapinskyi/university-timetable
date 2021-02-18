@@ -11,84 +11,102 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import ua.com.foxminded.dao.FacultyDAO;
-import ua.com.foxminded.dao.GroupDAO;
 import ua.com.foxminded.domain.Faculty;
+import ua.com.foxminded.domain.Group;
 
 class FacultyServiceTest {
     @InjectMocks
-    private FacultyService universityService;
+    private FacultyService facultyService;
 
     @Mock
     private FacultyDAO facultyDAO;
     @Mock
-    private GroupDAO groupDAO;
-    
-    @Captor
-    ArgumentCaptor<Faculty> facultyCaptor;
-    @Captor
-    ArgumentCaptor<Integer> numberCaptor;
+    private GroupService groupService;
 
     @BeforeEach
     void init() {
-	MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void shouldCreateFaculty() {
-	String facultyName = "TestName";
-	universityService.createFaculty(facultyName);
-	verify(facultyDAO).create(facultyCaptor.capture());
-	Faculty actualFaculty = facultyCaptor.getValue();
-	assertEquals(facultyName, actualFaculty.getName());
+        String facultyName = "TestName";
+        Faculty faculty = new Faculty();
+        faculty.setName(facultyName);
+        facultyService.createFaculty(faculty);
+        verify(facultyDAO).create(faculty);
     }
 
     @Test
-    void shouldFindAllFaculties() {
-	Faculty faculty1 = new Faculty();
-	Faculty faculty2 = new Faculty();
-	faculty1.setId(1);
-	faculty1.setName("Faculty1");
-	faculty2.setId(2);
-	faculty2.setName("Faculty2");
-	List<Faculty> facultyList = new ArrayList<>(Arrays.asList(faculty1, faculty2));
-	when(facultyDAO.findAll()).thenReturn(facultyList);
-	List<Faculty> actualList = universityService.findAllFaculties();
-	assertTrue(facultyList.containsAll(actualList) && actualList.containsAll(facultyList));
+    void shouldGetAllFaculties() {
+        List<Faculty> faculties = new ArrayList<>(Arrays.asList(
+                new Faculty(), new Faculty()));
+        faculties.get(0).setId(1);
+        faculties.get(0).setId(2);
+        
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                new Group(), new Group(), new Group()));
+        groups.get(0).setId(1);
+        groups.get(1).setId(2);
+        groups.get(2).setId(3);
+        groups.get(0).setFaculty(faculties.get(0));
+        groups.get(1).setFaculty(faculties.get(0));
+        groups.get(2).setFaculty(faculties.get(1));
+        
+        List<Faculty> expectedFaculties = new ArrayList<>(faculties);
+        expectedFaculties.get(0).setGroups(groups.subList(0, 2));
+        expectedFaculties.get(1).setGroups(groups.subList(2, groups.size()));
+        
+        when(facultyDAO.findAll()).thenReturn(faculties);
+        when(groupService.getAllGroups()).thenReturn(groups);
+        List<Faculty> actualList = facultyService.getAllFaculties();
+        assertTrue(expectedFaculties.containsAll(actualList) && actualList.containsAll(expectedFaculties));
+        verify(facultyDAO).findAll();
+        verify(groupService).getAllGroups();
     }
-    
+
     @Test
     void shouldFindFacultyById() {
-	int testId = 2;
-	Faculty faculty = new Faculty();
-	faculty.setId(testId);
-	faculty.setName("TestFaculty");
-	when(facultyDAO.findById(testId)).thenReturn(faculty);
-	assertEquals(faculty, universityService.findFacultyById(testId));
+        int testId = 2;
+        Faculty faculty = new Faculty();
+        faculty.setId(testId);
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                new Group(), new Group()));
+        groups.get(0).setId(1);
+        groups.get(0).setId(1);
+        groups.stream().forEach(group -> group.setFaculty(faculty));
+        
+        Faculty expectedFaculty = new Faculty();
+        expectedFaculty.setId(testId);
+        expectedFaculty.setGroups(groups);
+        
+        when(facultyDAO.findById(testId)).thenReturn(faculty);
+        when(groupService.getAllGroups()).thenReturn(groups);
+        Faculty actualFaculty = facultyService.getFacultyById(testId);
+        assertEquals(expectedFaculty, actualFaculty);
+        verify(facultyDAO).findById(testId);
+        verify(groupService).getAllGroups();
     }
-    
+
     @Test
     void shouldUpdateFaculty() {
-	int testId = 3;
-	String testName = "Faculty Name";
-	Faculty testFaculty = new Faculty();
-	testFaculty.setName(testName);
-	universityService.updateFaculty(testId, testName);
-	verify(facultyDAO).update(numberCaptor.capture(), facultyCaptor.capture());
-	assertTrue(testId == numberCaptor.getValue() && testFaculty.equals(facultyCaptor.getValue()));
+        int testId = 3;
+        String testName = "Faculty Name";
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName(testName);
+        facultyService.updateFaculty(testId, testFaculty);
+        verify(facultyDAO).update(testId, testFaculty);
     }
-    
+
     @Test
     void shouldDeleteFacultyById() {
         int testId = 1;
-        universityService.deleteFacultyById(testId);
-        verify(facultyDAO).deleteById(numberCaptor.capture());
-        assertTrue(testId == numberCaptor.getValue());
+        facultyService.deleteFacultyById(testId);
+        verify(facultyDAO).deleteById(testId);
     }
 }

@@ -13,12 +13,10 @@ import ua.com.foxminded.domain.Student;
 @Service
 public class StudentService {
     private StudentDAO studentDAO;
-    private GroupService groupService;
 
     @Autowired
-    public StudentService (StudentDAO studentDAO, GroupService groupService) {
+    public StudentService (StudentDAO studentDAO) {
         this.studentDAO = studentDAO;
-        this.groupService = groupService;
     }
 
     public void createStudent(int groupId, Student student) {
@@ -34,14 +32,12 @@ public class StudentService {
     public List<Student> getAllStudents() {
         List<Student> students = studentDAO.findAll();
         students.stream().forEach(student -> student.setGroup(studentDAO.getStudentGroup(student.getId())));
-        students.stream().forEach(student -> student.setGroup(groupService.getGroupById(student.getGroup().getId())));
         return students;
     }
     
     public Student getStudentById(int studentId) {
         Student student = studentDAO.findById(studentId);
         student.setGroup(studentDAO.getStudentGroup(studentId));
-        student.setGroup(groupService.getGroupById(student.getGroup().getId()));
         return student;
     }
     
