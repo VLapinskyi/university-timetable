@@ -73,7 +73,7 @@ public class LessonService {
         }
         return lessons;
     }
-    
+
     public List<Lesson> getLecturerWeekLessons(int lecturerId) {
         List<Lesson> weekLessons = new ArrayList<>();
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
@@ -81,7 +81,7 @@ public class LessonService {
         }
         return weekLessons;
     }
-    
+
     public List<Lesson> getLecturerMonthLessons(int lecturerId, YearMonth month) {
         List<Lesson> lessons = new ArrayList<>();
         for (int i = 1; i <= month.lengthOfMonth(); i++) {

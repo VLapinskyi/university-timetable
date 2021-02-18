@@ -33,7 +33,7 @@ class GroupDAOTest {
     private JdbcTemplate jdbcTemplate;
     private List<Group> expectedGroups;
     private Connection connection;
-    
+
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
@@ -42,7 +42,7 @@ class GroupDAOTest {
     void setUp() throws Exception {
         connection = jdbcTemplate.getDataSource().getConnection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
-        
+
         expectedGroups = new ArrayList<>(Arrays.asList(
                 new Group(), new Group(), new Group()));
         List<String> groupNames = new ArrayList<>(Arrays.asList(
@@ -86,7 +86,7 @@ class GroupDAOTest {
         Group expectedGroup = new Group();
         expectedGroup.setId(checkedGroupId);
         expectedGroup.setName("TestGroup2");
-        
+
         assertEquals(expectedGroup, groupDAO.findById(checkedGroupId));
     }
 
@@ -117,36 +117,36 @@ class GroupDAOTest {
         List<Group> actualGroups = groupDAO.findAll();
         assertTrue(expectedGroups.containsAll(actualGroups) && actualGroups.containsAll(expectedGroups));
     }
-    
+
     @Test
     void shouldSetGroupFaculty() {
-	ScriptUtils.executeSqlScript(connection, testData);
-	int facultyId = 1;
-	Faculty faculty = new Faculty();
-	faculty.setId(facultyId);
-	faculty.setName("TestFaculty1");
-	
-	int groupId = 2;
-	Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == groupId).findFirst().get();
-	expectedGroup.setFaculty(faculty);
-	
-	groupDAO.setGroupFaculty(facultyId, groupId);
-	Group actualGroup = groupDAO.findById(groupId);
-	actualGroup.setFaculty(groupDAO.getGroupFaculty(groupId));
-	assertEquals(expectedGroup, actualGroup);
+        ScriptUtils.executeSqlScript(connection, testData);
+        int facultyId = 1;
+        Faculty faculty = new Faculty();
+        faculty.setId(facultyId);
+        faculty.setName("TestFaculty1");
+
+        int groupId = 2;
+        Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == groupId).findFirst().get();
+        expectedGroup.setFaculty(faculty);
+
+        groupDAO.setGroupFaculty(facultyId, groupId);
+        Group actualGroup = groupDAO.findById(groupId);
+        actualGroup.setFaculty(groupDAO.getGroupFaculty(groupId));
+        assertEquals(expectedGroup, actualGroup);
     }
 
     @Test
     void shouldGetGroupFaculty() {
-	ScriptUtils.executeSqlScript(connection, testData);
-	int facultyId = 2;
-	Faculty expectedFaculty = new Faculty();
-	expectedFaculty.setId(facultyId);
-	expectedFaculty.setName("TestFaculty2");
-	
-	int groupId = 2;
-	groupDAO.setGroupFaculty(facultyId, groupId);
-	Faculty actualFaculty = groupDAO.getGroupFaculty(groupId);
-	assertEquals(expectedFaculty, actualFaculty);
+        ScriptUtils.executeSqlScript(connection, testData);
+        int facultyId = 2;
+        Faculty expectedFaculty = new Faculty();
+        expectedFaculty.setId(facultyId);
+        expectedFaculty.setName("TestFaculty2");
+
+        int groupId = 2;
+        groupDAO.setGroupFaculty(facultyId, groupId);
+        Faculty actualFaculty = groupDAO.getGroupFaculty(groupId);
+        assertEquals(expectedFaculty, actualFaculty);
     }
 }

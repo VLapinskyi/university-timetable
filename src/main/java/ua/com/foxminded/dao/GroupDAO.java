@@ -16,13 +16,13 @@ import ua.com.foxminded.mapper.GroupMapper;
 public class GroupDAO implements GenericDAO<Group> {
     private final JdbcTemplate jdbcTemplate;
     private Environment environment;
-    
+
     @Autowired
     public GroupDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
     }    
-    
+
     @Override
     public void create(Group group) {
         jdbcTemplate.update(environment.getProperty("create.group"), group.getName());        
@@ -48,13 +48,13 @@ public class GroupDAO implements GenericDAO<Group> {
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.group"), id);       
     }
-    
+
     public void setGroupFaculty (int facultyId, int groupId) {
-	jdbcTemplate.update(environment.getProperty("set.group.faculty"), facultyId, groupId);
+        jdbcTemplate.update(environment.getProperty("set.group.faculty"), facultyId, groupId);
     }
-    
+
     public Faculty getGroupFaculty (int groupId) {
-	return jdbcTemplate.queryForStream(environment.getProperty("get.group.faculty"), new FacultyMapper(), groupId)
-		.findAny().orElse(null);
+        return jdbcTemplate.queryForStream(environment.getProperty("get.group.faculty"), new FacultyMapper(), groupId)
+                .findAny().orElse(null);
     }
 }

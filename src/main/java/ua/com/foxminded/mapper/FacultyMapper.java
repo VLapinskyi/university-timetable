@@ -16,5 +16,4 @@ public class FacultyMapper implements RowMapper<Faculty> {
         faculty.setName(rs.getString("name"));
         return faculty;
     }
-
 }

@@ -19,5 +19,4 @@ public class LessonMapper implements RowMapper<Lesson> {
         lesson.setDay(DayOfWeek.of(rs.getInt("week_day")));        
         return lesson;
     }
-
 }

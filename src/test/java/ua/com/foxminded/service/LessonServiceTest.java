@@ -167,7 +167,7 @@ class LessonServiceTest {
             assertSame(groupId, actualGroupIndexes.get(i));
         }
     }
-    
+
     @Test
     void shouldGetWeekLessonsForLecturer() {
         int lecturerId = 3;
@@ -176,7 +176,7 @@ class LessonServiceTest {
             verify(lessonDAO).getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
         }
     }
-    
+
     @Test
     void shouldGetMonthLessonsForLecturer() {
         int lecturerId = 3;
@@ -192,10 +192,10 @@ class LessonServiceTest {
                 DayOfWeek.of(4)));
         lessonService.getLecturerMonthLessons(lecturerId, month);
         verify(lessonDAO, times(monthLength)).getLecturerDayLessons(numberCaptor.capture(), dayCaptor.capture());
-        
+
         List<DayOfWeek> actualDays = dayCaptor.getAllValues();
         List<Integer> actualLecturerIndexes = numberCaptor.getAllValues();
-        
+
         for (int i = 0; i < monthLength; i++) {
             assertEquals(expectedDays.get(i), actualDays.get(i));
             assertSame(lecturerId, actualLecturerIndexes.get(i));

@@ -17,5 +17,4 @@ public class LessonTimeMapper implements RowMapper<LessonTime> {
         lessonTime.setEndTime(rs.getTime("end_time").toLocalTime());
         return lessonTime;
     }
-
 }

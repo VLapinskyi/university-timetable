@@ -1,11 +1,8 @@
 package ua.com.foxminded.domain;
 
-import java.util.List;
-
 public class Faculty {
     private int id;
     private String name;
-    private List<Group> groups;
 
     public int getId() {
         return id;
@@ -23,19 +20,10 @@ public class Faculty {
         this.name = name;
     }
 
-    public List<Group> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<Group> groups) {
-        this.groups = groups;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((groups == null) ? 0 : groups.hashCode());
         result = prime * result + id;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
         return result;
@@ -50,11 +38,6 @@ public class Faculty {
         if (getClass() != obj.getClass())
             return false;
         Faculty other = (Faculty) obj;
-        if (groups == null) {
-            if (other.groups != null)
-                return false;
-        } else if (!groups.equals(other.groups))
-            return false;
         if (id != other.id)
             return false;
         if (name == null) {

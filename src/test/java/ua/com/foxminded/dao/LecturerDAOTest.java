@@ -31,7 +31,7 @@ class LecturerDAOTest {
     private JdbcTemplate jdbcTemplate;
     private List<Lecturer> expectedLecturers;
     private Connection connection;
-    
+
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
@@ -40,7 +40,7 @@ class LecturerDAOTest {
     void setUp() throws Exception {
         connection = jdbcTemplate.getDataSource().getConnection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
-        
+
         expectedLecturers = new ArrayList<>(Arrays.asList(
                 new Lecturer(), new Lecturer(), new Lecturer()));
         List<Integer> indexes = new ArrayList<>(Arrays.asList(
@@ -78,13 +78,13 @@ class LecturerDAOTest {
         expectedLecturer.setLastName("Last-name");
         expectedLecturer.setGender(Gender.MALE);
         expectedLecturer.setPhoneNumber("1233");
-        
+
         Lecturer testLecturer = new Lecturer();
         testLecturer.setFirstName("First-name");
         testLecturer.setLastName("Last-name");
         testLecturer.setGender(Gender.MALE);
         testLecturer.setPhoneNumber("1233");
-        
+
         lecturerDAO.create(testLecturer);
         Lecturer actualLecturer = lecturerDAO.findAll().stream().findFirst().get();
         assertEquals(expectedLecturer, actualLecturer);
@@ -114,14 +114,14 @@ class LecturerDAOTest {
     void shouldUpdateLecturer() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 2;
-        
+
         Lecturer testLecturer = new Lecturer();
         testLecturer.setFirstName("Iryna");
         testLecturer.setLastName("Kohan");
         testLecturer.setGender(Gender.FEMALE);
         testLecturer.setEmail("i.kohan@gmail.com");
         testLecturer.setPhoneNumber("+380501234567");
-        
+
         Lecturer expectedLecturer = new Lecturer();
         expectedLecturer.setId(testId);
         expectedLecturer.setFirstName("Iryna");
@@ -129,7 +129,7 @@ class LecturerDAOTest {
         expectedLecturer.setGender(Gender.FEMALE);
         expectedLecturer.setEmail("i.kohan@gmail.com");
         expectedLecturer.setPhoneNumber("+380501234567");
-        
+
         lecturerDAO.update(testId, testLecturer);
         assertEquals(expectedLecturer, lecturerDAO.findById(testId));
     }
@@ -140,8 +140,8 @@ class LecturerDAOTest {
         int deletedId = 2;
         for (int i = 0; i < expectedLecturers.size(); i++) {
             if (expectedLecturers.get(i).getId() == deletedId) {
-               expectedLecturers.remove(i);
-               i--;
+                expectedLecturers.remove(i);
+                i--;
             }
         }
         lecturerDAO.deleteById(deletedId);

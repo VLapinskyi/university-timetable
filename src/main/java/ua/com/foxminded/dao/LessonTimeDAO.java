@@ -15,13 +15,13 @@ import ua.com.foxminded.mapper.LessonTimeMapper;
 public class LessonTimeDAO implements GenericDAO<LessonTime> {
     private final JdbcTemplate jdbcTemplate;
     private Environment environment;
-    
+
     @Autowired
     public LessonTimeDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment  = environment;
     }
-    
+
     @Override
     public void create(LessonTime lessonTime) {
         Time startTime = null;
@@ -55,5 +55,4 @@ public class LessonTimeDAO implements GenericDAO<LessonTime> {
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.lesson.time.by.id"), id);        
     }
-
 }

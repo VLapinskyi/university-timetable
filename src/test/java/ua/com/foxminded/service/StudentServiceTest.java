@@ -1,5 +1,6 @@
 package ua.com.foxminded.service;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,8 +24,6 @@ class StudentServiceTest {
 
     @Mock
     private StudentDAO studentDAO;
-    @Mock
-    private GroupService groupService;
 
     @BeforeEach
     void init() {
@@ -94,5 +93,35 @@ class StudentServiceTest {
         int testId = 1;
         studentService.deleteStudentById(testId);
         verify(studentDAO).deleteById(testId);
+    }
+
+    @Test
+    void shouldGetStudentsFromGroup() {
+        int groupId = 3;
+        List<Group> groups = new ArrayList<>(Arrays.asList(new Group(), new Group(), new Group()));
+        groups.get(0).setId(1);
+        groups.get(1).setId(2);
+        groups.get(2).setId(3);
+
+        List<Student> students = new ArrayList<>(Arrays.asList(new Student(), new Student(), new Student()));
+        students.get(0).setId(1);
+        students.get(1).setId(2);
+        students.get(2).setId(3);
+
+        List<Student> expectedStudents = new ArrayList<>(students.subList(0, 2));
+        expectedStudents.stream().forEach(student -> student.setGroup(groups.get(2)));
+
+        when(studentDAO.findAll()).thenReturn(students);
+        when(studentDAO.getStudentGroup(students.get(0).getId())).thenReturn(groups.get(2));
+        when(studentDAO.getStudentGroup(students.get(1).getId())).thenReturn(groups.get(2));
+        when(studentDAO.getStudentGroup(students.get(2).getId())).thenReturn(groups.get(1));
+        List<Student> actualStudents = studentService.getStudentsFromGroup(groupId);
+
+        assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
+        verify(studentDAO).findAll();
+        for(int i = 0; i < students.size(); i++) {
+            verify(studentDAO).getStudentGroup(students.get(i).getId());
+        }
+
     }
 }

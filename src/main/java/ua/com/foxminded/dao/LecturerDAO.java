@@ -15,7 +15,7 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
     private static final String ROLE = "lecturer";
     private final JdbcTemplate jdbcTemplate;
     private Environment environment;
-    
+
     @Autowired
     public LecturerDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
@@ -44,7 +44,7 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
     public void update(int id, Lecturer lecturer) {
         jdbcTemplate.update(environment.getProperty("update.person"), lecturer.getFirstName(), lecturer.getLastName(),
                 lecturer.getGender().toString(), lecturer.getPhoneNumber(), lecturer.getEmail(), id, ROLE);
-        
+
     }
 
     @Override

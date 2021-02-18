@@ -17,7 +17,7 @@ public class StudentDAO implements GenericDAO<Student> {
     private static final String ROLE = "student";
     private final JdbcTemplate jdbcTemplate;
     private Environment environment;
-    
+
     @Autowired
     public StudentDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
@@ -26,9 +26,9 @@ public class StudentDAO implements GenericDAO<Student> {
 
     @Override
     public void create(Student student) {
-      jdbcTemplate.update(environment.getProperty("create.person"), ROLE, 
-              student.getFirstName(), student.getLastName(), student.getGender().name(),
-              student.getPhoneNumber(), student.getEmail());
+        jdbcTemplate.update(environment.getProperty("create.person"), ROLE, 
+                student.getFirstName(), student.getLastName(), student.getGender().name(),
+                student.getPhoneNumber(), student.getEmail());
     }
 
     @Override
@@ -47,20 +47,20 @@ public class StudentDAO implements GenericDAO<Student> {
         jdbcTemplate.update(environment.getProperty("update.person"),
                 student.getFirstName(), student.getLastName(), student.getGender().toString(),
                 student.getPhoneNumber(), student.getEmail(),  id, ROLE);
-        
+
     }
 
     @Override
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
     }
-    
+
     public void setStudentGroup(int groupId, int studentId) {
-	jdbcTemplate.update(environment.getProperty("set.student.group"), groupId, studentId);
+        jdbcTemplate.update(environment.getProperty("set.student.group"), groupId, studentId);
     }
-    
+
     public Group getStudentGroup(int studentId) {
-	return jdbcTemplate.queryForStream(environment.getProperty("get.student.group"), new GroupMapper(), studentId)
-		.findFirst().get();
-	}
+        return jdbcTemplate.queryForStream(environment.getProperty("get.student.group"), new GroupMapper(), studentId)
+                .findFirst().get();
+    }
 }

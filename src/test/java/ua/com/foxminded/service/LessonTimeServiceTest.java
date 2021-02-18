@@ -16,7 +16,7 @@ import ua.com.foxminded.domain.LessonTime;
 class LessonTimeServiceTest {
     @InjectMocks
     private LessonTimeService lessonTimeService;
-    
+
     @Mock
     private LessonTimeDAO lessonTimeDAO;
 
@@ -24,7 +24,7 @@ class LessonTimeServiceTest {
     void init() {
         MockitoAnnotations.openMocks(this);
     }
-    
+
     @Test
     void shouldCreateLessonTime() {
         LocalTime startTime = LocalTime.of(9, 0);
@@ -32,24 +32,24 @@ class LessonTimeServiceTest {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(startTime);
         lessonTime.setEndTime(endTime);
-        
+
         lessonTimeService.createLessonTime(lessonTime);
         verify(lessonTimeDAO).create(lessonTime);
     }
-    
+
     @Test
     void shouldGetAllLessonTimes() {
         lessonTimeService.getAllLessonTimes();
         verify(lessonTimeDAO).findAll();
     }
-    
+
     @Test
     void shouldGetLessonTimeById() {
         int lessonTimeId = 2;
         lessonTimeService.getLessonTimeById(lessonTimeId);
         verify(lessonTimeDAO).findById(lessonTimeId);
     }
-    
+
     @Test
     void shouldChangeLessonTimeData() {
         int lessonTimeId = 1;
@@ -58,11 +58,11 @@ class LessonTimeServiceTest {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(startTime);
         lessonTime.setEndTime(endTime);
-        
+
         lessonTimeService.changeLessonTimeData(lessonTimeId, lessonTime);
         verify(lessonTimeDAO).update(lessonTimeId, lessonTime);
     }
-    
+
     @Test
     void shouldDeleteLessonTimeById() {
         int lessonTimeId = 4;
