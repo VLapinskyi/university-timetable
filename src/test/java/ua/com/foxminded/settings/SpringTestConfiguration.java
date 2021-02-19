@@ -17,7 +17,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 public class SpringTestConfiguration {
     @Autowired
     private Environment environment;
-    
+
     @Bean
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -27,7 +27,7 @@ public class SpringTestConfiguration {
         dataSource.setPassword(environment.getProperty("password"));
         return dataSource;
     }
-    
+
     @Bean
     public JdbcTemplate getJdbcTemplate () {
         return new JdbcTemplate(getDataSource());

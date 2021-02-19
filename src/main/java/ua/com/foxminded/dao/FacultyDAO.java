@@ -14,13 +14,13 @@ import ua.com.foxminded.mapper.FacultyMapper;
 public class FacultyDAO implements GenericDAO<Faculty> {
     private final JdbcTemplate jdbcTemplate;
     private Environment environment;
-    
+
     @Autowired
     public FacultyDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
     }
-    
+
     @Override
     public void create(Faculty faculty) {
         jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
@@ -45,6 +45,6 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     @Override
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.faculty"), id);
-        
+
     }
 }

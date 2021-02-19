@@ -31,7 +31,7 @@ class LessonTimeDAOTest {
     private JdbcTemplate jdbcTemplate;
     private List<LessonTime> expectedLessonTimes;
     private Connection connection;
-    
+
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
@@ -64,12 +64,12 @@ class LessonTimeDAOTest {
         LessonTime testLessonTime = new LessonTime();
         testLessonTime.setStartTime(LocalTime.of(9, 0));
         testLessonTime.setEndTime(LocalTime.of(10, 0));
-        
+
         LessonTime expectedLessonTime = new LessonTime();
         expectedLessonTime.setId(1);
         expectedLessonTime.setStartTime(LocalTime.of(9, 0));
         expectedLessonTime.setEndTime(LocalTime.of(10, 0));
-        
+
         lessonTimeDAO.create(testLessonTime);
         assertEquals(expectedLessonTime, lessonTimeDAO.findAll().stream().findFirst().get());
     }
@@ -99,12 +99,12 @@ class LessonTimeDAOTest {
         LessonTime testLessonTime = new LessonTime();
         testLessonTime.setStartTime(LocalTime.of(15, 0));
         testLessonTime.setEndTime(LocalTime.of(16, 0));
-        
+
         LessonTime expectedLessonTime = new LessonTime();
         expectedLessonTime.setId(testId);
         expectedLessonTime.setStartTime(LocalTime.of(15, 0));
         expectedLessonTime.setEndTime(LocalTime.of(16, 0));
-        
+
         lessonTimeDAO.update(testId, testLessonTime);
         assertEquals(expectedLessonTime, lessonTimeDAO.findById(testId));
     }

@@ -10,59 +10,59 @@ public class Lesson {
     private String audience;
     private DayOfWeek day;
     private LessonTime lessonTime;
-    
+
     public int getId() {
         return id;
     }
-    
+
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public Lecturer getLecturer() {
         return lecturer;
     }
-    
+
     public void setLecturer(Lecturer lecturer) {
         this.lecturer = lecturer;
     }
-    
+
     public Group getGroup() {
         return group;
     }
-    
+
     public void setGroup(Group group) {
         this.group = group;
     }
-    
+
     public String getAudience() {
         return audience;
     }
-    
+
     public void setAudience(String audience) {
         this.audience = audience;
     }
-    
+
     public DayOfWeek getDay() {
         return day;
     }
-    
+
     public void setDay(DayOfWeek day) {
         this.day = day;
     }
-    
+
     public LessonTime getLessonTime() {
         return lessonTime;
     }
-    
+
     public void setLessonTime(LessonTime lessonTime) {
         this.lessonTime = lessonTime;
     }

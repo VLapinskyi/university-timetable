@@ -21,17 +21,17 @@ import ua.com.foxminded.mapper.LessonTimeMapper;
 public class LessonDAO implements GenericDAO<Lesson> {
     private JdbcTemplate jdbcTemplate;
     private Environment environment;
-    
+
     @Autowired
     public LessonDAO (JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
     }
-    
+
     @Override
     public void create(Lesson lesson) {
-     jdbcTemplate.update(environment.getProperty("create.lesson"), lesson.getName(), lesson.getAudience(),
-             lesson.getDay().getValue());
+        jdbcTemplate.update(environment.getProperty("create.lesson"), lesson.getName(), lesson.getAudience(),
+                lesson.getDay().getValue());
     }
 
     @Override
@@ -49,45 +49,44 @@ public class LessonDAO implements GenericDAO<Lesson> {
     public void update(int id, Lesson lesson) {
         jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(),
                 lesson.getAudience(), lesson.getDay().getValue(), id);
-        
     }
 
     @Override
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.lesson"), id);
     }
-    
+
     public void setLessonLecturer (int lecturerId, int lessonId) {
-	jdbcTemplate.update(environment.getProperty("set.lesson.lecturer"), lecturerId, lessonId);
+        jdbcTemplate.update(environment.getProperty("set.lesson.lecturer"), lecturerId, lessonId);
     }
-    
+
     public Lecturer getLessonLecturer (int lessonId) {
-	return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(), lessonId).findFirst().get();
+        return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(), lessonId).findFirst().get();
     }
-    
+
     public void setLessonGroup (int groupId, int lessonId) {
-	jdbcTemplate.update(environment.getProperty("set.lesson.group"), groupId, lessonId);
+        jdbcTemplate.update(environment.getProperty("set.lesson.group"), groupId, lessonId);
     }
-    
+
     public Group getLessonGroup (int lessonId) {
-	return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.group"), new GroupMapper(), lessonId).findFirst().get();
+        return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.group"), new GroupMapper(), lessonId).findFirst().get();
     }
-    
+
     public void setLessonTime (int lessonTimeId, int lessonId) {
-	jdbcTemplate.update(environment.getProperty("set.lesson.time"), lessonTimeId, lessonId);
+        jdbcTemplate.update(environment.getProperty("set.lesson.time"), lessonTimeId, lessonId);
     }
-    
+
     public LessonTime getLessonTime (int lessonId) {
-	return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.time"), new LessonTimeMapper(), lessonId)
-		.findFirst().get();
+        return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.time"), new LessonTimeMapper(), lessonId)
+                .findFirst().get();
     }
-    
-    public List<Lesson> getDayLessonsForGroup(int groupId, DayOfWeek weekDay) {
+
+    public List<Lesson> getGroupDayLessons(int groupId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(),
                 groupId, weekDay.getValue());
     }
-    
-    public List<Lesson> getDayLessonsForLecturer(int lecturerId, DayOfWeek weekDay) {
+
+    public List<Lesson> getLecturerDayLessons(int lecturerId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.lecturer"), new LessonMapper(),
                 lecturerId, weekDay.getValue());
     }

@@ -32,16 +32,16 @@ class FacultyDAOTest {
     private JdbcTemplate jdbcTemplate;
     private List<Faculty> expectedFaculties;
     private Connection connection;
-    
+
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
-    
+
     @BeforeEach
     void setUp() throws ScriptException, SQLException {
         connection = jdbcTemplate.getDataSource().getConnection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
-        
+
         expectedFaculties = new ArrayList<> (Arrays.asList(
                 new Faculty(), new Faculty(), new Faculty()));
         List<String> facultyNames = new ArrayList<>(Arrays.asList(
@@ -53,7 +53,7 @@ class FacultyDAOTest {
             expectedFaculties.get(i).setName(facultyNames.get(i));
         }
     }
-    
+
     @AfterEach
     void tearDown() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
