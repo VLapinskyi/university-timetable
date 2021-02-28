@@ -47,4 +47,9 @@ public class Faculty {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+            return "Faculty [id=" + id + ", name=" + name + "]";
+    }
 }

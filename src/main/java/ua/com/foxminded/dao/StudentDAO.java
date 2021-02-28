@@ -2,6 +2,8 @@ package ua.com.foxminded.dao;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,8 +16,11 @@ import ua.com.foxminded.mapper.StudentMapper;
 
 @Repository
 public class StudentDAO implements GenericDAO<Student> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentDAO.class);
     private static final String ROLE = "student";
+    
     private final JdbcTemplate jdbcTemplate;
+    
     private Environment environment;
 
     @Autowired
@@ -26,6 +31,9 @@ public class StudentDAO implements GenericDAO<Student> {
 
     @Override
     public void create(Student student) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to insert new student: \"{}\"", student);
+        }
         jdbcTemplate.update(environment.getProperty("create.person"), ROLE, 
                 student.getFirstName(), student.getLastName(), student.getGender().name(),
                 student.getPhoneNumber(), student.getEmail());
@@ -47,7 +55,6 @@ public class StudentDAO implements GenericDAO<Student> {
         jdbcTemplate.update(environment.getProperty("update.person"),
                 student.getFirstName(), student.getLastName(), student.getGender().toString(),
                 student.getPhoneNumber(), student.getEmail(),  id, ROLE);
-
     }
 
     @Override

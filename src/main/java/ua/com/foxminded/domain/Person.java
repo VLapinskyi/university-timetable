@@ -104,4 +104,10 @@ public abstract class Person {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Person [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", gender=" + gender
+                + ", phoneNumber=" + phoneNumber + ", email=" + email + "]";
+    }
 }
