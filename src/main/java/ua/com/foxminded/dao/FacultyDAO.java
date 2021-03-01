@@ -35,7 +35,7 @@ public class FacultyDAO implements GenericDAO<Faculty> {
         }
         jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The faculty \"{}\" was inserted", faculty);
+            LOGGER.debug("The faculty \"{}\" was inserted.", faculty);
         }
     }
 
