@@ -27,11 +27,11 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     @Override
     public void create(Faculty faculty) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to insert new faculty: \"{}\"", faculty);
+            LOGGER.debug("Try to insert new faculty: \"{}\".", faculty);
         }
-        
+
         jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
-        
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("The faculty \"{}\" was inserted.", faculty);
         }
@@ -40,17 +40,17 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     @Override
     public List<Faculty> findAll() {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to find all faculties");
+            LOGGER.debug("Try to find all faculties.");
         }
 
         List<Faculty> resultFaculties = jdbcTemplate.query(environment.getProperty("find.all.faculties"),
                 new FacultyMapper());
 
         if (resultFaculties.isEmpty()) {
-            LOGGER.warn("There are not any faculties in the result");
+            LOGGER.warn("There are not any faculties in the result.");
         } else {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The result is: \"{}\"", resultFaculties);
+                LOGGER.debug("The result is: \"{}\".", resultFaculties);
             }
         }
         return resultFaculties;
@@ -59,14 +59,14 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     @Override
     public Faculty findById(int id) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to find a faculty by id \"{}\"", id);
+            LOGGER.debug("Try to find a faculty by id \"{}\".", id);
         }
 
         Faculty resultFaculty = jdbcTemplate.queryForStream(environment.getProperty("find.faculty.by.id"),
                 new FacultyMapper(), id).findAny().orElse(null);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The result faculty is \"{}\"", resultFaculty);
+            LOGGER.debug("The result faculty is \"{}\".", resultFaculty);
         }
         return resultFaculty;
     }
@@ -74,35 +74,25 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     @Override
     public void update(int id, Faculty faculty) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update faculty with id \"{}\"", id);
-        }
-
-        if (faculty.getId() != 0 && faculty.getId() != id) {
-            LOGGER.warn("The faculty has setted field id \"{}\" and it isn't equal to argument id \"{}\". The field id \"{}\" will be ignored.",
-                    faculty.getId(), id, faculty.getId());
+            LOGGER.debug("Try to update faculty with id \"{}\".", id);
         }
 
         jdbcTemplate.update(environment.getProperty("update.faculty"), faculty.getName(), id);
-
-        if (faculty.getName() == null) {
-            LOGGER.warn("The faculty name is null, so the name wasn't changed and the old name remained.");
-        } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The faculty with id \"{}\" was changed", id);
-            }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The faculty with id \"{}\" was changed.", id);
         }
     }
 
     @Override
     public void deleteById(int id) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to delete faculty by id \"{}\"", id);
+            LOGGER.debug("Try to delete faculty by id \"{}\".", id);
         }
 
         jdbcTemplate.update(environment.getProperty("delete.faculty"), id);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The faculty with id \"{}\" was deleted", id);
+            LOGGER.debug("The faculty with id \"{}\" was deleted.", id);
         }
     }
 }

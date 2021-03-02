@@ -159,7 +159,7 @@ class FacultyDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert new faculty: \"" + testFaculty + "\"",
+                "Try to insert new faculty: \"" + testFaculty + "\".",
                 "The faculty \"" + testFaculty + "\" was inserted."));
         
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -182,8 +182,8 @@ class FacultyDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.WARN));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all faculties",
-                "There are not any faculties in the result"));
+                "Try to find all faculties.",
+                "There are not any faculties in the result."));
         
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -207,8 +207,8 @@ class FacultyDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all faculties",
-                "The result is: \"" + expectedFaculties + "\""));
+                "Try to find all faculties.",
+                "The result is: \"" + expectedFaculties + "\"."));
         
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -234,8 +234,8 @@ class FacultyDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find a faculty by id \"" + testId + "\"",
-                "The result faculty is \"" + expectedFaculty + "\""));
+                "Try to find a faculty by id \"" + testId + "\".",
+                "The result faculty is \"" + expectedFaculty + "\"."));
         
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -243,6 +243,62 @@ class FacultyDAOTest {
         }
         
         facultyDAO.findById(testId);
+        
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenUpdate() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int testId = 1;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName("TestFaculty");
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to update faculty with id \"" + testId + "\".",
+                "The faculty with id \"" + testId +  "\" was changed."));
+        
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        facultyDAO.update(testId, testFaculty);
+        
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDeleteById() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int testId = 3;
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to delete faculty by id \"" + testId + "\".",
+                "The faculty with id \"" + testId +  "\" was deleted."));
+        
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        facultyDAO.deleteById(testId);
         
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
         for (int i = 0; i < actualLogs.size(); i++) {
