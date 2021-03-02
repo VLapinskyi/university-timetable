@@ -29,11 +29,9 @@ public class FacultyDAO implements GenericDAO<Faculty> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to insert new faculty: \"{}\"", faculty);
         }
-        if (faculty.getId() != 0) {
-            LOGGER.warn("The faculty has already setted id: \"{}\". The setted id will be ignored.",
-                    faculty.getId());
-        }
+        
         jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
+        
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("The faculty \"{}\" was inserted.", faculty);
         }
@@ -61,7 +59,7 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     @Override
     public Faculty findById(int id) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to find faculty by id \"{}\"", id);
+            LOGGER.debug("Try to find a faculty by id \"{}\"", id);
         }
 
         Faculty resultFaculty = jdbcTemplate.queryForStream(environment.getProperty("find.faculty.by.id"),

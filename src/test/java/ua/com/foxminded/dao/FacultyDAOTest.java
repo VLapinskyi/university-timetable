@@ -151,7 +151,7 @@ class FacultyDAOTest {
     }
     
     @Test
-    void shouldGenerateRightLogsWhenCreateFacultyWithoutId() {
+    void shouldGenerateLogsWhenCreateFaculty() {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test Faculty");
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
@@ -168,6 +168,82 @@ class FacultyDAOTest {
         }
         
         facultyDAO.create(testFaculty);
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenFindAllIsEmpty() {
+	List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to find all faculties",
+                "There are not any faculties in the result"));
+        
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        facultyDAO.findAll();
+        
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenFindAllHasResult() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to find all faculties",
+                "The result is: \"" + expectedFaculties + "\""));
+        
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        facultyDAO.findAll();
+        
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenFindById() {
+	ScriptUtils.executeSqlScript(connection, testData);
+	int testId = 2;
+	Faculty expectedFaculty = expectedFaculties.stream().filter(faculty -> faculty.getId() == testId).findFirst().get();
+	List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to find a faculty by id \"" + testId + "\"",
+                "The result faculty is \"" + expectedFaculty + "\""));
+        
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        facultyDAO.findById(testId);
+        
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
