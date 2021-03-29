@@ -121,4 +121,15 @@ public class Lesson {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Lesson [id=" + id + ", " + (name != null ? "name=" + name + ", " : "")
+                + (lecturer != null ? "lecturer=" + lecturer + ", " : "")
+                + (group != null ? "group=" + group + ", " : "")
+                + (audience != null ? "audience=" + audience + ", " : "") + (day != null ? "day=" + day + ", " : "")
+                + (lessonTime != null ? "lessonTime=" + lessonTime : "") + "]";
+    }
+    
+    
 }

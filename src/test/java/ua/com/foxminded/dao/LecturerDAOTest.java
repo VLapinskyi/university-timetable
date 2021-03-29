@@ -18,23 +18,28 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration (classes = {SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 class LecturerDAOTest {
+    private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
+    private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
+    private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
+    
+    private TestAppender testAppender = new TestAppender();
     @Autowired
     private LecturerDAO lecturerDAO;
     @Autowired
     private JdbcTemplate jdbcTemplate;
     private List<Lecturer> expectedLecturers;
     private Connection connection;
-
-    private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
-    private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
-    private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
 
     @BeforeEach
     void setUp() throws Exception {
@@ -67,6 +72,7 @@ class LecturerDAOTest {
 
     @AfterEach
     void tearDown() throws Exception {
+        testAppender.cleanEventList();
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
@@ -147,5 +153,171 @@ class LecturerDAOTest {
         lecturerDAO.deleteById(deletedId);
         List<Lecturer> actualLecturers = lecturerDAO.findAll();
         assertTrue(expectedLecturers.containsAll(actualLecturers) && actualLecturers.containsAll(expectedLecturers));
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenCreateLecturer() {
+        Lecturer testLecturer = new Lecturer();
+        testLecturer.setFirstName("Roman");
+        testLecturer.setLastName("Dudchenko");
+        testLecturer.setGender(Gender.MALE);
+        testLecturer.setPhoneNumber("+380998765432");
+        testLecturer.setEmail("test@test.com");
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to insert new lecturer: " + testLecturer + ".",
+                "The lecturer " + testLecturer + " was inserted."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        lecturerDAO.create(testLecturer);
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenFindAllIsEmpty() {
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to find all lecturers.",
+                "There are not any lecturers in the result."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        lecturerDAO.findAll();
+        
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenFindAllHasResult() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to find all lecturers.",
+                "The result is: " + expectedLecturers + "."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        lecturerDAO.findAll();
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenFindById() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int testId = 2;
+        Lecturer expectedLecturer = expectedLecturers.stream().filter(lecturer -> lecturer.getId() == testId).findFirst().get();
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to find lecturer by id " + testId + ".",
+                "The result lecturer with id " + testId + " is " + expectedLecturer + "."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        lecturerDAO.findById(testId);
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenUpdate() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int testId = 1;
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Roman");
+        lecturer.setLastName("Dudchenko");
+        lecturer.setGender(Gender.MALE);
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to update lecturer " + lecturer + " with id " + testId + ".",
+                "The lecturer " + lecturer + " with id " + testId + " was changed."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        lecturerDAO.update(testId, lecturer);
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDeleteById() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int testId = 3;
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to delete lecturer by id " + testId + ".",
+                "The lecturer with id " + testId + " was deleted."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        lecturerDAO.deleteById(testId);
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
     }
 }

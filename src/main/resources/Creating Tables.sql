@@ -13,13 +13,14 @@ DROP TYPE IF EXISTS
     role CASCADE;
     
 CREATE TYPE gender AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE week_day AS ENUM (1, 2, 3, 4, 5, 6, 7);
+CREATE TYPE week_day AS ENUM ('1', '2', '3', '4', '5', '6', '7');
 CREATE TYPE role AS ENUM ('student', 'lecturer');
 
 CREATE TABLE faculties (
     id serial NOT NULL,
     name character varying NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE (name)
 );
 
 CREATE TABLE groups (
@@ -27,7 +28,8 @@ CREATE TABLE groups (
     name character varying NOT NULL,
     faculty_id integer,
     PRIMARY KEY (id),
-    FOREIGN KEY (faculty_id) REFERENCES public.faculties (id) ON DELETE CASCADE
+    FOREIGN KEY (faculty_id) REFERENCES public.faculties (id) ON DELETE CASCADE,
+    UNIQUE (name)
 );
 
 CREATE TABLE people (
@@ -40,7 +42,9 @@ CREATE TABLE people (
     email character varying,
     student_group_id integer,
     PRIMARY KEY (id),
-    FOREIGN KEY (student_group_id) REFERENCES public.groups (id) ON DELETE CASCADE
+    FOREIGN KEY (student_group_id) REFERENCES public.groups (id) ON DELETE CASCADE,
+    UNIQUE (phone_number),
+    UNIQUE (email)
 );
 
 CREATE TABLE lesson_times (

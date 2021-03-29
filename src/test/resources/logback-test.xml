@@ -2,6 +2,7 @@
 <configuration>
 	<appender name="TEST_APPENDER"
 		class="ua.com.foxminded.settings.TestAppender">
+		<filter class="ua.com.foxminded.settings.TestLoggerFilter" />
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
 		</encoder>

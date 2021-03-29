@@ -35,4 +35,12 @@ public class Student extends Person {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Student [" + (group != null ? "group=" + group + ", " : "")
+                + (super.toString() != null ? "toString()=" + super.toString() : "") + "]";
+    }
+    
+    
 }

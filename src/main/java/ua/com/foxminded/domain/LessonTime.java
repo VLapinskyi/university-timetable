@@ -64,4 +64,12 @@ public class LessonTime {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "LessonTime [id=" + id + ", " + (startTime != null ? "startTime=" + startTime + ", " : "")
+                + (endTime != null ? "endTime=" + endTime : "") + "]";
+    }
+    
+    
 }

@@ -32,42 +32,105 @@ public class StudentDAO implements GenericDAO<Student> {
     @Override
     public void create(Student student) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to insert new student: \"{}\"", student);
+            LOGGER.debug("Try to insert new student: {}.", student);
         }
+        
         jdbcTemplate.update(environment.getProperty("create.person"), ROLE, 
                 student.getFirstName(), student.getLastName(), student.getGender().name(),
                 student.getPhoneNumber(), student.getEmail());
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The student {} was inserted.", student);
+        }
     }
 
     @Override
     public List<Student> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new StudentMapper(), ROLE);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to find all students.");
+        }
+        
+        List<Student> resultStudents = jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new StudentMapper(), ROLE);
+        
+        if (resultStudents.isEmpty()) {
+            LOGGER.warn("There are not any students in the result.");
+        } else {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The result is: {}.", resultStudents);
+            }
+        }
+        
+        return resultStudents;
     }
 
     @Override
     public Student findById(int id) {
-        return jdbcTemplate.queryForStream(environment.getProperty("find.person.by.id"),
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to find student by id {}.", id);
+        }
+        
+        Student resultStudent = jdbcTemplate.queryForStream(environment.getProperty("find.person.by.id"),
                 new StudentMapper(), id, ROLE).findAny().orElse(null);
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The result student with id {} is {}.", id, resultStudent);
+        }
+        
+        return resultStudent;
     }
 
     @Override
     public void update(int id, Student student) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to update student {} with id {}.", student, id);
+        }
+        
         jdbcTemplate.update(environment.getProperty("update.person"),
                 student.getFirstName(), student.getLastName(), student.getGender().toString(),
                 student.getPhoneNumber(), student.getEmail(),  id, ROLE);
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The student {} with id {} was changed.", student, id);
+        }
     }
 
     @Override
     public void deleteById(int id) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to delete student by id {}.", id);
+        }
+        
         jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The student with id {} was deleted.", id);
+        }
     }
 
     public void setStudentGroup(int groupId, int studentId) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to set group with id {} for student with id {}.", groupId, studentId);
+        }
+        
         jdbcTemplate.update(environment.getProperty("set.student.group"), groupId, studentId);
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The group with id {} was setted for student with id {}.", groupId, studentId);
+        }
     }
 
     public Group getStudentGroup(int studentId) {
-        return jdbcTemplate.queryForStream(environment.getProperty("get.student.group"), new GroupMapper(), studentId)
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to get group for student with id {}.", studentId);
+        }
+        
+        Group resultGroup = jdbcTemplate.queryForStream(environment.getProperty("get.student.group"), new GroupMapper(), studentId)
                 .findFirst().get();
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("The result group for student with id {} is {}.", studentId, resultGroup);
+        }
+        
+        return resultGroup;
     }
 }
