@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -295,6 +297,7 @@ class GroupDAOTest {
 
         try {
             groupDAO.findAll();
+            verify(mockedJdbcTemplate).query(anyString(), any(GroupMapper.class));
         } catch (DAOException daoException) {
             //do nothing
         }
@@ -387,6 +390,7 @@ class GroupDAOTest {
         
         try {
             groupDAO.findById(testId);
+            verify(mockedJdbcTemplate).queryForObject(anyString(), any(GroupMapper.class), any());
         } catch (DAOException daoEcxeption) {
             //do nothing
         }
@@ -439,7 +443,7 @@ class GroupDAOTest {
         
         JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.update(anyString(), anyString(), anyInt())).thenThrow(QueryTimeoutException.class);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyString(), anyInt());
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -456,6 +460,7 @@ class GroupDAOTest {
         
         try {
             groupDAO.update(testId, testGroup);
+            verify(mockedJdbcTemplate).update(anyString(), anyString(), anyInt());
         } catch (DAOException daoEcxeption) {
             //do nothing
         }
@@ -503,7 +508,7 @@ class GroupDAOTest {
 
         JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.update(anyString(), anyInt())).thenThrow(QueryTimeoutException.class);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -520,6 +525,7 @@ class GroupDAOTest {
         
         try {
             groupDAO.deleteById(testId);
+            verify(mockedJdbcTemplate).update(anyString(), anyInt());
         } catch (DAOException daoException) {
             //do nothing
         }
@@ -570,7 +576,7 @@ class GroupDAOTest {
 
         JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.update(anyString(), anyInt(), anyInt())).thenThrow(QueryTimeoutException.class);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -587,6 +593,7 @@ class GroupDAOTest {
         
         try {
             groupDAO.setGroupFaculty(facultyId, groupId);
+            verify(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
         } catch (DAOException daoException) {
             //do nothing
         }
@@ -652,6 +659,7 @@ class GroupDAOTest {
         
         try {
             groupDAO.getGroupFaculty(groupId);
+            verify(mockedJdbcTemplate).queryForObject(anyString(), any(FacultyMapper.class), any());
         } catch (DAOException daoException) {
             //do nothing
         }

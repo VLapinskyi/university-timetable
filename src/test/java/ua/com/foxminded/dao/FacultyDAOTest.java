@@ -2,6 +2,8 @@ package ua.com.foxminded.dao;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.any;
@@ -266,6 +268,7 @@ class FacultyDAOTest {
 
         try {
             facultyDAO.findAll();
+            verify(mockedJdbcTemplate).query(anyString(), any(FacultyMapper.class));
         } catch (DAOException daoException) {
             //do nothing
         }
@@ -359,6 +362,7 @@ class FacultyDAOTest {
         
         try {
             facultyDAO.findById(testId);
+            verify(mockedJdbcTemplate).queryForObject(anyString(), any(FacultyMapper.class), any());
         } catch (DAOException daoEcxeption) {
             //do nothing
         }
@@ -411,7 +415,7 @@ class FacultyDAOTest {
         
         JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(facultyDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.update(anyString(), anyString(), anyInt())).thenThrow(QueryTimeoutException.class);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -428,6 +432,7 @@ class FacultyDAOTest {
         
         try {
             facultyDAO.update(testId, testFaculty);
+            verify(mockedJdbcTemplate).update(anyString(), (Object) any());
         } catch (DAOException daoEcxeption) {
             //do nothing
         }
@@ -476,7 +481,7 @@ class FacultyDAOTest {
 
         JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(facultyDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.update(anyString(), anyInt())).thenThrow(QueryTimeoutException.class);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -493,6 +498,7 @@ class FacultyDAOTest {
         
         try {
             facultyDAO.deleteById(testId);
+            verify(mockedJdbcTemplate).update(anyString(), anyInt());
         } catch (DAOException daoException) {
             //do nothing
         }

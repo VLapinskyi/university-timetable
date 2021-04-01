@@ -1,14 +1,18 @@
 package ua.com.foxminded.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.mapper.LecturerMapper;
 
@@ -16,7 +20,7 @@ import ua.com.foxminded.mapper.LecturerMapper;
 public class LecturerDAO implements GenericDAO<Lecturer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(LecturerDAO.class);
     private static final String ROLE = "lecturer";
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
     private Environment environment;
 
     @Autowired
@@ -30,11 +34,17 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to insert new lecturer: {}.", lecturer);
         }
-        jdbcTemplate.update(environment.getProperty("create.person"), ROLE,
-                lecturer.getFirstName(), lecturer.getLastName(), lecturer.getGender().toString(),
-                lecturer.getPhoneNumber(), lecturer.getEmail());
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The lecturer {} was inserted.", lecturer);
+
+        try {
+            jdbcTemplate.update(environment.getProperty("create.person"), ROLE,
+                    lecturer.getFirstName(), lecturer.getLastName(), lecturer.getGender().toString(),
+                    lecturer.getPhoneNumber(), lecturer.getEmail());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The lecturer {} was inserted.", lecturer);
+            }
+        } catch (DataAccessException dataAccessException) {
+            LOGGER.error("Can't create lecturer: {}.", lecturer, dataAccessException);
+            throw new DAOException("Can't create lecturer.", dataAccessException);
         }
     }
 
@@ -43,17 +53,22 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find all lecturers.");
         }
-        List<Lecturer> resultLecturers = jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new LecturerMapper(), ROLE);
-        
-        if (resultLecturers.isEmpty()) {
-            LOGGER.warn("There are not any lecturers in the result.");
-        } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The result is: {}.", resultLecturers);
+        List<Lecturer> resultLecturers = new ArrayList<>();
+        try {
+            resultLecturers = jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new LecturerMapper(), ROLE);
+
+            if (resultLecturers.isEmpty()) {
+                LOGGER.warn("There are not any lecturers in the result.");
+            } else {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("The result is: {}.", resultLecturers);
+                }
             }
+            return resultLecturers;
+        } catch (DataAccessException dataAccessException) {
+            LOGGER.error("Can't find all lecturers.", dataAccessException);
+            throw new DAOException("Can't find all lecturers.", dataAccessException);
         }
-        
-        return resultLecturers;
     }
 
     @Override
@@ -61,14 +76,22 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find lecturer by id {}.", id);
         }
-        Lecturer resultLecturer = jdbcTemplate.queryForStream(environment.getProperty("find.person.by.id"), new LecturerMapper(), id, ROLE)
-                .findAny().orElse(null);
-        
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The result lecturer with id {} is {}.", id, resultLecturer);
+        Lecturer resultLecturer = null;
+        try {
+            resultLecturer = jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"), new LecturerMapper(), id, ROLE);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The result lecturer with id {} is {}.", id, resultLecturer);
+            }
+
+            return resultLecturer;
+        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
+            LOGGER.error("There is no result when find by id {}.", id, emptyResultDataAccessException);
+            throw new DAOException("Can't find lecturer by id.", emptyResultDataAccessException);
+        } catch (DataAccessException dataAccessException) {
+            LOGGER.error("Can't find lecturer by id {}.", id, dataAccessException);
+            throw new DAOException("Can't find lecturer by id.", dataAccessException);
         }
-        
-        return resultLecturer;
     }
 
     @Override
@@ -76,12 +99,17 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to update lecturer {} with id {}.", lecturer, id);
         }
-        
-        jdbcTemplate.update(environment.getProperty("update.person"), lecturer.getFirstName(), lecturer.getLastName(),
-                lecturer.getGender().toString(), lecturer.getPhoneNumber(), lecturer.getEmail(), id, ROLE);
-        
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The lecturer {} with id {} was changed.", lecturer, id);
+
+        try {
+            jdbcTemplate.update(environment.getProperty("update.person"), lecturer.getFirstName(), lecturer.getLastName(),
+                    lecturer.getGender().toString(), lecturer.getPhoneNumber(), lecturer.getEmail(), id, ROLE);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The lecturer {} with id {} was changed.", lecturer, id);
+            }
+        } catch (DataAccessException dataAccessException) {
+            LOGGER.error("Can't update lecturer {} by id {}.", lecturer, id, dataAccessException);
+            throw new DAOException("Can't update lecturer.", dataAccessException);
         }
     }
 
@@ -90,11 +118,15 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to delete lecturer by id {}.", id);
         }
-        
-        jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
-        
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("The lecturer with id {} was deleted.", id);
+
+        try {
+            jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The lecturer with id {} was deleted.", id);
+            }
+        } catch(DataAccessException dataAccessException) {
+            LOGGER.error("Can't delete lecturer by id {}.", id, dataAccessException);
+            throw new DAOException("Can't delete lecturer by id.", dataAccessException);
         }
     }
 }
