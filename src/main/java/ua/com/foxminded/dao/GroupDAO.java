@@ -1,6 +1,5 @@
 package ua.com.foxminded.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -52,9 +51,9 @@ public class GroupDAO implements GenericDAO<Group> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find all groups.");
         }
-        List<Group> resultGroups = new ArrayList<>();
+
         try {
-            resultGroups = jdbcTemplate.query(environment.getProperty("find.all.groups"),
+            List<Group> resultGroups = jdbcTemplate.query(environment.getProperty("find.all.groups"),
                     new GroupMapper());
 
             if (resultGroups.isEmpty()) {
@@ -76,9 +75,9 @@ public class GroupDAO implements GenericDAO<Group> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find a group by id {}.", id);
         }
-        Group resultGroup = null;
+
         try {
-            resultGroup = jdbcTemplate.queryForObject(environment.getProperty("find.group.by.id"),
+            Group resultGroup = jdbcTemplate.queryForObject(environment.getProperty("find.group.by.id"),
                     new GroupMapper(), id);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The result group with id {} is {}.", id, resultGroup);
@@ -151,14 +150,17 @@ public class GroupDAO implements GenericDAO<Group> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to get faculty for group with id {}.", groupId);
         }
-        Faculty resultFaculty = null;
+
         try {
-            resultFaculty = jdbcTemplate.queryForObject(environment.getProperty("get.group.faculty"),
+            Faculty resultFaculty = jdbcTemplate.queryForObject(environment.getProperty("get.group.faculty"),
                     new FacultyMapper(), groupId);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The result faculty for group with id {} is {}.", groupId, resultFaculty);
             }
             return resultFaculty;
+        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
+            LOGGER.error("There is no a faculty for group with id {}.", groupId, emptyResultDataAccessException);
+            throw new DAOException("There is no a faculty for the group.", emptyResultDataAccessException);
         } catch (DataAccessException dataAccessException) {
             LOGGER.error("Can't get faculty for group with id {}.", groupId, dataAccessException);
             throw new DAOException("Can't get faculty for group.", dataAccessException);

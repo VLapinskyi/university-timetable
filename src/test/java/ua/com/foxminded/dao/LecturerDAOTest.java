@@ -203,11 +203,7 @@ class LecturerDAOTest {
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileCreate() {
         Lecturer testLecturer = new Lecturer();
-        testLecturer.setFirstName(null);
-        testLecturer.setLastName("Dudchenko");
         testLecturer.setGender(Gender.MALE);
-        testLecturer.setPhoneNumber("+380998765432");
-        testLecturer.setEmail("test@test.com");
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));

@@ -19,7 +19,7 @@ public class StudentDAO implements GenericDAO<Student> {
     private static final Logger LOGGER = LoggerFactory.getLogger(StudentDAO.class);
     private static final String ROLE = "student";
     
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
     
     private Environment environment;
 

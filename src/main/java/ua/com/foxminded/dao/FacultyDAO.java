@@ -1,6 +1,5 @@
 package ua.com.foxminded.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -50,9 +49,8 @@ public class FacultyDAO implements GenericDAO<Faculty> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find all faculties.");
         }
-        List<Faculty> resultFaculties = new ArrayList<>();
         try {
-            resultFaculties = jdbcTemplate.query(environment.getProperty("find.all.faculties"),
+            List<Faculty> resultFaculties = jdbcTemplate.query(environment.getProperty("find.all.faculties"),
                     new FacultyMapper());
             if (resultFaculties.isEmpty()) {
                 LOGGER.warn("There are not any faculties in the result.");
@@ -74,9 +72,9 @@ public class FacultyDAO implements GenericDAO<Faculty> {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find a faculty by id {}.", id);
         }
-        Faculty resultFaculty = null;
+        
         try {
-            resultFaculty = jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"),
+            Faculty resultFaculty = jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"),
                     new FacultyMapper(), id);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The result faculty with id {} is {}.", id, resultFaculty);

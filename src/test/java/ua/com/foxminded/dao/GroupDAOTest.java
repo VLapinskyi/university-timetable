@@ -636,6 +636,37 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
+
+    @Test
+    void shouldGenerateLogsWhenThrowEmptyResultDataAccesEcxeptionWhileGetGroupFaculty() {
+        int groupId = 2;
+         
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get faculty for group with id " + groupId + ".",
+                "There is no a faculty for group with id " + groupId + "."));
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        try {
+            groupDAO.getGroupFaculty(groupId);
+        } catch (DAOException daoException) {
+            //do nothing
+        }
+        
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
     
     @Test
     void shouldGenerateLogsWhenThrowDataAccesEcxeptionWhileGetGroupFaculty() {
