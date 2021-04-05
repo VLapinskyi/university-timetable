@@ -18,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,8 @@ class GroupDAOTest {
     private JdbcTemplate jdbcTemplate;
     private List<Group> expectedGroups;
     private Connection connection;
+    @Mock
+    private JdbcTemplate mockedJdbcTemplate;
 
 
     @BeforeEach
@@ -279,7 +282,6 @@ class GroupDAOTest {
     
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindAll() {
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.query(anyString(), any(GroupMapper.class))).thenThrow(QueryTimeoutException.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
@@ -372,7 +374,7 @@ class GroupDAOTest {
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindById() {
         int testId = 1;
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
+        
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), any())).thenThrow(QueryTimeoutException.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
@@ -506,7 +508,6 @@ class GroupDAOTest {
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
         int testId = 3;
 
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
         
@@ -574,7 +575,6 @@ class GroupDAOTest {
         int facultyId = 1;
         int groupId = 2;
 
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
         
@@ -672,7 +672,6 @@ class GroupDAOTest {
     void shouldGenerateLogsWhenThrowDataAccesEcxeptionWhileGetGroupFaculty() {
         int groupId = 2;
         
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.queryForObject(anyString(), any(FacultyMapper.class), any())).thenThrow(QueryTimeoutException.class);
         

@@ -18,7 +18,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.QueryTimeoutException;
@@ -51,9 +52,12 @@ class LessonTimeDAOTest {
     private JdbcTemplate jdbcTemplate;
     private List<LessonTime> expectedLessonTimes;
     private Connection connection;
+    @Mock
+    private JdbcTemplate mockedJdbcTemplate;
 
     @BeforeEach
     void setUp() throws Exception {
+        MockitoAnnotations.openMocks(this);
         connection = jdbcTemplate.getDataSource().getConnection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
         expectedLessonTimes = new ArrayList<>(Arrays.asList(
@@ -259,7 +263,6 @@ class LessonTimeDAOTest {
 
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindAll() {
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.query(anyString(), any(LessonTimeMapper.class))).thenThrow(QueryTimeoutException.class);
 
@@ -356,7 +359,6 @@ class LessonTimeDAOTest {
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindById() {
         int testId = 2;
 
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.queryForObject(anyString(), any(LessonTimeMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
 
@@ -428,7 +430,6 @@ class LessonTimeDAOTest {
         testLessonTime.setStartTime(LocalTime.of(16, 0));
         testLessonTime.setEndTime(LocalTime.of(17, 30));
 
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), any(LocalTime.class), any(LocalTime.class), anyInt());
 
@@ -493,7 +494,6 @@ class LessonTimeDAOTest {
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
         int testId = 3;
 
-        JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
 
