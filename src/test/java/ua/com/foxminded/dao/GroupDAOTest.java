@@ -223,7 +223,7 @@ class GroupDAOTest {
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
-        assertEquals(actualLogs.size(), expectedLogs.size());
+        assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
