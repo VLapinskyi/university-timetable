@@ -172,6 +172,73 @@ class GroupDAOTest {
         Faculty actualFaculty = groupDAO.getGroupFaculty(groupId);
         assertEquals(expectedFaculty, actualFaculty);
     }
+
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileCreate() {
+        Group group = new Group();
+        assertThrows(DAOException.class, () -> groupDAO.create(group));
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
+        when(mockedJdbcTemplate.query(anyString(), any(GroupMapper.class))).thenThrow(QueryTimeoutException.class);
+        assertThrows(DAOException.class, () -> groupDAO.findAll());
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenEmptyResultyDataAccessExceptionWhileFindById() {
+        int testId = 1;
+        assertThrows(DAOException.class, () -> groupDAO.findById(testId));
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindById() {
+        int testId = 1;
+        ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
+        assertThrows(DAOException.class, () -> groupDAO.findById(testId));
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileUpdate() {
+        int testId = 1;
+        Group testGroup = new Group();
+        ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
+        assertThrows(DAOException.class, () -> groupDAO.update(testId, testGroup));
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileDeleteById() {
+        int testId = 1;
+        ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
+        assertThrows(DAOException.class, () -> groupDAO.deleteById(testId));
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExeceptionWhileSetGroupFaculty() {
+        int facultyId = 1;
+        int groupId = 2;
+        ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
+        assertThrows(DAOException.class, () -> groupDAO.setGroupFaculty(facultyId, groupId));
+    }
+    
+    @Test
+    void shouldDAOExceptionWhenEmptyResultDataAccessExceptionWhileGetGroupFaculty() {
+        int groupId = 1;
+        assertThrows(DAOException.class, () -> groupDAO.getGroupFaculty(groupId));
+    }
+    
+    @Test
+    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileGetGroupFaculty() {
+        int groupId = 1;
+        ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(FacultyMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
+        assertThrows(DAOException.class, () -> groupDAO.getGroupFaculty(groupId));
+    }
     
     @Test
     void shouldGenerateLogsWhenCreateGroup() {
@@ -182,8 +249,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert new group: " + testGroup + ".",
-                "The group " + testGroup + " was inserted."));
+                "Try to insert a new object: " + testGroup + ".",
+                "The object " + testGroup + " was inserted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -208,8 +275,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert new group: " + testGroup + ".",
-                "Can't create group: " + testGroup + "."));
+                "Try to insert a new object: " + testGroup + ".",
+                "Can't insert the object: " + testGroup + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -237,8 +304,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.WARN));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all groups.",
-                "There are not any groups in the result."));
+                "Try to find all objects.",
+                "There are not any objects in the result when findAll."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -262,7 +329,7 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all groups.",
+                "Try to find all objects.",
                 "The result is: " + expectedGroups + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -289,8 +356,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all groups.",
-                "Can't find all groups."));
+                "Try to find all objects.",
+                "Can't find all objects."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -322,8 +389,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find a group by id " + testId + ".",
-                "The result group with id " + testId + " is " + expectedGroup + "."));
+                "Try to find an object by id: " + testId + ".",
+                "The result object with id " + testId + " is " + expectedGroup + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -348,8 +415,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find a group by id " + testId + ".",
-                "There is no result when find by id " + testId + "."));
+                "Try to find an object by id: " + testId + ".",
+                "There is no result when find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -382,8 +449,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find a group by id " + testId + ".",
-                "Can't find group by id " + testId + "."));
+                "Try to find an object by id: " + testId + ".",
+                "Can't find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -418,8 +485,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update group " + testGroup + " with id " + testId + ".",
-                "The group " + testGroup + " with id " + testId + " was changed."));
+                "Try to update an object " + testGroup + " with id " + testId + ".",
+                "The object " + testGroup + " with id " + testId + " was updated."));
         
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -452,8 +519,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update group " + testGroup + " with id " + testId + ".",
-                "Can't update group " + testGroup + " by id " + testId +  "."));
+                "Try to update an object " + testGroup + " with id " + testId + ".",
+                "Can't update an object " + testGroup + " with id " + testId +  "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -486,8 +553,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete group by id " + testId + ".",
-                "The group with id " + testId + " was deleted."));
+                "Try to delete an object by id " + testId + ".",
+                "The object was deleted by id " + testId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -516,8 +583,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete group by id " + testId + ".",
-                "Can't delete group by id " + testId +  "."));
+                "Try to delete an object by id " + testId + ".",
+                "Can't delete an object by id " + testId +  "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -551,8 +618,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to set faculty with id " + facultyId + " for group with id " + groupId + ".",
-                "The faculty with id " + facultyId + " was setted for group with id " + groupId + "."));
+                "Try to set a faculty with id " + facultyId + " for a group with id " + groupId + ".",
+                "The faculty with id " + facultyId + " was setted for the group with id " + groupId + "."));
         
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -583,8 +650,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to set faculty with id " + facultyId + " for group with id " + groupId + ".",
-                "Can't set faculty with id " + facultyId + " for group with id " + groupId + "."));
+                "Try to set a faculty with id " + facultyId + " for a group with id " + groupId + ".",
+                "Can't set a faculty with id " + facultyId + " for a group with id " + groupId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -619,8 +686,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get faculty for group with id " + groupId + ".",
-                "The result faculty for group with id " + groupId + " is " + expectedFaculty + "."));
+                "Try to get a faculty for a group with id " + groupId + ".",
+                "The result faculty for the group with id " + groupId + " is " + expectedFaculty + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -646,8 +713,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get faculty for group with id " + groupId + ".",
-                "There is no a faculty for group with id " + groupId + "."));
+                "Try to get a faculty for a group with id " + groupId + ".",
+                "There is no a faculty for a group with id " + groupId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -680,8 +747,8 @@ class GroupDAOTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get faculty for group with id " + groupId + ".",
-                "Can't get faculty for group with id " + groupId + "."));
+                "Try to get a faculty for a group with id " + groupId + ".",
+                "Can't get a faculty for a group with id " + groupId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));

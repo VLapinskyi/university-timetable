@@ -16,8 +16,8 @@ import ua.com.foxminded.dao.exceptions.DAOException;
 
 @Aspect
 @Configuration
-public class DAOAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DAOAspect.class);
+public class GeneralDAOAspect {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralDAOAspect.class);
 
     @Pointcut("execution (void ua.com.foxminded.dao.*.create(*))")
     private void createDAOMethods() {
