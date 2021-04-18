@@ -187,7 +187,7 @@ class GroupDAOTest {
     }
     
     @Test
-    void shouldThrowDAOExceptionWhenEmptyResultyDataAccessExceptionWhileFindById() {
+    void shouldThrowDAOExceptionWhenEmptyResultDataAccessExceptionWhileFindById() {
         int testId = 1;
         assertThrows(DAOException.class, () -> groupDAO.findById(testId));
     }

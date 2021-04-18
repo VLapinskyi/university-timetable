@@ -18,11 +18,11 @@ import ua.com.foxminded.domain.Faculty;
 public class GroupDAOAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupDAOAspect.class);
 
-    @Pointcut("execution (void setGroupFaculty (int, int))")
+    @Pointcut("execution (void ua.com.foxminded.dao.GroupDAO.setGroupFaculty (int, int))")
     private void setGroupFacultyMethod() {
     }
     
-    @Pointcut("execution (ua.com.foxminded.domain.Faculty getGroupFaculty (int))")
+    @Pointcut("execution (ua.com.foxminded.domain.Faculty ua.com.foxminded.dao.GroupDAO.getGroupFaculty (int))")
     private void getGroupFacultyMethod() {
     }
 
