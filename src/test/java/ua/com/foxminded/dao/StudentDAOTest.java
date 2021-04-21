@@ -37,9 +37,9 @@ import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
 import ua.com.foxminded.mapper.GroupMapper;
 import ua.com.foxminded.mapper.StudentMapper;
-import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.SpringDAOTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
-@ContextConfiguration(classes = {SpringTestConfiguration.class})
+@ContextConfiguration(classes = {SpringDAOTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 class StudentDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");

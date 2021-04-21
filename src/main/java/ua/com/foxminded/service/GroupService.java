@@ -113,7 +113,5 @@ public class GroupService {
             LOGGER.error("The group {} has a faculty {} with incorrect id {}.", group, groupFaculty, groupFaculty.getId(), notValidObjectException);
             throw notValidObjectException;
         }
-        
-        facultyService.validateFaculty(groupFaculty);
     }
 }

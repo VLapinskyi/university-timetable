@@ -46,10 +46,10 @@ import ua.com.foxminded.mapper.GroupMapper;
 import ua.com.foxminded.mapper.LecturerMapper;
 import ua.com.foxminded.mapper.LessonMapper;
 import ua.com.foxminded.mapper.LessonTimeMapper;
-import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.SpringDAOTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = {SpringTestConfiguration.class})
+@ContextConfiguration(classes = {SpringDAOTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 class LessonDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");

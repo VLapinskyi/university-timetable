@@ -8,7 +8,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="ua.com.foxminded.dao" level="DEBUG"
+	<logger name="ua.com.foxminded" level="DEBUG"
 		additivity="false">
 		
 		<appender-ref ref="TEST_APPENDER" />

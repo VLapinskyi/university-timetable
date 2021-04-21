@@ -35,10 +35,10 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.mapper.LessonTimeMapper;
-import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.SpringDAOTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = {SpringTestConfiguration.class})
+@ContextConfiguration(classes = {SpringDAOTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 class LessonTimeDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");

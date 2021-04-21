@@ -20,27 +20,27 @@ public class GeneralDAOAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneralDAOAspect.class);
 
     @Pointcut("execution (void ua.com.foxminded.dao.*.create(*))")
-    private void createDAOMethods() {
+    private void createMethods() {
     }
 
     @Pointcut("execution (java.util.List ua.com.foxminded.dao.*.findAll())")
-    private void findAllDAOMethods() {
+    private void findAllMethods() {
     }
     
     @Pointcut("execution (* ua.com.foxminded.dao.*.findById(int))")
-    private void findByIdDAOMethods() {
+    private void findByIdMethods() {
     }
     
     @Pointcut("execution (void ua.com.foxminded.dao.*.update(int, *))")
-    private void updateDAOMethods() {
+    private void updateMethods() {
     }
     
     @Pointcut("execution (void ua.com.foxminded.dao.*.deleteById(int))")
-    private void deleteByIdDAOMethods() {
+    private void deleteByIdMethods() {
     }
 
-    @Around("createDAOMethods()")
-    void aroundCreateMethodAdvice (ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    @Around("createMethods()")
+    void aroundCreateAdvice (ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object object = proceedingJoinPoint.getArgs()[0];
 
         if (LOGGER.isDebugEnabled()) {
@@ -58,8 +58,8 @@ public class GeneralDAOAspect {
         }
     }
 
-    @Around("findAllDAOMethods()")
-    Object aroundFindAllMethodAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    @Around("findAllMethods()")
+    Object aroundFindAllAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to find all objects.");
         }
@@ -82,12 +82,12 @@ public class GeneralDAOAspect {
             return targetMethod;
             
         } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't find all objects.");
+            LOGGER.error("Can't find all objects.", dataAccessException);
             throw new DAOException("Can't find all objects.", dataAccessException);
         }
     }
     
-    @Around ("findByIdDAOMethods()")
+    @Around ("findByIdMethods()")
     Object aroundFindByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
         
@@ -113,7 +113,7 @@ public class GeneralDAOAspect {
         }
     }
     
-    @Around ("updateDAOMethods()")
+    @Around ("updateMethods()")
     void aroundUpdateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
         Object updatedObject = proceedingJoinPoint.getArgs()[1];
@@ -133,7 +133,7 @@ public class GeneralDAOAspect {
         }
     }
     
-    @Around ("deleteByIdDAOMethods()")
+    @Around ("deleteByIdMethods()")
     void aroundDeleteByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
         
