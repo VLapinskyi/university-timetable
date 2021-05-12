@@ -22,19 +22,19 @@ public class LessonService {
         this.lessonDAO = lessonDAO;
     }
 
-    public void createLesson (int lecturerId, int groupId, int lessonTimeId, Lesson lesson) {
+    public void create (Lesson lesson) {
         lessonDAO.create(lesson);
         Optional<Lesson> createdLesson = lessonDAO.findAll().stream().max(Comparator.comparing(Lesson::getId));
         int lessonId = 0;
         if(createdLesson.isPresent()) {
             lessonId = createdLesson.get().getId();
         }
-        lessonDAO.setLessonLecturer(lecturerId, lessonId);
-        lessonDAO.setLessonGroup(groupId, lessonId);
-        lessonDAO.setLessonTime(lessonTimeId, lessonId);
+        lessonDAO.setLessonLecturer(lesson.getLecturer().getId(), lessonId);
+        lessonDAO.setLessonGroup(lesson.getGroup().getId(), lessonId);
+        lessonDAO.setLessonTime(lesson.getLessonTime().getId(), lessonId);
     }
 
-    public List<Lesson> getAllLessons() {
+    public List<Lesson> getAll() {
         List<Lesson> lessons = lessonDAO.findAll();
         lessons.stream().forEach(lesson -> lesson.setGroup(lessonDAO.getLessonGroup(lesson.getId())));
         lessons.stream().forEach(lesson -> lesson.setLecturer(lessonDAO.getLessonLecturer(lesson.getId())));
@@ -42,7 +42,7 @@ public class LessonService {
         return lessons;
     }
 
-    public Lesson getLessonById (int lessonId) {
+    public Lesson getById (int lessonId) {
         Lesson lesson =  lessonDAO.findById(lessonId);
         lesson.setGroup(lessonDAO.getLessonGroup(lessonId));
         lesson.setLecturer(lessonDAO.getLessonLecturer(lessonId));
@@ -50,11 +50,11 @@ public class LessonService {
         return lesson;     
     }
 
-    public void updateLesson(int lessonId, Lesson updatedLesson) {
-        lessonDAO.update(lessonId, updatedLesson);
-        lessonDAO.setLessonLecturer(updatedLesson.getLecturer().getId(), lessonId);
-        lessonDAO.setLessonGroup(updatedLesson.getGroup().getId(), lessonId);
-        lessonDAO.setLessonTime(updatedLesson.getLessonTime().getId(), lessonId);
+    public void update(Lesson updatedLesson) {
+        lessonDAO.update(updatedLesson.getId(), updatedLesson);
+        lessonDAO.setLessonLecturer(updatedLesson.getLecturer().getId(), updatedLesson.getId());
+        lessonDAO.setLessonGroup(updatedLesson.getGroup().getId(), updatedLesson.getId());
+        lessonDAO.setLessonTime(updatedLesson.getLessonTime().getId(), updatedLesson.getId());
     }
 
     public List<Lesson> getGroupWeekLessons (int groupId) {

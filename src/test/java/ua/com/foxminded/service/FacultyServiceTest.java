@@ -11,11 +11,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -24,18 +28,25 @@ import ua.com.foxminded.dao.FacultyDAO;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.service.exceptions.ServiceException;
-import ua.com.foxminded.settings.SpringServiceTestConfiguration;
+import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = {SpringServiceTestConfiguration.class})
+@ContextConfiguration(classes = {SpringConfiguration.class})
 @ExtendWith(SpringExtension.class)
 class FacultyServiceTest {
     private TestAppender testAppender = new TestAppender();
 
     @Autowired
     private FacultyService facultyService;
-    @Autowired
+
+    @Mock
     private FacultyDAO facultyDAO;
+    
+    @BeforeEach
+    void init() {
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(facultyService, "facultyDAO", facultyDAO);
+    }
 
     @AfterEach
     void tearDown () {
@@ -58,7 +69,7 @@ class FacultyServiceTest {
     }
 
     @Test
-    void shouldFindFacultyById() {
+    void shouldGetFacultyById() {
         int facultyId = 5;
         facultyService.getById(facultyId);
         verify(facultyDAO).findById(facultyId);
@@ -92,6 +103,7 @@ class FacultyServiceTest {
     void shouldThrowServiceExceptionWhenFacultyIdIsNotZeroWhileCreate() {
         Faculty faculty = new Faculty();
         faculty.setId(5);
+        faculty.setName("Test name");
         assertThrows(ServiceException.class, () -> facultyService.create(faculty));
     }
 
@@ -104,7 +116,14 @@ class FacultyServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenFacultyNameIsShortWhileCreate() {
         Faculty faculty = new Faculty();
-        faculty.setName("   q");
+        faculty.setName("q   ");
+        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenFacultyNameStartsWithWhiteSpaceWhileCreate() {
+        Faculty faculty = new Faculty();
+        faculty.setName(" Test name");
         assertThrows(ServiceException.class, () -> facultyService.create(faculty));
     }
 
@@ -134,31 +153,18 @@ class FacultyServiceTest {
         when(facultyDAO.findById(testId)).thenThrow(DAOException.class);
         assertThrows(ServiceException.class, () -> facultyService.getById(testId));
     }
-
+    
     @Test
     void shouldThrowServiceExceptionWhenFacultyIsNullWhileUpdate() {
         Faculty faculty = null;
         assertThrows(ServiceException.class, () -> facultyService.update(faculty));
     }
-
+    
     @Test
-    void shouldThrowServiceExceptionWhenFacultyIdIsZeroWhileUpdate() {
+    void shouldThrowServiceExceptionWhenFacultyIsInvalidWhileUpdate() {
         Faculty faculty = new Faculty();
-        assertThrows(ServiceException.class, () -> facultyService.update(faculty));
-    }
-
-    @Test
-    void shouldThrowServiceExceptionWhenFacultyNameIsNullWhileUpdate() {
-        Faculty faculty = new Faculty();
-        faculty.setId(5);
-        assertThrows(ServiceException.class, () -> facultyService.update(faculty));
-    }
-
-    @Test
-    void shouldThrowServiceExceptionWhenFacultyNameIsShortWhileUpdate() {
-        Faculty faculty = new Faculty();
-        faculty.setId(5);
-        faculty.setName("   p     ");
+        faculty.setId(-22);
+        faculty.setName(" Test name");
         assertThrows(ServiceException.class, () -> facultyService.update(faculty));
     }
 
@@ -192,8 +198,8 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new object: " + faculty + ".",
-                "An object " + faculty + " is null when create."));
+                "Try to create a new faculty: " + faculty + ".",
+                "A faculty " + faculty + " can't be null when create."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -225,8 +231,8 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new object: " + faculty + ".",
-                "An object " + faculty + " has wrong id " + faculty.getId() + " which is not equal zero when create."));
+                "Try to create a new faculty: " + faculty + ".",
+                "A faculty " + faculty + " has wrong id " + faculty.getId() + " which is not equal zero when create."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -251,13 +257,14 @@ class FacultyServiceTest {
     @Test
     void shouldGenerateLogsWhenFacultyNameIsNullWhileCreate() {
         Faculty faculty = new Faculty();
+        String violationMessage = "Faculty name can't be null";
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new object: " + faculty + ".",
-                "An object " + faculty + " has wrong name " + faculty.getName() + " when create."));
+                "Try to create a new faculty: " + faculty + ".",
+                "The faculty " + faculty + " is not valid when create. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -280,16 +287,17 @@ class FacultyServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenFacultyNameIsShortWhileCreate() {
+    void shouldGenerateLogsWhenFacultyNameIsNotValidWhileCreate() {
         Faculty faculty = new Faculty();
-        faculty.setName("   y");
+        faculty.setName("y  ");
+        String violationMessage = "Faculty name must have at least two symbols and start with non-white space";     
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new object: " + faculty + ".",
-                "An object " + faculty + " has wrong name " + faculty.getName() + " when create."));
+                "Try to create a new faculty: " + faculty + ".",
+                "The faculty " + faculty + " is not valid when create. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -320,7 +328,7 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new object: " + faculty + ".",
+                "Try to create a new faculty: " + faculty + ".",
                 "There is some error in dao layer when create an object " + faculty + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -354,7 +362,7 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new object: " + faculty + ".",
+                "Try to create a new faculty: " + faculty + ".",
                 "The object " + faculty + " was created."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -577,8 +585,8 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object: " + testFaculty  + ".",
-                "A given object " + testFaculty + " is null when update."));
+                "Try to update a faculty: " + testFaculty + ".",
+                "An updated faculty " + testFaculty + " is null."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -610,8 +618,8 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object: " + testFaculty  + ".",
-                "An object " + testFaculty + " has wrong id " + testFaculty.getId() + " which is not positive when update."));
+                "Try to update a faculty: " + testFaculty  + ".",
+                "An updated faculty " + testFaculty + " has wrong id " + testFaculty.getId() + " which is not positive."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -637,14 +645,15 @@ class FacultyServiceTest {
     void shouldGenerateLogsWhenFacultyNameIsNullWhileUpdate() {
         Faculty testFaculty = new Faculty();
         testFaculty.setId(9);
+        String violationMessage = "Faculty name can't be null";
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object: " + testFaculty  + ".",
-                "An object " + testFaculty + " has wrong name " + testFaculty.getName() + " when update."));
+                "Try to update a faculty: " + testFaculty  + ".",
+                "The faculty " + testFaculty + " is not valid when update. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -667,18 +676,20 @@ class FacultyServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenFacultyNameIsShortWhileUpdate() {
+    void shouldGenerateLogsWhenFacultyNameIsNotValidWhileUpdate() {
         Faculty testFaculty = new Faculty();
         testFaculty.setId(9);
         testFaculty.setName("      b   ");
+        
+        String violationMessage = "Faculty name must have at least two symbols and start with non-white space";
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object: " + testFaculty  + ".",
-                "An object " + testFaculty + " has wrong name " + testFaculty.getName() + " when update."));
+                "Try to update a faculty: " + testFaculty  + ".",
+                "The faculty " + testFaculty + " is not valid when update. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -713,7 +724,7 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object: " + testFaculty  + ".",
+                "Try to update a faculty: " + testFaculty  + ".",
                 "There is some error in dao layer when update an object " + testFaculty + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -747,7 +758,7 @@ class FacultyServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object: " + testFaculty  + ".",
+                "Try to update a faculty: " + testFaculty  + ".",
                 "The object " + testFaculty + " was updated."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {

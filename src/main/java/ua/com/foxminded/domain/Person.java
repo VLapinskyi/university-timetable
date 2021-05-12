@@ -1,11 +1,34 @@
 package ua.com.foxminded.domain;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public abstract class Person {
+    @PositiveOrZero (message = "Peson id can't be negative")
     private int id;
+    
+    @NotNull(message = "Person firstname can't be null")
+    @Pattern(regexp = "\\S{2,}.*",
+            message = "Person firstname must have at least two symbols and startwith non-white space")
     private String firstName;
+    
+    @NotNull(message = "Person lastname can't be null")
+    @Pattern(regexp = "\\S{2,}.*",
+            message = "Person lastname must have at least two symbols and start with non-white space")
     private String lastName;
+    
+    @NotNull(message = "Person gender can't be null")
     private Gender gender;
+    
+    @NotNull(message = "Person phone number can't be null")
+    @Pattern(regexp = "\\+\\d{12}",
+            message = "Person phone number should starts from symbol \"+\" and additional twelve numbers")
     private String phoneNumber;
+    
+    @NotNull(message = "Person email can't be null")
+    @Email(message = "Person email must be formatted well")
     private String email;
 
     public int getId() {

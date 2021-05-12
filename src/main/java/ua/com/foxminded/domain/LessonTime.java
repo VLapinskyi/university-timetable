@@ -2,9 +2,19 @@ package ua.com.foxminded.domain;
 
 import java.time.LocalTime;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import ua.com.foxminded.domain.validation.CheckLessonTime;
+
+@CheckLessonTime
 public class LessonTime {
+    @PositiveOrZero (message = "LessonTime id can't be null")
     private int id;
+    
+    @NotNull(message = "LessonTime's startTime can't be null")
     private LocalTime startTime;
+    
+    @NotNull(message = "LessonTime's endTime can't be null")
     private LocalTime endTime;
 
     public LocalTime getStartTime() {

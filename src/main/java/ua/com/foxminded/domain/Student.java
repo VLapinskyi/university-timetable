@@ -1,6 +1,11 @@
 package ua.com.foxminded.domain;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 public class Student extends Person {
+    @NotNull(message = "Student must be in some group")
+    @Valid
     private Group group;
 
     public Group getGroup() {
