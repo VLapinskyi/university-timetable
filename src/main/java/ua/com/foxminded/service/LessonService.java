@@ -56,6 +56,10 @@ public class LessonService {
         lessonDAO.setLessonGroup(updatedLesson.getGroup().getId(), updatedLesson.getId());
         lessonDAO.setLessonTime(updatedLesson.getLessonTime().getId(), updatedLesson.getId());
     }
+    
+    public void deleteById (int lessonId) {
+        lessonDAO.deleteById(lessonId);
+    }
 
     public List<Lesson> getGroupWeekLessons (int groupId) {
         List<Lesson> weekLessons = new ArrayList<>();

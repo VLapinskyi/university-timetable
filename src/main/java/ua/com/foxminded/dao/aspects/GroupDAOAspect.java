@@ -21,7 +21,7 @@ public class GroupDAOAspect {
     @Pointcut("execution (void ua.com.foxminded.dao.GroupDAO.setGroupFaculty (int, int))")
     private void setGroupFacultyMethod() {
     }
-    
+
     @Pointcut("execution (ua.com.foxminded.domain.Faculty ua.com.foxminded.dao.GroupDAO.getGroupFaculty (int))")
     private void getGroupFacultyMethod() {
     }
@@ -47,18 +47,18 @@ public class GroupDAOAspect {
             throw new DAOException("Can't set a faculty for a group.", dataAccessException);
         }
     }
-    
+
     @Around("getGroupFacultyMethod()")
     Faculty aroundGetGroupFacultyAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
-        
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to get a faculty for a group with id {}.", groupId);
         }
-        
+
         try {
             Faculty targetMethod = (Faculty) proceedingJoinPoint.proceed();
-            
+
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The result faculty for the group with id {} is {}.", groupId, targetMethod);
             }

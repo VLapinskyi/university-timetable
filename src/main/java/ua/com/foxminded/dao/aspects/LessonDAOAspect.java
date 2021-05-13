@@ -192,7 +192,7 @@ public class LessonDAOAspect {
 
 
     @Around("getGroupDayLessonsMethod()")
-    List<?> aroundGetGroupDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    Object aroundGetGroupDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
         DayOfWeek weekDay = (DayOfWeek) proceedingJoinPoint.getArgs()[1];
 
@@ -201,15 +201,18 @@ public class LessonDAOAspect {
         }
 
         try {
-            List<?> targetMethod = (List<?>) proceedingJoinPoint.proceed();
+            Object targetMethod = proceedingJoinPoint.proceed();
 
-            if(targetMethod.isEmpty()) {
-                LOGGER.warn("There are not any lesson for the group with id {} on a day {}.", groupId, weekDay);
-            } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("For the group with id {} on a day {} there are lessons: {}.", groupId, weekDay, targetMethod);
+            if (targetMethod instanceof List<?>) {
+                if(((List<?>)targetMethod).isEmpty()) {
+                    LOGGER.warn("There are not any lesson for the group with id {} on a day {}.", groupId, weekDay);
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("For the group with id {} on a day {} there are lessons: {}.", groupId, weekDay, targetMethod);
+                    }
                 }
             }
+            
             return targetMethod;
 
         } catch (DataAccessException dataAccessException) {
@@ -219,7 +222,7 @@ public class LessonDAOAspect {
     }
 
     @Around("getLecturerDayLessonsMethod()")
-    List<?> aroundGetLecturerDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    Object aroundGetLecturerDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int lecturerId = (int) proceedingJoinPoint.getArgs()[0];
         DayOfWeek weekDay = (DayOfWeek) proceedingJoinPoint.getArgs()[1];
 
@@ -228,13 +231,16 @@ public class LessonDAOAspect {
         }
 
         try {
-            List<?> targetMethod = (List<?>) proceedingJoinPoint.proceed();
+            Object targetMethod = proceedingJoinPoint.proceed();
 
-            if (targetMethod.isEmpty()) {
-                LOGGER.warn("There are not any lesson for the lecturer with id {} on a day {}.", lecturerId, weekDay);
-            } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("For the lecturer with id {} on a day {} there are lessons: {}.", lecturerId, weekDay, targetMethod);
+            if (targetMethod instanceof List<?>) {
+
+                if (((List<?>) targetMethod).isEmpty()) {
+                    LOGGER.warn("There are not any lesson for the lecturer with id {} on a day {}.", lecturerId, weekDay);
+                } else {
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("For the lecturer with id {} on a day {} there are lessons: {}.", lecturerId, weekDay, targetMethod);
+                    }
                 }
             }
 

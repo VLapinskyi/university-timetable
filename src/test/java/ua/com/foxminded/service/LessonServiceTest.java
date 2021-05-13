@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -33,6 +34,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.dao.LessonDAO;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
@@ -233,6 +237,13 @@ class LessonServiceTest {
         verify(lessonDAO).setLessonLecturer(lesson.getLecturer().getId(), lessonId);
         verify(lessonDAO).setLessonGroup(lesson.getGroup().getId(), lessonId);
         verify(lessonDAO).setLessonTime(lesson.getLessonTime().getId(), lessonId);
+    }
+    
+    @Test
+    void shouldDeleteLessonById() {
+        int lessonId = 456;
+        lessonService.deleteById(lessonId);
+        verify(lessonDAO).deleteById(lessonId);
     }
 
     @Test
@@ -521,5 +532,1414 @@ class LessonServiceTest {
         int testId = 4;
         when(lessonDAO.findById(testId)).thenThrow(DAOException.class);
         assertThrows(ServiceException.class, () -> lessonService.getById(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLessonIsNullWhileUpdate() {
+        Lesson lesson = null;
+        assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLessonIsInvalidWhileUpdate() {
+        Lesson lesson = new Lesson();
+        lesson.setId(3);
+        lesson.setName("Lesson-3");
+        lesson.setAudience(" 104");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group2);
+        lesson.setDay(DayOfWeek.MONDAY);
+        lesson.setLessonTime(lessonTime2);
+        
+        assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
+        Lesson lesson = new Lesson();
+        lesson.setId(45);
+        lesson.setName("Lesson-1");
+        lesson.setAudience(" 114");
+        lesson.setLecturer(lecturer2);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.MONDAY);
+        lesson.setLessonTime(lessonTime2);
+        
+        doThrow(DAOException.class).when(lessonDAO).update(lesson.getId(), lesson);
+        
+        assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLessonIdIsZeroWhileDeleteById() {
+        int testId = 0;
+        assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
+        int testId = 74;
+        doThrow(DAOException.class).when(lessonDAO).deleteById(testId);
+        assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenGroupIdIsZeroWhileGetGroupWeekLessons() {
+        int testId = 0;
+        assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptioinWhenDAOExceptionWhileGetGroupWeekLessons() {
+        int testId = 74;
+        DayOfWeek testDay = DayOfWeek.MONDAY;
+        when(lessonDAO.getGroupDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenGroupIdIsZeroWhileGetGroupMonthLessons() {
+        int testId = 0;
+        YearMonth testMonth = YearMonth.of(2021, 5);
+        assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetGroupMonthLessons() {
+        int testId = 14;
+        YearMonth testMonth = YearMonth.of(2021, 4);
+        DayOfWeek  testDay = DayOfWeek.THURSDAY;
+        when(lessonDAO.getGroupDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileGetLecturerWeekLessons() {
+        int testId = 0;
+        assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptioinWhenDAOExceptionWhileGetLecturerWeekLessons() {
+        int testId = 12;
+        DayOfWeek testDay = DayOfWeek.THURSDAY;
+        when(lessonDAO.getLecturerDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileGetLecturerMonthLessons() {
+        int testId = 0;
+        YearMonth testMonth = YearMonth.of(2021, 3);
+        assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetLecturerMonthLessons() {
+        int testId = 19;
+        YearMonth testMonth = YearMonth.of(2021, 2);
+        DayOfWeek  testDay = DayOfWeek.FRIDAY;
+        when(lessonDAO.getLecturerDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
+    }
+
+    @Test
+    void shouldGenerateLogsWhenLessonIsNullWhileCreate() {
+        Lesson lesson = null;
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to create a new lesson: " + lesson + ".",
+                "A lesson " + lesson + " can't be null when create."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.create(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }    
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLessonIdIsNotZeroWhileCreate() {
+        int testId = 6;
+        
+        Lesson lesson = new Lesson();
+        lesson.setId(testId);
+        lesson.setName("Lesson-6");
+        lesson.setAudience("512");
+        lesson.setLecturer(lecturer2);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.FRIDAY);
+        lesson.setLessonTime(lessonTime1);
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to create a new lesson: " + lesson + ".",
+                "A lesson " + lesson + " has wrong id " + testId + " which is not equal zero when create."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.create(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }    
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLessonIsInvalidWhileCreate() {
+        Lesson lesson = new Lesson();
+        lesson.setName(" Lesson");
+        lesson.setAudience("954");
+        lesson.setLecturer(lecturer2);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.THURSDAY);
+        lesson.setLessonTime(lessonTime1);
+        
+        String violationMessage = "Lesson name must have at least two symbols and start with non-white space";
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to create a new lesson: " + lesson + ".",
+                "The lesson " + lesson + " is not valid when create. There are errors: " + violationMessage + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.create(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }  
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
+        Lesson lesson = new Lesson();
+        lesson.setName("Lesson");
+        lesson.setAudience("103");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.MONDAY);
+        lesson.setLessonTime(lessonTime1);
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to create a new lesson: " + lesson + ".",
+                "There is some error in dao layer when create an object " + lesson + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        doThrow(DAOException.class).when(lessonDAO).create(lesson);
+
+        try {
+            lessonService.create(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }    
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenCreate() {
+        Lesson lesson = new Lesson();
+        lesson.setName("Lesson1");
+        lesson.setAudience("106");
+        lesson.setLecturer(lecturer2);
+        lesson.setGroup(group2);
+        lesson.setDay(DayOfWeek.TUESDAY);
+        lesson.setLessonTime(lessonTime2);
+        
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to create a new lesson: " + lesson + ".",
+                "The object " + lesson + " was created."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+            lessonService.create(lesson);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }    
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenResultIsEmptyWhileGetAll() {
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get all objects.",
+                "There are not any objects in the result when getAll."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getAll();
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get all objects.",
+                "There is some error in dao layer when getAll."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        when(lessonDAO.findAll()).thenThrow(DAOException.class);
+
+        try {
+            lessonService.getAll();
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGetAll() {
+        List<Lesson> expectedLessons = new ArrayList<>(Arrays.asList(
+                new Lesson(), new Lesson(), new Lesson()));
+        List<String> names = new ArrayList<>(Arrays.asList(
+                "Lesson-1", "Lesson-2", "Lesson-3"));
+        List<String> audiences = new ArrayList<>(Arrays.asList(
+                "101", "102", "103"));
+        List<Lecturer> lecturers = new ArrayList<>(Arrays.asList(
+                lecturer1, lecturer2, lecturer1));
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                group1, group1, group2));
+        List<DayOfWeek> days = new ArrayList<>(Arrays.asList(
+                DayOfWeek.MONDAY, DayOfWeek.THURSDAY, DayOfWeek.WEDNESDAY));
+        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(
+                lessonTime2, lessonTime2, lessonTime1));
+        
+        for (int i = 0; i < expectedLessons.size(); i++) {
+            int index = i + 1;
+            expectedLessons.get(i).setId(index);
+            expectedLessons.get(i).setName(names.get(i));
+            expectedLessons.get(i).setAudience(audiences.get(i));
+            expectedLessons.get(i).setLecturer(lecturers.get(i));
+            expectedLessons.get(i).setGroup(groups.get(i));
+            expectedLessons.get(i).setDay(days.get(i));
+            expectedLessons.get(i).setLessonTime(lessonTimes.get(i));
+        }
+
+        when(lessonDAO.findAll()).thenReturn(expectedLessons);
+        when(lessonDAO.getLessonGroup(1)).thenReturn(group1);
+        when(lessonDAO.getLessonGroup(2)).thenReturn(group1);
+        when(lessonDAO.getLessonGroup(3)).thenReturn(group2);
+        
+        when(lessonDAO.getLessonLecturer(1)).thenReturn(lecturer1);
+        when(lessonDAO.getLessonLecturer(2)).thenReturn(lecturer2);
+        when(lessonDAO.getLessonLecturer(3)).thenReturn(lecturer1);
+        
+        when(lessonDAO.getLessonTime(1)).thenReturn(lessonTime2);
+        when(lessonDAO.getLessonTime(2)).thenReturn(lessonTime2);
+        when(lessonDAO.getLessonTime(3)).thenReturn(lessonTime1);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get all objects.",
+                "The result is: " + expectedLessons + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getAll();
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLessonIdIsNegativeWhileGetById() {
+        int negativeId = -4;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get an object by id: " + negativeId  + ".",
+                "A given id " + negativeId + " is less than 1 when getById."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getById(negativeId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
+        int testId = 1;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get an object by id: " + testId  + ".",
+                "There is some error in dao layer when get object by id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        when(lessonDAO.findById(testId)).thenThrow(DAOException.class);
+
+        try {
+            lessonService.getById(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGetById() {
+        int testId = 3;
+        
+        Lesson lesson = new Lesson();
+        lesson.setId(testId);
+        lesson.setName("Lesson-3");
+        lesson.setAudience("451");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group2);
+        lesson.setDay(DayOfWeek.TUESDAY);
+        lesson.setLessonTime(lessonTime1);
+        
+        when(lessonDAO.findById(testId)).thenReturn(lesson);
+        when(lessonDAO.getLessonGroup(testId)).thenReturn(group2);
+        when(lessonDAO.getLessonLecturer(testId)).thenReturn(lecturer1);
+        when(lessonDAO.getLessonTime(testId)).thenReturn(lessonTime1);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get an object by id: " + testId  + ".",
+                "The result object with id " + testId + " is " + lesson + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getById(testId);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLessonIdIsZeroWhileUpdate() {
+        Lesson lesson = new Lesson();
+        lesson.setName("Lesson");
+        lesson.setAudience("100");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.TUESDAY);
+        lesson.setLessonTime(lessonTime2);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to update a lesson: " + lesson + ".",
+                "An updated lesson " + lesson + " has wrong id " + lesson.getId() + " which is not positive."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.update(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLessonIsInvalidWhileUpdate() {
+        Lesson lesson = new Lesson();
+        lesson.setId(5);
+        lesson.setName("Lesson");
+        lesson.setAudience("456");
+        lesson.setLecturer(lecturer1);
+        lesson.setDay(DayOfWeek.FRIDAY);
+        lesson.setLessonTime(lessonTime2);
+        
+        String violationMessage = "Lesson group can't be null";
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to update a lesson: " + lesson + ".",
+                "The lesson " + lesson + " is not valid when update. There are errors: " + violationMessage + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.update(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
+        Lesson lesson = new Lesson();
+        lesson.setId(9);
+        lesson.setName("Lesson-9");
+        lesson.setAudience("951");
+        lesson.setLecturer(lecturer2);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.MONDAY);
+        lesson.setLessonTime(lessonTime1);
+
+        doThrow(DAOException.class).when(lessonDAO).update(lesson.getId(), lesson);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to update a lesson: " + lesson + ".",
+                "There is some error in dao layer when update an object " + lesson + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.update(lesson);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenUpdate() {
+        Lesson lesson = new Lesson();
+        lesson.setId(4);
+        lesson.setName("Lesson-4");
+        lesson.setAudience("410");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group1);
+        lesson.setDay(DayOfWeek.FRIDAY);
+        lesson.setLessonTime(lessonTime2);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to update a lesson: " + lesson + ".",
+                "The object " + lesson + " was updated."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.update(lesson);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLessonIdIsNegativeWhileDeleteById() {
+        int testId = -4;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to delete an object by id: " + testId + ".",
+                "A given id " + testId + " is less than 1 when deleteById."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.deleteById(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
+        int testId = 2;
+
+        doThrow(DAOException.class).when(lessonDAO).deleteById(testId);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to delete an object by id: " + testId + ".",
+                "There is some error in dao layer when delete an object by id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.deleteById(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDeleteById() {
+        int testId = 6;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to delete an object by id: " + testId + ".",
+                "An object was deleted by id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.deleteById(testId);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGroupIdIsNegativeWhileGetGroupWeekLessons() {
+        int testId = -9;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a group with id: " + testId + ".",
+                "A group id " + testId + " is not positive when get week lessons for a group."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getGroupWeekLessons(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldGenerateLogsWhenResultIsEmptyWhileGetGroupWeekLessons() {
+        int testId = 2;
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a group with id: " + testId + ".",
+                "There are not any week lessons for a group with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getGroupWeekLessons(testId);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileGetGroupWeekLessons() {
+        int testId = 4;
+
+        when(lessonDAO.getGroupDayLessons(anyInt(),any(DayOfWeek.class))).thenThrow(DAOException.class);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a group with id: " + testId + ".",
+                "There is some error in dao layer when get week lessons for a group with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getGroupWeekLessons(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGetGroupWeekLessons() {
+        int groupId = 1;
+        List<Lesson> lessons = new ArrayList<>(Arrays.asList(
+                new Lesson(), new Lesson(), new Lesson()));
+        List<String> names = new ArrayList<>(Arrays.asList(
+                "Lesson-10", "Lesson-20", "Lesson-33"));
+        List<String> audiences = new ArrayList<>(Arrays.asList(
+                "201", "202", "203"));
+        List<Lecturer> lecturers = new ArrayList<>(Arrays.asList(
+                lecturer2, lecturer1, lecturer2));
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                group1, group2, group1));
+        List<DayOfWeek> days = new ArrayList<>(Arrays.asList(
+                DayOfWeek.FRIDAY, DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
+        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(
+                lessonTime1, lessonTime1, lessonTime2));
+        
+        for (int i = 0; i < lessons.size(); i++) {
+            int index = i + 1;
+            lessons.get(i).setId(index);
+            lessons.get(i).setName(names.get(i));
+            lessons.get(i).setAudience(audiences.get(i));
+            lessons.get(i).setLecturer(lecturers.get(i));
+            lessons.get(i).setGroup(groups.get(i));
+            lessons.get(i).setDay(days.get(i));
+            lessons.get(i).setLessonTime(lessonTimes.get(i));
+        }
+
+        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        
+        List<Lesson> expectedLessons = new ArrayList<>(Arrays.asList(
+                lessons.get(2), lessons.get(0)));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a group with id: " + groupId + ".",
+                "When get week lessons for a group with id " + groupId + " the result is: " + expectedLessons + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getGroupWeekLessons(groupId);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldGenerateLogsWhenGroupIdIsNegativeWhileGetGroupMonthLessons() {
+        int testId = -12;
+        YearMonth testMonth = YearMonth.of(2021, 1);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + testMonth + " month lessons for a group with id: " + testId + ".",
+                "A group id " + testId + " is not positive when get " + testMonth + " month lessons for a group."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getGroupMonthLessons(testId, testMonth);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldGenerateLogsWhenResultIsEmptyWhileGetGroupMonthLessons() {
+        int testId = 5;
+        YearMonth testMonth = YearMonth.of(2021, 2);
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + testMonth + " month lessons for a group with id: " + testId + ".",
+                "There are not any " + testMonth + " month lessons for a group with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getGroupMonthLessons(testId, testMonth);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileGetGroupMonthLessons() {
+        int testId = 1;
+        YearMonth testMonth = YearMonth.of(2020, 12);
+
+        when(lessonDAO.getGroupDayLessons(anyInt(),any(DayOfWeek.class))).thenThrow(DAOException.class);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + testMonth + " month lessons for a group with id: " + testId + ".",
+                "There is some error in dao layer when get " + testMonth + " month lessons for a group with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getGroupMonthLessons(testId, testMonth);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGetGroupMonthLessons() {
+        int groupId = 1;
+        YearMonth month = YearMonth.of(2020, 12);
+        List<Lesson> lessons = new ArrayList<>(Arrays.asList(
+                new Lesson(), new Lesson(), new Lesson()));
+        List<String> names = new ArrayList<>(Arrays.asList(
+                "Lesson-1", "Lesson-2", "Lesson-3"));
+        List<String> audiences = new ArrayList<>(Arrays.asList(
+                "321", "333", "345"));
+        List<Lecturer> lecturers = new ArrayList<>(Arrays.asList(
+                lecturer1, lecturer2, lecturer2));
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                group1, group1, group1));
+        List<DayOfWeek> days = new ArrayList<>(Arrays.asList(
+                DayOfWeek.THURSDAY, DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
+        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(
+                lessonTime1, lessonTime1, lessonTime2));
+        
+        for (int i = 0; i < lessons.size(); i++) {
+            int index = i + 1;
+            lessons.get(i).setId(index);
+            lessons.get(i).setName(names.get(i));
+            lessons.get(i).setAudience(audiences.get(i));
+            lessons.get(i).setLecturer(lecturers.get(i));
+            lessons.get(i).setGroup(groups.get(i));
+            lessons.get(i).setDay(days.get(i));
+            lessons.get(i).setLessonTime(lessonTimes.get(i));
+        }
+
+        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        
+        List<Lesson> expectedLessons = new ArrayList<>();
+        expectedLessons.add(lessons.get(2));
+        
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < lessons.size(); j++) {
+                expectedLessons.add(lessons.get(j));
+            }
+        }
+        
+        expectedLessons.add(lessons.get(0));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + month + " month lessons for a group with id: " + groupId + ".",
+                "When get " + month + " month lessons for a group with id " + groupId + " the result is: " + expectedLessons + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getGroupMonthLessons(groupId, month);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenLecturerIdIsNegativeWhileGetLecturerWeekLessons() {
+        int testId = -11;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a lecturer with id: " + testId + ".",
+                "A lecturer id " + testId + " is not positive when get week lessons for a lecturer."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getLecturerWeekLessons(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldGenerateLogsWhenResultIsEmptyWhileGetLecturerWeekLessons() {
+        int testId = 6;
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a lecturer with id: " + testId + ".",
+                "There are not any week lessons for a lecturer with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getLecturerWeekLessons(testId);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileGetLecturerWeekLessons() {
+        int testId = 10;
+
+        when(lessonDAO.getLecturerDayLessons(anyInt(),any(DayOfWeek.class))).thenThrow(DAOException.class);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a lecturer with id: " + testId + ".",
+                "There is some error in dao layer when get week lessons for a lecturer with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getLecturerWeekLessons(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGetLecturerWeekLessons() {
+        int lecturerId = 2;
+        List<Lesson> lessons = new ArrayList<>(Arrays.asList(
+                new Lesson(), new Lesson(), new Lesson()));
+        List<String> names = new ArrayList<>(Arrays.asList(
+                "Lesson-109", "Lesson-208", "Lesson-337"));
+        List<String> audiences = new ArrayList<>(Arrays.asList(
+                "203", "204", "201"));
+        List<Lecturer> lecturers = new ArrayList<>(Arrays.asList(
+                lecturer2, lecturer2, lecturer2));
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                group1, group2, group1));
+        List<DayOfWeek> days = new ArrayList<>(Arrays.asList(
+                DayOfWeek.TUESDAY, DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
+        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(
+                lessonTime2, lessonTime1, lessonTime2));
+        
+        for (int i = 0; i < lessons.size(); i++) {
+            int index = i + 1;
+            lessons.get(i).setId(index);
+            lessons.get(i).setName(names.get(i));
+            lessons.get(i).setAudience(audiences.get(i));
+            lessons.get(i).setLecturer(lecturers.get(i));
+            lessons.get(i).setGroup(groups.get(i));
+            lessons.get(i).setDay(days.get(i));
+            lessons.get(i).setLessonTime(lessonTimes.get(i));
+        }
+
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.TUESDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        
+        List<Lesson> expectedLessons = new ArrayList<>(Arrays.asList(
+                lessons.get(1), lessons.get(0), lessons.get(2)));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get week lessons for a lecturer with id: " + lecturerId + ".",
+                "When get week lessons for a lecturer with id " + lecturerId + " the result is: " + expectedLessons + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getLecturerWeekLessons(lecturerId);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldGenerateLogsWhenLecturerIdIsNegativeWhileGetLecturerMonthLessons() {
+        int testId = -102;
+        YearMonth testMonth = YearMonth.of(2021, 4);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + testMonth + " month lessons for a lecturer with id: " + testId + ".",
+                "A lecturer id " + testId + " is not positive when get " + testMonth + " month lessons for a lecturer."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getLecturerMonthLessons(testId, testMonth);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldGenerateLogsWhenResultIsEmptyWhileGetLecturerMonthLessons() {
+        int testId = 3;
+        YearMonth testMonth = YearMonth.of(2021, 5);
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + testMonth + " month lessons for a lecturer with id: " + testId + ".",
+                "There are not any " + testMonth + " month lessons for a lecturer with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getLecturerMonthLessons(testId, testMonth);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenDAOExceptionWhileGetLecturerMonthLessons() {
+        int testId = 6;
+        YearMonth testMonth = YearMonth.of(2020, 9);
+
+        when(lessonDAO.getLecturerDayLessons(anyInt(),any(DayOfWeek.class))).thenThrow(DAOException.class);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + testMonth + " month lessons for a lecturer with id: " + testId + ".",
+                "There is some error in dao layer when get " + testMonth + " month lessons for a lecturer with id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        try {
+            lessonService.getLecturerMonthLessons(testId, testMonth);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenGetLecturerMonthLessons() {
+        int lecturerId = 2;
+        YearMonth month = YearMonth.of(2020, 10);
+        List<Lesson> lessons = new ArrayList<>(Arrays.asList(
+                new Lesson(), new Lesson(), new Lesson()));
+        List<String> names = new ArrayList<>(Arrays.asList(
+                "Lesson-101", "Lesson-102", "Lesson-103"));
+        List<String> audiences = new ArrayList<>(Arrays.asList(
+                "101", "102", "103"));
+        List<Lecturer> lecturers = new ArrayList<>(Arrays.asList(
+                lecturer2, lecturer2, lecturer2));
+        List<Group> groups = new ArrayList<>(Arrays.asList(
+                group2, group2, group1));
+        List<DayOfWeek> days = new ArrayList<>(Arrays.asList(
+                DayOfWeek.THURSDAY, DayOfWeek.MONDAY, DayOfWeek.FRIDAY));
+        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(
+                lessonTime2, lessonTime1, lessonTime2));
+        
+        for (int i = 0; i < lessons.size(); i++) {
+            int index = i + 1;
+            lessons.get(i).setId(index);
+            lessons.get(i).setName(names.get(i));
+            lessons.get(i).setAudience(audiences.get(i));
+            lessons.get(i).setLecturer(lecturers.get(i));
+            lessons.get(i).setGroup(groups.get(i));
+            lessons.get(i).setDay(days.get(i));
+            lessons.get(i).setLessonTime(lessonTimes.get(i));
+        }
+
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(2, 3));
+        
+        List<Lesson> expectedLessons = new ArrayList<>();
+        expectedLessons.add(lessons.get(0));
+        
+        for (int i = 0; i < 4; i++) {
+            for (int j = lessons.size()-1; j >= 0; j--) {
+                expectedLessons.add(lessons.get(j));
+            }
+        }
+        
+        expectedLessons.add(lessons.get(2));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get " + month + " month lessons for a lecturer with id: " + lecturerId + ".",
+                "When get " + month + " month lessons for a lecturer with id " + lecturerId + " the result is: " + expectedLessons + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+
+        lessonService.getLecturerMonthLessons(lecturerId, month);
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
     }
 }

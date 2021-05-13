@@ -1,5 +1,6 @@
 package ua.com.foxminded.service.aspects;
 
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -46,7 +47,7 @@ public class LessonAspect {
     private void getGroupWeekLessonsMethod() {
     }
     
-    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getGroupMonthLessons(int))")
+    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getGroupMonthLessons(int, java.time.YearMonth))")
     private void getGroupMonthLessonsMethod() {
     }
     
@@ -54,7 +55,7 @@ public class LessonAspect {
     private void getLecturerWeekLessonsMethod() {
     }
     
-    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getLecturerMonthLessons(int))")
+    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getLecturerMonthLessons(int, java.time.YearMonth))")
     private void getLecturerMonthLessonsMethod() {
     }
     
@@ -156,7 +157,7 @@ public class LessonAspect {
             
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException("A group id isn't positive for existing object.");
-                LOGGER.error("A group id {} is not positive when get week lessons for a group with id.", groupId, exception);
+                LOGGER.error("A group id {} is not positive when get week lessons for a group.", groupId, exception);
                 throw exception;
             }
             
@@ -166,13 +167,13 @@ public class LessonAspect {
                    LOGGER.warn("There are not any week lessons for a group with id {}.", groupId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                        LOGGER.debug("When get week lessons for a group with id {} the result is: {}.", groupId, targetMethod);
                     }
                 }
             }
             return targetMethod;
         } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("There is an error with given number when getting week lessons for a group.", illegalArgumentException);
+            throw new ServiceException("There is an error with given number when get week lessons for a group.", illegalArgumentException);
         } catch (DAOException daoException) {
             LOGGER.error("There is some error in dao layer when get week lessons for a group with id {}.", groupId, daoException);
             throw new ServiceException("There is some error in dao layer when get week lessons for a group.", daoException);
@@ -182,34 +183,35 @@ public class LessonAspect {
     @Around("getGroupMonthLessonsMethod()")
     Object aroundGetMonthLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
+        YearMonth month = (YearMonth) proceedingJoinPoint.getArgs()[1];
         
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get month lessons for a group with id: {}.", groupId);
+            LOGGER.debug("Try to get {} month lessons for a group with id: {}.", month, groupId);
         }
         
         try {
             
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException("A group id isn't positive for existing object.");
-                LOGGER.error("A group id {} is not positive when get month lessons for a group with id.", groupId, exception);
+                LOGGER.error("A group id {} is not positive when get {} month lessons for a group.", groupId, month, exception);
                 throw exception;
             }
             
             Object targetMethod = proceedingJoinPoint.proceed();
             if (targetMethod instanceof List<?>) {
                 if (((List<?>) targetMethod).isEmpty()) {
-                   LOGGER.warn("There are not any month lessons for a group with id {}.", groupId); 
+                   LOGGER.warn("There are not any {} month lessons for a group with id {}.", month, groupId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                        LOGGER.debug("When get {} month lessons for a group with id {} the result is: {}.", month, groupId, targetMethod);
                     }
                 }
             }
             return targetMethod;
         } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("There is an error with given number when getting month lessons for a group.", illegalArgumentException);
+            throw new ServiceException("There is an error with given number when get month lessons for a group.", illegalArgumentException);
         } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get month lessons for a group with id {}.", groupId, daoException);
+            LOGGER.error("There is some error in dao layer when get {} month lessons for a group with id {}.", month, groupId, daoException);
             throw new ServiceException("There is some error in dao layer when get month lessons for a group.", daoException);
         }
     }
@@ -219,14 +221,14 @@ public class LessonAspect {
         int lecturerId = (int) proceedingJoinPoint.getArgs()[0];
         
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get month lessons for a lecturer with id: {}.", lecturerId);
+            LOGGER.debug("Try to get week lessons for a lecturer with id: {}.", lecturerId);
         }
         
         try {
             
             if (lecturerId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException("A lecturer id isn't positive for existing object.");
-                LOGGER.error("A lecturer id {} is not positive when get week lessons for a lecturer with id.", lecturerId, exception);
+                LOGGER.error("A lecturer id {} is not positive when get week lessons for a lecturer.", lecturerId, exception);
                 throw exception;
             }
             
@@ -236,13 +238,13 @@ public class LessonAspect {
                    LOGGER.warn("There are not any week lessons for a lecturer with id {}.", lecturerId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                        LOGGER.debug("When get week lessons for a lecturer with id {} the result is: {}.", lecturerId, targetMethod);
                     }
                 }
             }
             return targetMethod;
         } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("There is an error with given number when getting week lessons for a lecturer.", illegalArgumentException);
+            throw new ServiceException("There is an error with given number when get week lessons for a lecturer.", illegalArgumentException);
         } catch (DAOException daoException) {
             LOGGER.error("There is some error in dao layer when get week lessons for a lecturer with id {}.", lecturerId, daoException);
             throw new ServiceException("There is some error in dao layer when get week lessons for a group.", daoException);
@@ -252,26 +254,27 @@ public class LessonAspect {
     @Around("getLecturerMonthLessonsMethod()")
     Object aroundGetLecturerMonthLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int lecturerId = (int) proceedingJoinPoint.getArgs()[0];
+        YearMonth month = (YearMonth) proceedingJoinPoint.getArgs()[1];
         
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get month lessons for a lecturer with id: {}.", lecturerId);
+            LOGGER.debug("Try to get {} month lessons for a lecturer with id: {}.", month, lecturerId);
         }
         
         try {
             
             if (lecturerId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException("A lecturer id isn't positive for existing object.");
-                LOGGER.error("A lecturer id {} is not positive when get month lessons for a lecturer with id.", lecturerId, exception);
+                LOGGER.error("A lecturer id {} is not positive when get {} month lessons for a lecturer.", lecturerId, month, exception);
                 throw exception;
             }
             
             Object targetMethod = proceedingJoinPoint.proceed();
             if (targetMethod instanceof List<?>) {
                 if (((List<?>) targetMethod).isEmpty()) {
-                   LOGGER.warn("There are not any month lessons for a lecturer with id {}.", lecturerId); 
+                   LOGGER.warn("There are not any {} month lessons for a lecturer with id {}.", month, lecturerId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                        LOGGER.debug("When get {} month lessons for a lecturer with id {} the result is: {}.", month, lecturerId, targetMethod);
                     }
                 }
             }
@@ -279,7 +282,7 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when getting month lessons for a lecturer.", illegalArgumentException);
         } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get month lessons for a lecturer with id {}.", lecturerId, daoException);
+            LOGGER.error("There is some error in dao layer when get {} month lessons for a lecturer with id {}.", month, lecturerId, daoException);
             throw new ServiceException("There is some error in dao layer when get month lessons for a group.", daoException);
         }
     }

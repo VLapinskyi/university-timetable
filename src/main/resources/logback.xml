@@ -11,13 +11,13 @@
 
 	<appender name="DAO_ROLLING_FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		
+
 		<file>dao\${LOG_FILE}.log</file>
 
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			
-			<fileNamePattern>DAO ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+
+			<fileNamePattern>dao\DAO ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
 			<maxHistory>30</maxHistory>
 			<totalSizeCap>3GB</totalSizeCap>
 		</rollingPolicy>
@@ -26,36 +26,36 @@
 			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
 		</encoder>
 	</appender>
-	
+
 	<appender name="SERVICE_ROLLING_FILE"
-        class="ch.qos.logback.core.rolling.RollingFileAppender">
-        
-        <file>service\${LOG_FILE}.log</file>
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-        <rollingPolicy
-            class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            
-            <fileNamePattern>Service ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
-        </rollingPolicy>
+		<file>service\${LOG_FILE}.log</file>
 
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
-        </encoder>
-    </appender>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+			<fileNamePattern>service\Service ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>3GB</totalSizeCap>
+		</rollingPolicy>
+
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
+		</encoder>
+	</appender>
 
 	<logger name="ua.com.foxminded.dao" level="DEBUG"
 		additivity="false">
-		
+
 		<appender-ref ref="DAO_ROLLING_FILE" />
 	</logger>
-	
+
 	<logger name="ua.com.foxminded.service" level="DEBUG"
-        additivity="false">
-        
-        <appender-ref ref="SERVICE_ROLLING_FILE" />
-    </logger>
+		additivity="false">
+
+		<appender-ref ref="SERVICE_ROLLING_FILE" />
+	</logger>
 
 	<root level="debug">
 		<appender-ref ref="CONSOLE" />
