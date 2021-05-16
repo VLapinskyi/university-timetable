@@ -17,23 +17,23 @@ public class LecturerService {
         this.lecturerDAO = lecturerDAO;
     }
 
-    public void createLecturer(Lecturer lecturer) {
+    public void create(Lecturer lecturer) {
         lecturerDAO.create(lecturer);
     }
 
-    public List<Lecturer> getAllLecturers() {
+    public List<Lecturer> getAll() {
         return lecturerDAO.findAll();
     }
 
-    public Lecturer getLecturerById (int lecturerId) {
+    public Lecturer getById (int lecturerId) {
         return lecturerDAO.findById(lecturerId);
     }
 
-    public void updateLecturer(int lecturerId, Lecturer lecturer) {
-        lecturerDAO.update(lecturerId, lecturer);
+    public void update(Lecturer lecturer) {
+        lecturerDAO.update(lecturer.getId(), lecturer);
     }
 
-    public void deleteLecturerById(int lecturerId) {
+    public void deleteById(int lecturerId) {
         lecturerDAO.deleteById(lecturerId);
     }
 }

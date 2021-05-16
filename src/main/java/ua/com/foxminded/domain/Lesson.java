@@ -2,13 +2,38 @@ package ua.com.foxminded.domain;
 
 import java.time.DayOfWeek;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public class Lesson {
+    @PositiveOrZero (message = "Lesson id can't be negative")
     private int id;
+    
+    @NotNull (message = "Lesson name can't be null")
+    @Pattern (regexp = "\\S{2,}.*",
+            message = "Lesson name must have at least two symbols and start with non-white space")
     private String name;
+    
+    @NotNull (message = "Lesson lecturer can't be null")
+    @Valid
     private Lecturer lecturer;
+    
+    @NotNull (message = "Lesson group can't be null")
+    @Valid
     private Group group;
+    
+    @NotNull (message = "Lesson audience can't be null")
+    @Pattern (regexp = "\\S{2,}.*",
+            message = "Lesson audience must have at least two symbols and start with non-white space")
     private String audience;
+    
+    @NotNull (message = "Lesson day can't be null")
     private DayOfWeek day;
+    
+    @NotNull (message = "Lesson time can't be null")
+    @Valid
     private LessonTime lessonTime;
 
     public int getId() {
@@ -121,4 +146,15 @@ public class Lesson {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Lesson [id=" + id + ", " + (name != null ? "name=" + name + ", " : "")
+                + (lecturer != null ? "lecturer=" + lecturer + ", " : "")
+                + (group != null ? "group=" + group + ", " : "")
+                + (audience != null ? "audience=" + audience + ", " : "") + (day != null ? "day=" + day + ", " : "")
+                + (lessonTime != null ? "lessonTime=" + lessonTime : "") + "]";
+    }
+    
+    
 }

@@ -17,23 +17,23 @@ public class LessonTimeService {
         this.lessonTimeDAO = lessonTimeDAO;
     }
 
-    public void createLessonTime(LessonTime lessonTime) {
+    public void create(LessonTime lessonTime) {
         lessonTimeDAO.create(lessonTime);
     }
 
-    public List<LessonTime> getAllLessonTimes() {
+    public List<LessonTime> getAll() {
         return lessonTimeDAO.findAll();
     }
 
-    public LessonTime getLessonTimeById(int lessonTimeId) {
+    public LessonTime getById(int lessonTimeId) {
         return lessonTimeDAO.findById(lessonTimeId);
     }
 
-    public void changeLessonTimeData(int lessonId, LessonTime updatedLessonTime) {
-        lessonTimeDAO.update(lessonId, updatedLessonTime);
+    public void update(LessonTime updatedLessonTime) {
+        lessonTimeDAO.update(updatedLessonTime.getId(), updatedLessonTime);
     }
 
-    public void deleteLessonTimeById(int lessonTimeId) {
+    public void deleteById(int lessonTimeId) {
         lessonTimeDAO.deleteById(lessonTimeId);
     }
 }

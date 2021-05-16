@@ -1,8 +1,21 @@
 package ua.com.foxminded.domain;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
+
 public class Group {
+    @PositiveOrZero (message = "Group id can't be negative")
     private int id;
+    
+    @NotNull (message = "Group name can't be null")
+    @Pattern(regexp = "\\S{2,}.*",
+            message = "Group name must have at least two symbols and start with non-white space")
     private String name;
+    
+    @NotNull(message = "Group faculty can't be null")
+    @Valid
     private Faculty faculty;
 
     public int getId() {
@@ -61,5 +74,10 @@ public class Group {
         } else if (!name.equals(other.name))
             return false;
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Group [id=" + id + ", name=" + name + ", faculty=" + faculty + "]";
     }
 }

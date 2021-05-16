@@ -41,8 +41,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
 
     @Override
     public Lesson findById(int id) {
-        return jdbcTemplate.queryForStream(environment.getProperty("find.lesson.by.id"), new LessonMapper(), id)
-                .findAny().orElse(null);
+        return jdbcTemplate.queryForObject(environment.getProperty("find.lesson.by.id"), new LessonMapper(), id);
     }
 
     @Override
@@ -61,7 +60,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
     }
 
     public Lecturer getLessonLecturer (int lessonId) {
-        return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(), lessonId).findFirst().get();
+        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(), lessonId);
     }
 
     public void setLessonGroup (int groupId, int lessonId) {
@@ -69,7 +68,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
     }
 
     public Group getLessonGroup (int lessonId) {
-        return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.group"), new GroupMapper(), lessonId).findFirst().get();
+        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.group"), new GroupMapper(), lessonId);
     }
 
     public void setLessonTime (int lessonTimeId, int lessonId) {
@@ -77,8 +76,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
     }
 
     public LessonTime getLessonTime (int lessonId) {
-        return jdbcTemplate.queryForStream(environment.getProperty("get.lesson.time"), new LessonTimeMapper(), lessonId)
-                .findFirst().get();
+        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.time"), new LessonTimeMapper(), lessonId);
     }
 
     public List<Lesson> getGroupDayLessons(int groupId, DayOfWeek weekDay) {

@@ -20,34 +20,36 @@ public class GroupService {
         this.groupDAO = groupDAO;
     }
 
-    public void createGroup(int facultyId, Group group) {
-        groupDAO.create(group);
-        Optional<Group> createdGroup = groupDAO.findAll().stream().max(Comparator.comparing(Group :: getId));
-        int groupId = 0;
-        if(createdGroup.isPresent()) {
-            groupId = createdGroup.get().getId();
-        }
-        groupDAO.setGroupFaculty(facultyId, groupId);
+    public void create(Group group) {          
+            groupDAO.create(group);
+            Optional<Group> createdGroup = groupDAO.findAll().stream().max(Comparator.comparing(Group :: getId));
+            int groupId = 0;
+            
+            if(createdGroup.isPresent()) {
+                groupId = createdGroup.get().getId();
+            }
+            
+            groupDAO.setGroupFaculty(group.getFaculty().getId(), groupId);
     }
 
-    public List<Group> getAllGroups() {
+    public List<Group> getAll() {
         List<Group> groups = groupDAO.findAll();
         groups.stream().forEach(group -> group.setFaculty(groupDAO.getGroupFaculty(group.getId())));
         return groups;
     }
 
-    public Group getGroupById(int groupId) {
+    public Group getById(int groupId) {
         Group group = groupDAO.findById(groupId);
         group.setFaculty(groupDAO.getGroupFaculty(groupId));
         return group;
     }
 
-    public void updateGroup (int groupId, Group updatedGroup) {
-        groupDAO.update(groupId, updatedGroup);
-        groupDAO.setGroupFaculty(updatedGroup.getFaculty().getId(), groupId);
+    public void update (Group updatedGroup) {
+        groupDAO.update(updatedGroup.getId(), updatedGroup);
+        groupDAO.setGroupFaculty(updatedGroup.getFaculty().getId(), updatedGroup.getId());
     }
 
-    public void deleteGroupById (int groupId) {
+    public void deleteById (int groupId) {
         groupDAO.deleteById(groupId);
     }
 

@@ -17,23 +17,23 @@ public class FacultyService {
         this.facultyDAO = facultyDAO;
     }
 
-    public void createFaculty(Faculty faculty) {
+    public void create(Faculty faculty) {
         facultyDAO.create(faculty);
     }
 
-    public List<Faculty> getAllFaculties() {
+    public List<Faculty> getAll() {
         return facultyDAO.findAll();
     }
 
-    public Faculty getFacultyById(int facultyId) {
+    public Faculty getById(int facultyId) {
         return facultyDAO.findById(facultyId);
     }
 
-    public void updateFaculty (int facultyId, Faculty updatedFaculty) {
-        facultyDAO.update(facultyId, updatedFaculty);
+    public void update (Faculty updatedFaculty) {
+        facultyDAO.update(updatedFaculty.getId(), updatedFaculty);
     }
 
-    public void deleteFacultyById (int facultyId) {
+    public void deleteById (int facultyId) {
         facultyDAO.deleteById(facultyId);
     }
 }

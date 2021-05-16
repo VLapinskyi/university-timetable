@@ -12,7 +12,7 @@ import ua.com.foxminded.mapper.FacultyMapper;
 
 @Repository
 public class FacultyDAO implements GenericDAO<Faculty> {
-    private final JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
     private Environment environment;
 
     @Autowired
@@ -28,23 +28,23 @@ public class FacultyDAO implements GenericDAO<Faculty> {
 
     @Override
     public List<Faculty> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.faculties"), new FacultyMapper());
+        return jdbcTemplate.query(environment.getProperty("find.all.faculties"),
+                new FacultyMapper());
     }
 
     @Override
-    public Faculty findById(int id) {
-        return jdbcTemplate.queryForStream(environment.getProperty("find.faculty.by.id"), new FacultyMapper(), id)
-                .findAny().orElse(null);
+    public Faculty findById(int id) {        
+        return jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"),
+                new FacultyMapper(), id);
     }
 
     @Override
     public void update(int id, Faculty faculty) {
-        jdbcTemplate.update(environment.getProperty("update.faculty"), faculty.getName(), id);        
+        jdbcTemplate.update(environment.getProperty("update.faculty"), faculty.getName(), id);
     }
 
     @Override
     public void deleteById(int id) {
         jdbcTemplate.update(environment.getProperty("delete.faculty"), id);
-
     }
 }

@@ -15,7 +15,9 @@ import ua.com.foxminded.mapper.StudentMapper;
 @Repository
 public class StudentDAO implements GenericDAO<Student> {
     private static final String ROLE = "student";
-    private final JdbcTemplate jdbcTemplate;
+
+    private JdbcTemplate jdbcTemplate;
+
     private Environment environment;
 
     @Autowired
@@ -34,12 +36,13 @@ public class StudentDAO implements GenericDAO<Student> {
     @Override
     public List<Student> findAll() {
         return jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new StudentMapper(), ROLE);
+
     }
 
     @Override
     public Student findById(int id) {
-        return jdbcTemplate.queryForStream(environment.getProperty("find.person.by.id"),
-                new StudentMapper(), id, ROLE).findAny().orElse(null);
+        return jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"),
+                new StudentMapper(), id, ROLE);
     }
 
     @Override
@@ -47,7 +50,6 @@ public class StudentDAO implements GenericDAO<Student> {
         jdbcTemplate.update(environment.getProperty("update.person"),
                 student.getFirstName(), student.getLastName(), student.getGender().toString(),
                 student.getPhoneNumber(), student.getEmail(),  id, ROLE);
-
     }
 
     @Override
@@ -60,7 +62,6 @@ public class StudentDAO implements GenericDAO<Student> {
     }
 
     public Group getStudentGroup(int studentId) {
-        return jdbcTemplate.queryForStream(environment.getProperty("get.student.group"), new GroupMapper(), studentId)
-                .findFirst().get();
+        return  jdbcTemplate.queryForObject(environment.getProperty("get.student.group"), new GroupMapper(), studentId);
     }
 }

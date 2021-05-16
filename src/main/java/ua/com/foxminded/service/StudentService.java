@@ -20,34 +20,34 @@ public class StudentService {
         this.studentDAO = studentDAO;
     }
 
-    public void createStudent(int groupId, Student student) {
+    public void create(Student student) {
         studentDAO.create(student);
         Optional<Student> createdStudent = studentDAO.findAll().stream().max(Comparator.comparing(Student :: getId));
         int studentId = 0;
         if (createdStudent.isPresent()) {
             studentId = createdStudent.get().getId();
         }
-        studentDAO.setStudentGroup(groupId, studentId);
+        studentDAO.setStudentGroup(student.getGroup().getId(), studentId);
     }
 
-    public List<Student> getAllStudents() {
+    public List<Student> getAll() {
         List<Student> students = studentDAO.findAll();
         students.stream().forEach(student -> student.setGroup(studentDAO.getStudentGroup(student.getId())));
         return students;
     }
 
-    public Student getStudentById(int studentId) {
+    public Student getById(int studentId) {
         Student student = studentDAO.findById(studentId);
         student.setGroup(studentDAO.getStudentGroup(studentId));
         return student;
     }
 
-    public void updateStudent(int studentId, Student updatedStudent) {
-        studentDAO.update(studentId, updatedStudent);
-        studentDAO.setStudentGroup(updatedStudent.getGroup().getId(), studentId);
+    public void update(Student updatedStudent) {
+        studentDAO.update(updatedStudent.getId(), updatedStudent);
+        studentDAO.setStudentGroup(updatedStudent.getGroup().getId(), updatedStudent.getId());
     }
 
-    public void deleteStudentById(int studentId) {
+    public void deleteById(int studentId) {
         studentDAO.deleteById(studentId);
     }
 
