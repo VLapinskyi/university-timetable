@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head th:replace="fragments :: head" />
+<body>
+	<header th:replace="fragments :: header-navigation"> </header>
+    <div class="container">
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Lecturer's name</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="lecturer, iStat:${lecturers}">
+				<th scope="row" th:text="${iStat.count}">#</th>
+				<td><a class="text-decoration-none"
+					th:href="@{/lecturers/{id}(id=${lecturer.id})}"
+					th:text="${lecturer.firstName} + ' ' + ${lecturer.lastName}">lecturer</a></td>
+			</tr>
+		</tbody>
+	</table>
+    </div>
+	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
+		script</div>
+</body>
+</html>

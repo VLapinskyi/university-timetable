@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+<head th:replace="fragments :: head" />
+<body>
+	<header th:replace="fragments :: header-navigation"> </header>
+    <div class="container">
+        <table class="table">
+            <tr>
+                <td>Group's id:</td>
+                <td th:text="${group.id}"></td>
+            </tr>
+            <tr>
+                <td>Group's name:</td>
+                <td th:text="${group.name}"></td>
+            </tr>
+            <tr>
+                <td>Faculty:</td>
+                <td><a class="text-decoration-none"
+                    th:href="@{/faculties/{id}(id=${group.faculty.id})}"
+                    th:text="${group.faculty.name}">faculty</a></td>
+            </tr>
+        </table>
+    </div>
+	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
+		script</div>
+</body>
+</html>

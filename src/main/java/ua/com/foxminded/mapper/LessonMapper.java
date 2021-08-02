@@ -16,7 +16,7 @@ public class LessonMapper implements RowMapper<Lesson> {
         lesson.setId(rs.getInt("id"));
         lesson.setName(rs.getString("name"));        
         lesson.setAudience(rs.getString("audience"));              
-        lesson.setDay(DayOfWeek.of(rs.getInt("week_day")));        
+        lesson.setDay(DayOfWeek.of(Integer.parseInt(rs.getString("week_day"))));        
         return lesson;
     }
 }

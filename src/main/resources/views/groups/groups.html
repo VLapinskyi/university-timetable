@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head th:replace="fragments :: head" />
+<body>
+	<header th:replace="fragments :: header-navigation"> </header>
+    <div class="container">
+	<table class="table">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Group's name</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="group, iStat:${groups}">
+				<th scope="row" th:text="${iStat.count}">#</th>
+				<td><a class="text-decoration-none"
+					th:href="@{/groups/{id}(id=${group.id})}"
+					th:text="${group.name}">group</a></td>
+			</tr>
+		</tbody>
+	</table>
+    </div>
+	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
+		script</div>
+</body>
+</html>

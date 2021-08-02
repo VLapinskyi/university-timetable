@@ -2,6 +2,7 @@ package ua.com.foxminded.service.aspects;
 
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -43,19 +44,19 @@ public class LessonAspect {
     private void updateMethod() {
     }
     
-    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getGroupWeekLessons(int))")
+    @Pointcut("execution (java.util.Map ua.com.foxminded.service.LessonService.getGroupWeekLessons(int))")
     private void getGroupWeekLessonsMethod() {
     }
     
-    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getGroupMonthLessons(int, java.time.YearMonth))")
+    @Pointcut("execution (java.util.Map ua.com.foxminded.service.LessonService.getGroupMonthLessons(int, java.time.YearMonth))")
     private void getGroupMonthLessonsMethod() {
     }
     
-    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getLecturerWeekLessons(int))")
+    @Pointcut("execution (java.util.Map ua.com.foxminded.service.LessonService.getLecturerWeekLessons(int))")
     private void getLecturerWeekLessonsMethod() {
     }
     
-    @Pointcut("execution (java.util.List ua.com.foxminded.service.LessonService.getLecturerMonthLessons(int, java.time.YearMonth))")
+    @Pointcut("execution (java.util.Map ua.com.foxminded.service.LessonService.getLecturerMonthLessons(int, java.time.YearMonth))")
     private void getLecturerMonthLessonsMethod() {
     }
     
@@ -162,8 +163,20 @@ public class LessonAspect {
             }
             
             Object targetMethod = proceedingJoinPoint.proceed();
-            if (targetMethod instanceof List<?>) {
-                if (((List<?>) targetMethod).isEmpty()) {
+            if (targetMethod instanceof Map<?, ?>) {
+                boolean isEmpty = false;
+                
+                for(Map.Entry<?, ?> entry : ((Map<?, ?>) targetMethod).entrySet()) {
+                    if ((entry.getValue() instanceof List<?>)) {
+                        isEmpty = ((List<?>) entry.getValue()).isEmpty();
+                        
+                        if (!isEmpty) {
+                            break;
+                        }
+                    }
+                }
+                
+                if (isEmpty) {
                    LOGGER.warn("There are not any week lessons for a group with id {}.", groupId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
@@ -186,24 +199,36 @@ public class LessonAspect {
         YearMonth month = (YearMonth) proceedingJoinPoint.getArgs()[1];
         
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get {} month lessons for a group with id: {}.", month, groupId);
+            LOGGER.debug("Try to get {} month of {} year lessons for a group with id: {}.", month.getMonth(), month.getYear(), groupId);
         }
         
         try {
             
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException("A group id isn't positive for existing object.");
-                LOGGER.error("A group id {} is not positive when get {} month lessons for a group.", groupId, month, exception);
+                LOGGER.error("A group id {} is not positive when get {} month of {} year lessons for a group.", groupId, month.getMonth(), month.getYear(), exception);
                 throw exception;
             }
             
             Object targetMethod = proceedingJoinPoint.proceed();
-            if (targetMethod instanceof List<?>) {
-                if (((List<?>) targetMethod).isEmpty()) {
-                   LOGGER.warn("There are not any {} month lessons for a group with id {}.", month, groupId); 
+            if (targetMethod instanceof Map<?, ?>) {
+                boolean isEmpty = false;
+                
+                for(Map.Entry<?, ?> entry : ((Map<?, ?>) targetMethod).entrySet()) {
+                    if ((entry.getValue() instanceof List<?>)) {
+                        isEmpty = ((List<?>) entry.getValue()).isEmpty();
+                        
+                        if (!isEmpty) {
+                            break;
+                        }
+                    }
+                }
+                
+                if (isEmpty) {
+                   LOGGER.warn("There are not any {} month of {} year lessons for a group with id {}.", month.getMonth(), month.getYear(), groupId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("When get {} month lessons for a group with id {} the result is: {}.", month, groupId, targetMethod);
+                        LOGGER.debug("When get {} month of {} year lessons for a group with id {} the result is: {}.", month.getMonth(), month.getYear(), groupId, targetMethod);
                     }
                 }
             }
@@ -211,7 +236,7 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when get month lessons for a group.", illegalArgumentException);
         } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get {} month lessons for a group with id {}.", month, groupId, daoException);
+            LOGGER.error("There is some error in dao layer when get {} month of {} year lessons for a group with id {}.", month.getMonth(), month.getYear(), groupId, daoException);
             throw new ServiceException("There is some error in dao layer when get month lessons for a group.", daoException);
         }
     }
@@ -233,8 +258,19 @@ public class LessonAspect {
             }
             
             Object targetMethod = proceedingJoinPoint.proceed();
-            if (targetMethod instanceof List<?>) {
-                if (((List<?>) targetMethod).isEmpty()) {
+            if (targetMethod instanceof Map<?, ?>) {
+                boolean isEmpty = false;
+                
+                for(Map.Entry<?, ?> entry : ((Map<?, ?>) targetMethod).entrySet()) {
+                    if ((entry.getValue() instanceof List<?>)) {
+                        isEmpty = ((List<?>) entry.getValue()).isEmpty();
+                        if (!isEmpty) {
+                            break;
+                        }
+                    }
+                }
+                
+                if (isEmpty) {
                    LOGGER.warn("There are not any week lessons for a lecturer with id {}.", lecturerId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
@@ -257,24 +293,37 @@ public class LessonAspect {
         YearMonth month = (YearMonth) proceedingJoinPoint.getArgs()[1];
         
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get {} month lessons for a lecturer with id: {}.", month, lecturerId);
+            LOGGER.debug("Try to get {} month of {} year lessons for a lecturer with id: {}.", month.getMonth(), month.getYear(), lecturerId);
         }
         
         try {
             
             if (lecturerId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException("A lecturer id isn't positive for existing object.");
-                LOGGER.error("A lecturer id {} is not positive when get {} month lessons for a lecturer.", lecturerId, month, exception);
+                LOGGER.error("A lecturer id {} is not positive when get {} month of {} year lessons for a lecturer.", lecturerId, month.getMonth(), month.getYear(), exception);
                 throw exception;
             }
             
             Object targetMethod = proceedingJoinPoint.proceed();
-            if (targetMethod instanceof List<?>) {
-                if (((List<?>) targetMethod).isEmpty()) {
-                   LOGGER.warn("There are not any {} month lessons for a lecturer with id {}.", month, lecturerId); 
+            if (targetMethod instanceof Map<?, ?>) {
+                boolean isEmpty = false;
+                
+                for(Map.Entry<?, ?> entry : ((Map<?, ?>) targetMethod).entrySet()) {
+                    if ((entry.getValue() instanceof List<?>)) {
+                        isEmpty = ((List<?>) entry.getValue()).isEmpty();
+                        
+                        if (!isEmpty) {
+                            break;
+                        }
+                    }
+                }
+                
+                
+                if (isEmpty) {
+                   LOGGER.warn("There are not any {} month of {} year lessons for a lecturer with id {}.", month.getMonth(), month.getYear(), lecturerId); 
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("When get {} month lessons for a lecturer with id {} the result is: {}.", month, lecturerId, targetMethod);
+                        LOGGER.debug("When get {} month of {} year lessons for a lecturer with id {} the result is: {}.", month.getMonth(), month.getYear(), lecturerId, targetMethod);
                     }
                 }
             }
@@ -282,7 +331,7 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when getting month lessons for a lecturer.", illegalArgumentException);
         } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get {} month lessons for a lecturer with id {}.", month, lecturerId, daoException);
+            LOGGER.error("There is some error in dao layer when get {} month of {} year lessons for a lecturer with id {}.", month.getMonth(), month.getYear(), lecturerId, daoException);
             throw new ServiceException("There is some error in dao layer when get month lessons for a group.", daoException);
         }
     }

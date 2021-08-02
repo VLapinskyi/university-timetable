@@ -1357,7 +1357,7 @@ class LessonDAOTest {
         DayOfWeek weekDay = DayOfWeek.SATURDAY;
 
         ReflectionTestUtils.setField(lessonDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.query(anyString(), any(LessonMapper.class), anyInt(), anyInt())).thenThrow(QueryTimeoutException.class);
+        when(mockedJdbcTemplate.query(anyString(), any(LessonMapper.class), anyInt(), anyString())).thenThrow(QueryTimeoutException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -1373,7 +1373,7 @@ class LessonDAOTest {
 
         try {
             lessonDAO.getGroupDayLessons(groupId, weekDay);
-            verify(mockedJdbcTemplate).query(anyString(), any(LessonMapper.class), anyInt(), anyInt());
+            verify(mockedJdbcTemplate).query(anyString(), any(LessonMapper.class), anyInt(), anyString());
         } catch (DAOException daoException) {
             //do nothing
         }
@@ -1455,7 +1455,7 @@ class LessonDAOTest {
         DayOfWeek weekDay = DayOfWeek.THURSDAY;
 
         ReflectionTestUtils.setField(lessonDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.query(anyString(), any(LessonMapper.class), anyInt(), anyInt())).thenThrow(QueryTimeoutException.class);
+        when(mockedJdbcTemplate.query(anyString(), any(LessonMapper.class), anyInt(), anyString())).thenThrow(QueryTimeoutException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -1471,7 +1471,7 @@ class LessonDAOTest {
 
         try {
             lessonDAO.getLecturerDayLessons(lecturerId, weekDay);
-            verify(mockedJdbcTemplate).query(anyString(), any(LessonMapper.class), anyInt(), anyInt());
+            verify(mockedJdbcTemplate).query(anyString(), any(LessonMapper.class), anyInt(), anyString());
         } catch (DAOException daoException) {
             // do nothing
         }

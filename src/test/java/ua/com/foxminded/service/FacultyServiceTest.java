@@ -19,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.qos.logback.classic.Level;
@@ -33,6 +34,7 @@ import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration(classes = {SpringConfiguration.class})
 @ExtendWith(SpringExtension.class)
+@WebAppConfiguration
 class FacultyServiceTest {
     private TestAppender testAppender = new TestAppender();
 
