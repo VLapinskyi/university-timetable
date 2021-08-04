@@ -45,6 +45,24 @@
 			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
 		</encoder>
 	</appender>
+	
+	<appender name="CONTROLLERS_ROLLING_FILE"
+        class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <file>${ROOT_PROJECT_FOLDER}\controllers\${LOG_FILE}.log</file>
+
+        <rollingPolicy
+            class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+            <fileNamePattern>${ROOT_PROJECT_FOLDER}\controllers\Controllers ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
 	<logger name="ua.com.foxminded.dao" level="DEBUG"
 		additivity="false">
@@ -57,6 +75,12 @@
 
 		<appender-ref ref="SERVICE_ROLLING_FILE" />
 	</logger>
+	
+	<logger name="ua.com.foxminded.controllers" level="DEBUG"
+        additivity="false">
+
+        <appender-ref ref="CONTROLLERS_ROLLING_FILE" />
+    </logger>
 
 	<root level="debug">
 		<appender-ref ref="CONSOLE" />
