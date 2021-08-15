@@ -33,6 +33,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -998,6 +999,41 @@ class LessonServiceTest {
 
         try {
             lessonService.getById(negativeId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenEntityIsNotFoundInDatabaseWhileGetById() {
+        int testId = 2;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get an object by id: " + testId  + ".",
+                "The entity is not found when get object by id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        when(lessonDAO.findById(testId)).thenThrow(daoException);
+
+        try {
+            lessonService.getById(testId);
         } catch (ServiceException serviceException) {
             //do nothing
         }
