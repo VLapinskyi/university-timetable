@@ -119,7 +119,7 @@ class LecturersControllerTest {
         int id = 3;
         
         Lecturer lecturer = new Lecturer();
-        lecturer.setId(3);
+        lecturer.setId(id);
         lecturer.setFirstName("Petro");
         lecturer.setLastName("Petrov");
         lecturer.setGender(Gender.MALE);
