@@ -1,6 +1,5 @@
 package ua.com.foxminded.controllers.aspects;
 
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,8 +20,8 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
 @Configuration
-public class ScheduleControllerAdvise {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleControllerAdvise.class);
+public class ScheduleControllerAspect {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleControllerAspect.class);
     
     @Pointcut("execution(public String ua.com.foxminded.controllers.ScheduleController.searchSchedule(org.springframework.ui.Model))")
     private void searchScheduleMethod() {
@@ -53,21 +52,32 @@ public class ScheduleControllerAdvise {
     
     @Around("resultScheduleMethod()")
     public String aroundResultSchedule(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        HttpServletRequest request = (HttpServletRequest) proceedingJoinPoint.getArgs()[0];
-        Enumeration<String> parametersNames = request.getAttributeNames();
+        
+        HttpServletRequest request = null;
         Map<String, String> parametersValues = new HashMap<>();
         
-        while(parametersNames.hasMoreElements()) {
-            String parameterName = parametersNames.nextElement();
-            parametersValues.put(parameterName, request.getParameter(parameterName));
-        }
-        
-        if (LOGGER.isDebugEnabled()) {            
-            LOGGER.debug("Try to get the result of the search schedule form with parameters: {}.", parametersValues);
-        }
+        String peopleRoleParameter = "people-role-radio";
+        String periodParameter= "period-radio";
+        String inputFieldLecturerName = "lecturer-value";
+        String inputFieldGroupName = "group-value";
+        String inputFieldMonthName = "month-value";
         
         try {
-            return (String) proceedingJoinPoint.proceed();
+            String resultMethod = (String) proceedingJoinPoint.proceed();
+            
+            request = (HttpServletRequest) proceedingJoinPoint.getArgs()[0];
+            
+            parametersValues.put(peopleRoleParameter, request.getParameter(peopleRoleParameter));
+            parametersValues.put(periodParameter, request.getParameter(periodParameter));
+            parametersValues.put(inputFieldLecturerName, request.getParameter(inputFieldLecturerName));
+            parametersValues.put(inputFieldGroupName, request.getParameter(inputFieldGroupName));
+            parametersValues.put(inputFieldMonthName, request.getParameter(inputFieldMonthName));
+            
+            if (LOGGER.isDebugEnabled()) {            
+                LOGGER.debug("Try to get the result of the search schedule form with parameters: {}.", parametersValues);
+            }            
+            
+            return resultMethod;
             
         } catch (ServiceException serviceException) {
             if (serviceException.getException() instanceof DAOException) {
