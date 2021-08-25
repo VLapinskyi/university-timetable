@@ -18,9 +18,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.YearMonth;
+import java.time.format.TextStyle;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -230,10 +232,10 @@ class ScheduleControllerTest {
         
         mockMvc.perform(get("/result-schedule")
                 .param("people-role-radio", "lecturer")
-                .param("lecturer-value", "1")
+                .param("lecturer-value", Integer.toString(lecturerId))
                 .param("period-radio", "week"))
         .andExpect(status().isOk())
-        .andExpect(view().name("schedule/result-schedule"))
+        .andExpect(view().name("schedule/lecturer-week-schedule"))
         .andExpect(model().attribute("pageTitle", equalTo("Schedule of a lecturer " + lecturer.getFirstName() + " " + lecturer.getLastName()
                 + " for a week")))  
         .andExpect(model().attribute("lecturer", equalTo(lecturer)))
@@ -244,7 +246,176 @@ class ScheduleControllerTest {
     }
     
     @Test
+    void shouldAddToModelLecturerMonthLessonsWhenResultSchedule() throws Exception {
+        int lecturerId = 1;
+        
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(lecturerId);
+        lecturer.setFirstName("Ivan");
+        lecturer.setLastName("Zakharchuk");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setEmail("ivanzakharchuk@test.com");
+        lecturer.setPhoneNumber("+380946985741");
+        
+        Faculty faculty = new Faculty();
+        faculty.setId(1);
+        faculty.setName("Faculty");
+        
+        Group firstGroup = new Group();
+        firstGroup.setId(1);
+        firstGroup.setName("AS-1");
+        firstGroup.setFaculty(faculty);
+        
+        Group secondGroup = new Group();
+        secondGroup.setId(2);
+        firstGroup.setName("AS-2");
+        firstGroup.setFaculty(faculty);
+        
+        LessonTime firstLessonTime = new LessonTime();
+        firstLessonTime.setId(1);
+        firstLessonTime.setStartTime(LocalTime.of(9, 0));
+        firstLessonTime.setEndTime(LocalTime.of(10, 0));
+        
+        LessonTime secondLessonTime = new LessonTime();
+        secondLessonTime.setId(2);
+        secondLessonTime.setStartTime(LocalTime.of(11, 0));
+        secondLessonTime.setEndTime(LocalTime.of(12, 0));
+        
+        Lesson firstLesson = new Lesson();
+        firstLesson.setId(1);
+        firstLesson.setName("Lesson-1");
+        firstLesson.setAudience("103");
+        firstLesson.setLecturer(lecturer);
+        firstLesson.setGroup(firstGroup);
+        firstLesson.setDay(DayOfWeek.TUESDAY);
+        firstLesson.setLessonTime(firstLessonTime);
+        
+        Lesson secondLesson = new Lesson();
+        secondLesson.setId(2);
+        secondLesson.setName("Lesson-2");
+        secondLesson.setAudience("107");
+        secondLesson.setLecturer(lecturer);
+        secondLesson.setGroup(secondGroup);
+        secondLesson.setDay(DayOfWeek.FRIDAY);
+        secondLesson.setLessonTime(secondLessonTime);
+        
+        when(lecturerService.getById(lecturerId)).thenReturn(lecturer);
+        
+        Map<LocalDate, List<Lesson>> lecturerMonthLessons = new HashMap<>();
+        YearMonth month = YearMonth.of(2021, 3);
+        
+        for (int i = 1; i <= 31; i++) {
+            if (month.atDay(i).getDayOfWeek().equals(firstLesson.getDay())) {
+                lecturerMonthLessons.put(LocalDate.of(month.getYear(), month.getMonthValue(), i),
+                        Arrays.asList(firstLesson));
+            } else if (month.atDay(i).getDayOfWeek().equals(secondLesson.getDay())) {
+                lecturerMonthLessons.put(LocalDate.of(month.getYear(), month.getMonthValue(), i),
+                        Arrays.asList(secondLesson));
+            }
+        }
+        
+        when(lessonService.getLecturerMonthLessons(lecturerId, month)).thenReturn(lecturerMonthLessons);
+        
+        mockMvc.perform(get("/result-schedule")
+                .param("people-role-radio", "lecturer")
+                .param("lecturer-value", Integer.toString(lecturerId))
+                .param("period-radio", "month")
+                .param("month-value", "2021-03"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("schedule/lecturer-month-schedule"))
+        .andExpect(model().attribute("pageTitle", equalTo("Schedule of a lecturer " + lecturer.getFirstName() + " " + lecturer.getLastName()
+                + " for a month")))  
+        .andExpect(model().attribute("lecturer", equalTo(lecturer)))
+        .andExpect(model().attribute("monthLessons", equalTo(lecturerMonthLessons)))
+        .andExpect(model().attribute("month", equalTo(Month.MARCH.getDisplayName(TextStyle.FULL, Locale.ENGLISH))))
+        .andExpect(model().attribute("year", is(2021)));
+        
+        verify(lecturerService).getById(lecturerId);
+        verify(lessonService).getLecturerMonthLessons(lecturerId, month);
+    }
+    
+    @Test
     void shouldAddToModelGroupWeekLessonsWhenResultSchedule() throws Exception {
+        Faculty faculty = new Faculty();
+        faculty.setId(1);
+        faculty.setName("Faculty");
+        
+        int groupId = 1;
+        
+        Group group = new Group();
+        group.setId(groupId);
+        group.setName("SD-1");
+        group.setFaculty(faculty);
+        
+        Lecturer firstLecturer = new Lecturer();
+        firstLecturer.setId(1);
+        firstLecturer.setFirstName("Roman");
+        firstLecturer.setLastName("Dudchenko");
+        firstLecturer.setGender(Gender.MALE);
+        firstLecturer.setEmail("dudchenkoroman@test.com");
+        firstLecturer.setPhoneNumber("+3803216549871");
+        
+        Lecturer secondLecturer = new Lecturer();
+        secondLecturer.setId(2);
+        secondLecturer.setFirstName("Nataliia");
+        secondLecturer.setLastName("Sirhiyenko");
+        secondLecturer.setGender(Gender.FEMALE);
+        secondLecturer.setEmail("nataliiasirhiyenko@test.com");
+        secondLecturer.setPhoneNumber("+380459865321");
+        
+        LessonTime firstLessonTime = new LessonTime();
+        firstLessonTime.setId(1);
+        firstLessonTime.setStartTime(LocalTime.of(9, 0));
+        firstLessonTime.setEndTime(LocalTime.of(11, 0));
+        
+        LessonTime secondLessonTime = new LessonTime();
+        secondLessonTime.setId(2);
+        secondLessonTime.setStartTime(LocalTime.of(12, 0));
+        secondLessonTime.setEndTime(LocalTime.of(14, 0));
+        
+        Lesson firstLesson = new Lesson();
+        firstLesson.setId(1);
+        firstLesson.setName("Lesson-1");
+        firstLesson.setAudience("101");
+        firstLesson.setLecturer(firstLecturer);
+        firstLesson.setGroup(group);
+        firstLesson.setDay(DayOfWeek.WEDNESDAY);
+        firstLesson.setLessonTime(firstLessonTime);
+        
+        Lesson secondLesson = new Lesson();
+        secondLesson.setId(2);
+        secondLesson.setName("Lesson-2");
+        secondLesson.setAudience("102");
+        secondLesson.setLecturer(secondLecturer);
+        secondLesson.setGroup(group);
+        secondLesson.setDay(DayOfWeek.THURSDAY);
+        secondLesson.setLessonTime(secondLessonTime);
+        
+        when(groupService.getById(groupId)).thenReturn(group);
+        
+        Map<DayOfWeek, List<Lesson>> groupWeekLessons = new HashMap<>();
+        groupWeekLessons.put(firstLesson.getDay(), Arrays.asList(firstLesson));
+        groupWeekLessons.put(secondLesson.getDay(), Arrays.asList(secondLesson));
+        
+        when(lessonService.getGroupWeekLessons(groupId)).thenReturn(groupWeekLessons);
+        
+        mockMvc.perform(get("/result-schedule")
+                .param("people-role-radio", "group")
+                .param("group-value", Integer.toString(groupId))
+                .param("period-radio", "week"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("schedule/group-week-schedule"))
+        .andExpect(model().attribute("pageTitle", equalTo("Schedule of a group " + group.getName() 
+                + " for a week")))  
+        .andExpect(model().attribute("group", equalTo(group)))
+        .andExpect(model().attribute("weekLessons", equalTo(groupWeekLessons)));
+        
+        verify(groupService).getById(groupId);
+        verify(lessonService).getGroupWeekLessons(groupId);
+    }
+    
+    @Test
+    void shouldAddToModelGroupMonthLessonsWhenResultSchedule() throws Exception {
         Faculty faculty = new Faculty();
         faculty.setId(1);
         faculty.setName("Faculty");
@@ -319,16 +490,16 @@ class ScheduleControllerTest {
         
         mockMvc.perform(get("/result-schedule")
                 .param("people-role-radio", "group")
-                .param("group-value", "1")
+                .param("group-value", Integer.toString(groupId))
                 .param("period-radio", "month")
                 .param("month-value", "2021-02"))
         .andExpect(status().isOk())
-        .andExpect(view().name("schedule/result-schedule"))
+        .andExpect(view().name("schedule/group-month-schedule"))
         .andExpect(model().attribute("pageTitle", equalTo("Schedule of a group " + group.getName() 
                 + " for a month")))  
         .andExpect(model().attribute("group", equalTo(group)))
         .andExpect(model().attribute("monthLessons", equalTo(groupMonthLessons)))
-        .andExpect(model().attribute("month", equalTo(Month.FEBRUARY)))
+        .andExpect(model().attribute("month", equalTo(Month.FEBRUARY.getDisplayName(TextStyle.FULL, Locale.ENGLISH))))
         .andExpect(model().attribute("year", is(2021)));
         
         verify(groupService).getById(groupId);
