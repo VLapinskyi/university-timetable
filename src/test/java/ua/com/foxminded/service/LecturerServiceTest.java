@@ -17,8 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.qos.logback.classic.Level;
@@ -34,6 +36,7 @@ import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration (classes = {SpringConfiguration.class})
 @ExtendWith(SpringExtension.class)
+@WebAppConfiguration
 class LecturerServiceTest {
     private TestAppender testAppender = new TestAppender();
     
@@ -636,6 +639,41 @@ class LecturerServiceTest {
 
         try {
             lecturerService.getById(negativeId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
+    void shouldGenerateLogsWhenEntityIsNotFoundInDatabaseWhileGetById() {
+        int testId = 3;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get an object by id: " + testId  + ".",
+                "The entity is not found when get object by id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        when(lecturerDAO.findById(testId)).thenThrow(daoException);
+
+        try {
+            lecturerService.getById(testId);
         } catch (ServiceException serviceException) {
             //do nothing
         }

@@ -12,12 +12,15 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +33,10 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.qos.logback.classic.Level;
@@ -51,6 +56,7 @@ import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration(classes = {SpringConfiguration.class})
 @ExtendWith(SpringExtension.class)
+@WebAppConfiguration
 class LessonServiceTest {
     private TestAppender testAppender = new TestAppender();
     
@@ -249,10 +255,21 @@ class LessonServiceTest {
     @Test
     void shouldGetWeekLessonsForGroup() {
         int groupId = 2;
+        Lesson lesson1 = new Lesson();
+        lesson1.setId(1);
+        Lesson lesson2 = new Lesson();
+        lesson2.setId(2);
+        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.TUESDAY)).thenReturn(new ArrayList<Lesson>(Arrays.asList(lesson1, lesson2)));
         lessonService.getGroupWeekLessons(groupId);
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
             verify(lessonDAO).getGroupDayLessons(groupId, DayOfWeek.of(i));
         }
+        verify(lessonDAO).getLessonGroup(lesson1.getId());
+        verify(lessonDAO).getLessonGroup(lesson2.getId());
+        verify(lessonDAO).getLessonLecturer(lesson1.getId());
+        verify(lessonDAO).getLessonLecturer(lesson2.getId());
+        verify(lessonDAO).getLessonTime(lesson1.getId());
+        verify(lessonDAO).getLessonTime(lesson2.getId());
     }
 
     @Test
@@ -280,10 +297,21 @@ class LessonServiceTest {
     @Test
     void shouldGetWeekLessonsForLecturer() {
         int lecturerId = 3;
+        Lesson lesson1 = new Lesson();
+        lesson1.setId(1);
+        Lesson lesson2 = new Lesson();
+        lesson2.setId(2);
+        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY)).thenReturn(new ArrayList<Lesson>(Arrays.asList(lesson1, lesson2)));
         lessonService.getLecturerWeekLessons(lecturerId);
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
             verify(lessonDAO).getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
         }
+        verify(lessonDAO).getLessonGroup(lesson1.getId());
+        verify(lessonDAO).getLessonGroup(lesson2.getId());
+        verify(lessonDAO).getLessonLecturer(lesson1.getId());
+        verify(lessonDAO).getLessonLecturer(lesson2.getId());
+        verify(lessonDAO).getLessonTime(lesson1.getId());
+        verify(lessonDAO).getLessonTime(lesson2.getId());
     }
 
     @Test
@@ -985,6 +1013,41 @@ class LessonServiceTest {
     }
     
     @Test
+    void shouldGenerateLogsWhenEntityIsNotFoundInDatabaseWhileGetById() {
+        int testId = 2;
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
+                new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
+                Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
+                "Try to get an object by id: " + testId  + ".",
+                "The entity is not found when get object by id " + testId + "."));
+
+        for (int i = 0; i < expectedLogs.size(); i++) {
+            expectedLogs.get(i).setLevel(expectedLevels.get(i));
+            expectedLogs.get(i).setMessage(expectedMessages.get(i));
+        }
+        
+        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        when(lessonDAO.findById(testId)).thenThrow(daoException);
+
+        try {
+            lessonService.getById(testId);
+        } catch (ServiceException serviceException) {
+            //do nothing
+        }
+
+        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        for (int i = 0; i < actualLogs.size(); i++) {
+            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
+            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
+        }
+    }
+    
+    @Test
     void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
         int testId = 1;
 
@@ -1433,8 +1496,22 @@ class LessonServiceTest {
         when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(0, 1));
         when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
         
-        List<Lesson> expectedLessons = new ArrayList<>(Arrays.asList(
-                lessons.get(2), lessons.get(0)));
+        when(lessonDAO.getLessonGroup(lessons.get(0).getId())).thenReturn(lessons.get(0).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(0).getId())).thenReturn(lessons.get(0).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(0).getId())).thenReturn(lessons.get(0).getLessonTime());
+        
+        when(lessonDAO.getLessonGroup(lessons.get(2).getId())).thenReturn(lessons.get(2).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(2).getId())).thenReturn(lessons.get(2).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(2).getId())).thenReturn(lessons.get(2).getLessonTime());
+        
+        Map<DayOfWeek, List<Lesson>> expectedLessons = new TreeMap<>();
+        expectedLessons.put(DayOfWeek.SUNDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.MONDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.TUESDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.WEDNESDAY, new ArrayList<>(Arrays.asList(lessons.get(2))));
+        expectedLessons.put(DayOfWeek.THURSDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.FRIDAY, new ArrayList<>(Arrays.asList(lessons.get(0))));
+        expectedLessons.put(DayOfWeek.SATURDAY, new ArrayList<>());
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -1470,8 +1547,8 @@ class LessonServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + testMonth + " month lessons for a group with id: " + testId + ".",
-                "A group id " + testId + " is not positive when get " + testMonth + " month lessons for a group."));
+                "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a group with id: " + testId + ".",
+                "A group id " + testId + " is not positive when get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a group."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1502,8 +1579,8 @@ class LessonServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.WARN));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + testMonth + " month lessons for a group with id: " + testId + ".",
-                "There are not any " + testMonth + " month lessons for a group with id " + testId + "."));
+                "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a group with id: " + testId + ".",
+                "There are not any " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a group with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1533,8 +1610,8 @@ class LessonServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + testMonth + " month lessons for a group with id: " + testId + ".",
-                "There is some error in dao layer when get " + testMonth + " month lessons for a group with id " + testId + "."));
+                "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a group with id: " + testId + ".",
+                "There is some error in dao layer when get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a group with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1590,24 +1667,41 @@ class LessonServiceTest {
         when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
         when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
         
-        List<Lesson> expectedLessons = new ArrayList<>();
-        expectedLessons.add(lessons.get(2));
+        when(lessonDAO.getLessonGroup(lessons.get(0).getId())).thenReturn(lessons.get(0).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(0).getId())).thenReturn(lessons.get(0).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(0).getId())).thenReturn(lessons.get(0).getLessonTime());
         
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < lessons.size(); j++) {
-                expectedLessons.add(lessons.get(j));
+        when(lessonDAO.getLessonGroup(lessons.get(1).getId())).thenReturn(lessons.get(1).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(1).getId())).thenReturn(lessons.get(1).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(1).getId())).thenReturn(lessons.get(1).getLessonTime());
+        
+        when(lessonDAO.getLessonGroup(lessons.get(2).getId())).thenReturn(lessons.get(2).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(2).getId())).thenReturn(lessons.get(2).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(2).getId())).thenReturn(lessons.get(2).getLessonTime());
+        
+        Map<LocalDate, List<Lesson>> expectedLessons = new TreeMap<>();
+        
+        for (int i = 1; i <= month.lengthOfMonth(); i++) {
+            LocalDate day = month.atDay(i);
+            
+            if(i % 7 == 3) {
+                expectedLessons.put(day, new ArrayList<Lesson>(Arrays.asList(lessons.get(0))));
+            } else if(i % 7 == 0) {
+                expectedLessons.put(day, new ArrayList<Lesson>(Arrays.asList(lessons.get(1))));
+            } else if(i % 7 == 2) {
+                expectedLessons.put(day, new ArrayList<Lesson>(Arrays.asList(lessons.get(2))));
+            } else {
+                expectedLessons.put(day, new ArrayList<>());
             }
         }
-        
-        expectedLessons.add(lessons.get(0));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + month + " month lessons for a group with id: " + groupId + ".",
-                "When get " + month + " month lessons for a group with id " + groupId + " the result is: " + expectedLessons + "."));
+                "Try to get " + month.getMonth() + " month of " + month.getYear() + " year lessons for a group with id: " + groupId + ".",
+                "When get " + month.getMonth() + " month of " + month.getYear() + " year lessons for a group with id " + groupId + " the result is: " + expectedLessons + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1751,8 +1845,26 @@ class LessonServiceTest {
         when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
         when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
         
-        List<Lesson> expectedLessons = new ArrayList<>(Arrays.asList(
-                lessons.get(1), lessons.get(0), lessons.get(2)));
+        when(lessonDAO.getLessonGroup(lessons.get(0).getId())).thenReturn(lessons.get(0).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(0).getId())).thenReturn(lessons.get(0).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(0).getId())).thenReturn(lessons.get(0).getLessonTime());
+        
+        when(lessonDAO.getLessonGroup(lessons.get(1).getId())).thenReturn(lessons.get(1).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(1).getId())).thenReturn(lessons.get(1).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(1).getId())).thenReturn(lessons.get(1).getLessonTime());
+        
+        when(lessonDAO.getLessonGroup(lessons.get(2).getId())).thenReturn(lessons.get(2).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(2).getId())).thenReturn(lessons.get(2).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(2).getId())).thenReturn(lessons.get(2).getLessonTime());
+        
+        Map<DayOfWeek, List<Lesson>> expectedLessons = new TreeMap<>();
+        expectedLessons.put(DayOfWeek.SUNDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.MONDAY, new ArrayList<>(Arrays.asList(lessons.get(1))));
+        expectedLessons.put(DayOfWeek.TUESDAY, new ArrayList<>(Arrays.asList(lessons.get(0))));
+        expectedLessons.put(DayOfWeek.WEDNESDAY, new ArrayList<>(Arrays.asList(lessons.get(2))));
+        expectedLessons.put(DayOfWeek.THURSDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.FRIDAY, new ArrayList<>());
+        expectedLessons.put(DayOfWeek.SATURDAY, new ArrayList<>());
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
@@ -1788,8 +1900,8 @@ class LessonServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + testMonth + " month lessons for a lecturer with id: " + testId + ".",
-                "A lecturer id " + testId + " is not positive when get " + testMonth + " month lessons for a lecturer."));
+                "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a lecturer with id: " + testId + ".",
+                "A lecturer id " + testId + " is not positive when get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a lecturer."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1820,8 +1932,8 @@ class LessonServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.WARN));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + testMonth + " month lessons for a lecturer with id: " + testId + ".",
-                "There are not any " + testMonth + " month lessons for a lecturer with id " + testId + "."));
+                "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a lecturer with id: " + testId + ".",
+                "There are not any " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a lecturer with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1851,8 +1963,8 @@ class LessonServiceTest {
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + testMonth + " month lessons for a lecturer with id: " + testId + ".",
-                "There is some error in dao layer when get " + testMonth + " month lessons for a lecturer with id " + testId + "."));
+                "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a lecturer with id: " + testId + ".",
+                "There is some error in dao layer when get " + testMonth.getMonth() + " month of " + testMonth.getYear() + " year lessons for a lecturer with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1908,24 +2020,39 @@ class LessonServiceTest {
         when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
         when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(2, 3));
         
-        List<Lesson> expectedLessons = new ArrayList<>();
-        expectedLessons.add(lessons.get(0));
+        when(lessonDAO.getLessonGroup(lessons.get(0).getId())).thenReturn(lessons.get(0).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(0).getId())).thenReturn(lessons.get(0).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(0).getId())).thenReturn(lessons.get(0).getLessonTime());
         
-        for (int i = 0; i < 4; i++) {
-            for (int j = lessons.size()-1; j >= 0; j--) {
-                expectedLessons.add(lessons.get(j));
+        when(lessonDAO.getLessonGroup(lessons.get(1).getId())).thenReturn(lessons.get(1).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(1).getId())).thenReturn(lessons.get(1).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(1).getId())).thenReturn(lessons.get(1).getLessonTime());
+        
+        when(lessonDAO.getLessonGroup(lessons.get(2).getId())).thenReturn(lessons.get(2).getGroup());
+        when(lessonDAO.getLessonLecturer(lessons.get(2).getId())).thenReturn(lessons.get(2).getLecturer());
+        when(lessonDAO.getLessonTime(lessons.get(2).getId())).thenReturn(lessons.get(2).getLessonTime());
+        
+        Map<LocalDate, List<Lesson>> expectedLessons = new TreeMap<>();
+        
+        for(int i = 1; i <= month.lengthOfMonth(); i++) {
+            if (i % 7 == 1) {
+                expectedLessons.put(month.atDay(i), new ArrayList<Lesson>(Arrays.asList(lessons.get(0))));
+            } else if (i % 7 == 5) {
+                expectedLessons.put(month.atDay(i), new ArrayList<Lesson>(Arrays.asList(lessons.get(1))));
+            } else if (i % 7 == 2) {
+                expectedLessons.put(month.atDay(i), new ArrayList<Lesson>(Arrays.asList(lessons.get(2))));
+            } else {
+                expectedLessons.put(month.atDay(i), new ArrayList<>());
             }
         }
-        
-        expectedLessons.add(lessons.get(2));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
                 new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
                 Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get " + month + " month lessons for a lecturer with id: " + lecturerId + ".",
-                "When get " + month + " month lessons for a lecturer with id " + lecturerId + " the result is: " + expectedLessons + "."));
+                "Try to get " + month.getMonth() + " month of " + month.getYear() + " year lessons for a lecturer with id: " + lecturerId + ".",
+                "When get " + month.getMonth() + " month of " + month.getYear() + " year lessons for a lecturer with id " + lecturerId + " the result is: " + expectedLessons + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));

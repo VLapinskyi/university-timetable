@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+<head th:replace="fragments :: head" />
+<body>
+	<header th:replace="fragments :: header-navigation"> </header>
+    
+    <div class="container">
+        <table class="table">
+            <tr>
+                <td>Lecturer's id:</td>
+                <td th:text="${lecturer.id}"></td>
+            </tr>
+            <tr>
+                <td>Lecturer's name:</td>
+                <td th:text="${lecturer.firstName + ' ' + lecturer.lastName}"></td>
+            </tr>
+            <tr>
+                <td>Lecturer's gender:</td>
+                <td th:text="${lecturer.gender}"></td>
+            </tr>
+            <tr>
+                <td>Lecturer's phone number:</td>
+                <td th:text="${lecturer.phoneNumber}"></td>
+            </tr>
+            <tr>
+                <td>Lecturer's email:</td>
+                <td th:text="${lecturer.email}"></td>
+            </tr>
+        </table>
+    </div>
+	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
+		script</div>
+</body>
+</html>

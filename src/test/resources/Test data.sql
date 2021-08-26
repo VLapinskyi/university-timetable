@@ -27,10 +27,10 @@ INSERT INTO people (role, first_name, last_name, gender, phone_number, email, st
     VALUES ('student', 'Mykhailo', 'Mazur', 'male', null, null, 2);
 
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Ukranian', 1, 1, '101', 1, 1);
+    VALUES ('Ukranian', 1, 1, '101', '1', 1);
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Music', 2, 3, '102', 3, 1);
+    VALUES ('Music', 2, 3, '102', '3', 1);
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Physical Exercises', 3, 1, '103', 4, 3);
+    VALUES ('Physical Exercises', 3, 1, '103', '4', 3);
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Physical Exercises', 3, 2, '103', 4, 2);
+    VALUES ('Physical Exercises', 3, 2, '103', '4', 2);

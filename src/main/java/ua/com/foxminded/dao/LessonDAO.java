@@ -31,7 +31,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
     @Override
     public void create(Lesson lesson) {
         jdbcTemplate.update(environment.getProperty("create.lesson"), lesson.getName(), lesson.getAudience(),
-                lesson.getDay().getValue());
+                Integer.toString(lesson.getDay().getValue()));
     }
 
     @Override
@@ -47,7 +47,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
     @Override
     public void update(int id, Lesson lesson) {
         jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(),
-                lesson.getAudience(), lesson.getDay().getValue(), id);
+                lesson.getAudience(), Integer.toString(lesson.getDay().getValue()), id);
     }
 
     @Override
@@ -81,11 +81,11 @@ public class LessonDAO implements GenericDAO<Lesson> {
 
     public List<Lesson> getGroupDayLessons(int groupId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(),
-                groupId, weekDay.getValue());
+                groupId, Integer.toString(weekDay.getValue()));
     }
 
     public List<Lesson> getLecturerDayLessons(int lecturerId, DayOfWeek weekDay) {
         return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.lecturer"), new LessonMapper(),
-                lecturerId, weekDay.getValue());
+                lecturerId, Integer.toString(weekDay.getValue()));
     }
 }

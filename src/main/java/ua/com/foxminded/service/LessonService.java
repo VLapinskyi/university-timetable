@@ -1,11 +1,13 @@
 package ua.com.foxminded.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,42 +58,68 @@ public class LessonService {
         lessonDAO.setLessonGroup(updatedLesson.getGroup().getId(), updatedLesson.getId());
         lessonDAO.setLessonTime(updatedLesson.getLessonTime().getId(), updatedLesson.getId());
     }
-    
+
     public void deleteById (int lessonId) {
         lessonDAO.deleteById(lessonId);
     }
 
-    public List<Lesson> getGroupWeekLessons (int groupId) {
-        List<Lesson> weekLessons = new ArrayList<>();
+    public Map<DayOfWeek, List<Lesson>> getGroupWeekLessons (int groupId) {
+        Map<DayOfWeek, List<Lesson>> weekLessons = new TreeMap<>();
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            weekLessons.addAll(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.of(i)));
+            List<Lesson> dayLessons = lessonDAO.getGroupDayLessons(groupId, DayOfWeek.of(i));
+            if(!dayLessons.isEmpty()) {
+                dayLessons.stream().forEach(lesson -> lesson.setGroup(lessonDAO.getLessonGroup(lesson.getId())));
+                dayLessons.stream().forEach(lesson -> lesson.setLecturer(lessonDAO.getLessonLecturer(lesson.getId())));
+                dayLessons.stream().forEach(lesson -> lesson.setLessonTime(lessonDAO.getLessonTime(lesson.getId())));
+            }
+            weekLessons.put(DayOfWeek.of(i), dayLessons);
         }
         return weekLessons;
     }
 
-    public List<Lesson> getGroupMonthLessons(int groupId, YearMonth month) {
-        List<Lesson> lessons = new ArrayList<>();
+    public Map<LocalDate, List<Lesson>> getGroupMonthLessons(int groupId, YearMonth month) {
+        Map<LocalDate, List<Lesson>> dailyLessons = new TreeMap<>();
         for (int i = 1; i <= month.lengthOfMonth(); i++) {
-            DayOfWeek day = month.atDay(i).getDayOfWeek();
-            lessons.addAll(lessonDAO.getGroupDayLessons(groupId, day));
+            LocalDate day = month.atDay(i);
+            List<Lesson> lessons = lessonDAO.getGroupDayLessons(groupId, day.getDayOfWeek());
+            if (!lessons.isEmpty()) {
+                lessons.stream().forEach(lesson -> lesson.setGroup(lessonDAO.getLessonGroup(lesson.getId())));
+                lessons.stream().forEach(lesson -> lesson.setLecturer(lessonDAO.getLessonLecturer(lesson.getId())));
+                lessons.stream().forEach(lesson -> lesson.setLessonTime(lessonDAO.getLessonTime(lesson.getId())));
+            }
+            dailyLessons.put(day, lessons);
         }
-        return lessons;
+        return dailyLessons;
     }
 
-    public List<Lesson> getLecturerWeekLessons(int lecturerId) {
-        List<Lesson> weekLessons = new ArrayList<>();
+    public Map<DayOfWeek, List<Lesson>> getLecturerWeekLessons(int lecturerId) {
+        Map<DayOfWeek, List<Lesson>> weekLessons = new TreeMap<>();
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            weekLessons.addAll(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.of(i)));
+            List<Lesson> dayLessons = lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
+
+            if(!dayLessons.isEmpty()) {
+                dayLessons.stream().forEach(lesson -> lesson.setGroup(lessonDAO.getLessonGroup(lesson.getId())));
+                dayLessons.stream().forEach(lesson -> lesson.setLecturer(lessonDAO.getLessonLecturer(lesson.getId())));
+                dayLessons.stream().forEach(lesson -> lesson.setLessonTime(lessonDAO.getLessonTime(lesson.getId())));
+            }
+            weekLessons.put(DayOfWeek.of(i), dayLessons);
         }
         return weekLessons;
     }
 
-    public List<Lesson> getLecturerMonthLessons(int lecturerId, YearMonth month) {
-        List<Lesson> lessons = new ArrayList<>();
+    public Map<LocalDate, List<Lesson>> getLecturerMonthLessons(int lecturerId, YearMonth month) {
+        Map<LocalDate, List<Lesson>> dailyLessons = new TreeMap<>();
         for (int i = 1; i <= month.lengthOfMonth(); i++) {
-            DayOfWeek day = month.atDay(i).getDayOfWeek();
-            lessons.addAll(lessonDAO.getLecturerDayLessons(lecturerId, day));
+            LocalDate day = month.atDay(i);
+            List<Lesson> lessons = lessonDAO.getLecturerDayLessons(lecturerId, day.getDayOfWeek());
+            
+            if (!lessons.isEmpty()) {
+                lessons.stream().forEach(lesson -> lesson.setGroup(lessonDAO.getLessonGroup(lesson.getId())));
+                lessons.stream().forEach(lesson -> lesson.setLecturer(lessonDAO.getLessonLecturer(lesson.getId())));
+                lessons.stream().forEach(lesson -> lesson.setLessonTime(lessonDAO.getLessonTime(lesson.getId())));
+            }
+            dailyLessons.put(day, lessons);
         }
-        return lessons;
+        return dailyLessons;
     }
 }

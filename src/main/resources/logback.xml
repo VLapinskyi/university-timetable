@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<property name="LOG_FILE" value="Log File" />
+	<property name="ROOT_PROJECT_FOLDER" value="C:\\users\\valen\\git\\university-timetable"></property>
 
 	<appender name="CONSOLE"
 		class="ch.qos.logback.core.ConsoleAppender">
@@ -12,12 +13,12 @@
 	<appender name="DAO_ROLLING_FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-		<file>dao\${LOG_FILE}.log</file>
+		<file>${ROOT_PROJECT_FOLDER}\dao\${LOG_FILE}.log</file>
 
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 
-			<fileNamePattern>dao\DAO ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+			<fileNamePattern>${ROOT_PROJECT_FOLDER}\dao\DAO ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
 			<maxHistory>30</maxHistory>
 			<totalSizeCap>3GB</totalSizeCap>
 		</rollingPolicy>
@@ -30,12 +31,12 @@
 	<appender name="SERVICE_ROLLING_FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
 
-		<file>service\${LOG_FILE}.log</file>
+		<file>${ROOT_PROJECT_FOLDER}\service\${LOG_FILE}.log</file>
 
 		<rollingPolicy
 			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 
-			<fileNamePattern>service\Service ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+			<fileNamePattern>${ROOT_PROJECT_FOLDER}\service\Service ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
 			<maxHistory>30</maxHistory>
 			<totalSizeCap>3GB</totalSizeCap>
 		</rollingPolicy>
@@ -44,6 +45,24 @@
 			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
 		</encoder>
 	</appender>
+	
+	<appender name="CONTROLLERS_ROLLING_FILE"
+        class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <file>${ROOT_PROJECT_FOLDER}\controllers\${LOG_FILE}.log</file>
+
+        <rollingPolicy
+            class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+
+            <fileNamePattern>${ROOT_PROJECT_FOLDER}\controllers\Controllers ${LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{19} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
 	<logger name="ua.com.foxminded.dao" level="DEBUG"
 		additivity="false">
@@ -56,6 +75,12 @@
 
 		<appender-ref ref="SERVICE_ROLLING_FILE" />
 	</logger>
+	
+	<logger name="ua.com.foxminded.controllers" level="DEBUG"
+        additivity="false">
+
+        <appender-ref ref="CONTROLLERS_ROLLING_FILE" />
+    </logger>
 
 	<root level="debug">
 		<appender-ref ref="CONSOLE" />
