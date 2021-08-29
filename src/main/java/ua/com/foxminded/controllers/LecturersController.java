@@ -4,9 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.service.LecturerService;
 
@@ -34,5 +38,17 @@ public class LecturersController {
         model.addAttribute("pageTitle", lecturer.getFirstName() + " " + lecturer.getLastName());
         model.addAttribute("lecturer", lecturer);
         return "lecturers/lecturer";
+    }
+    
+    @GetMapping("/new")
+    public String newLecturer(@ModelAttribute("lecturer") Lecturer lecturer) {
+        return "/lecturers/new";
+    }
+    
+    @PostMapping()
+    public String createLecturer(@ModelAttribute("lecturer") Lecturer lecturer, @RequestParam("gender-value") String gender) {
+        lecturer.setGender(Gender.valueOf(gender));
+        lecturerService.create(lecturer);
+        return "redirect:/lecturers";
     }
 }

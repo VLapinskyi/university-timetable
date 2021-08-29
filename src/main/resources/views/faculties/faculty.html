@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://thymeleaf.org">
-<head>
 <head th:replace="fragments :: head" />
 <body>
 	<header th:replace="fragments :: header-navigation"> </header>
@@ -15,7 +14,6 @@
             <td th:text="${faculty.name}"></td>
         </tr>
     </table>
-    </div>
 	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
 		script</div>
 </body>

@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import ua.com.foxminded.domain.Faculty;
@@ -35,5 +37,16 @@ public class FacultiesController {
             model.addAttribute("faculty", faculty);
         
         return "faculties/faculty";
+    }
+    
+    @GetMapping("/new")
+    public String newFaculty (@ModelAttribute("faculty") Faculty faculty) {
+        return "faculties/new";
+    }
+    
+    @PostMapping()
+    public String createFaculty(@ModelAttribute("faculty") Faculty faculty) {
+        facultyService.create(faculty);
+        return "redirect:/faculties";
     }
 }

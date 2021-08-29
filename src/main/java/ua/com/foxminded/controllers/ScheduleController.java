@@ -3,15 +3,19 @@ package ua.com.foxminded.controllers;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
+import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.LessonService;
@@ -83,5 +87,17 @@ public class ScheduleController {
         model.addAttribute("year", month.getYear());
         
         return "schedule/group-month-schedule";
+    }
+    
+    @GetMapping("/lessons-new")
+    public String addLesson(@ModelAttribute("lesson") Lesson lesson, Model model) {
+        model.addAttribute("groups", groupService.getAll());
+        model.addAttribute("lecturers", lecturerService.getAll());
+        return "/schedule/new";
+    }
+    
+    @PostMapping("/search-schedule")
+    public String createLesson(@ModelAttribute("lesson") Lesson lesson, @RequestParam Map<String, String> allParams) {
+        return null;
     }
 }

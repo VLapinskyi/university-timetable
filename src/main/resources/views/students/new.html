@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head th:replace="fragments :: head" />
+<body>
+    <header th:replace="fragments :: header-navigation"> </header>
+    <form th:action="@{/students}" th:method="POST" th:object="${student}">
+    <div class="container">
+        <fieldset class="form-control">
+            <legend>Create a student</legend>
+            <label for="first-name-id">First name</label>
+            <br/>
+            <input type="text" th:field="*{firstName}" id="first-name-id" required>
+            
+            <br/>
+            <br/>
+             
+            <label for="last-name-id">Last name</label>
+            <br/>
+            <input type="text" th:field="*{lastName}" id="last-name-id" required>
+            
+            <br/>
+            <br/>
+            
+            <label for="gender-field-id">Gender</label>
+             <br/>
+            <select class="form-control" name="gender-value" id="gender-field-id" required>
+                <option value="" selected disabled hidden label="Choose gender"></option>
+                <option value="MALE" label="Male"></option>
+                <option value="FEMALE" label="Female"></option>
+            </select>
+           
+            
+            <br/>
+            <br/>
+            
+            <label for="group-field-id">Group</label>
+             <br/>
+            <select class="form-control" name="group-value" id="group-field-id" required>
+                <option value="" selected disabled hidden label="Select a group"></option>
+                <option th:each="group: ${groups}" th:value="${group.id}"
+                    th:label="${group.name}"></option>
+            </select>
+            
+            <br/>
+            <br/>
+             
+            <label for="phone-number-id">Phone number</label>
+            <br/>
+            <input type="text" th:field="*{phoneNumber}" id="phone-number-id" required>
+                        
+            <br/>
+            <br/>
+            
+            <label for="email-id">Email</label>
+            <br/>
+            <input type="email" th:field="*{email}" id="email-id" required>
+                        
+            <br/>
+            <br/>
+            
+            <button type="submit" class="btn btn-primary">Create!</button>
+        </fieldset>
+    </div>
+    </form>
+    <div th:replace="fragments :: bootstrap-script">Get a bootstrap
+        script</div>
+</body>
+</html>

@@ -21,6 +21,15 @@
 		</tbody>
 	</table>
     </div>
+    
+    <form th:action="@{/lecturers/new}">
+        <div class="position-relative">
+            <div class="position-absolute top-100 start-50 translate-middle">
+                <button type="submit" class="btn btn-primary">Create new lecturer</button>
+            </div>
+        </div>
+    </form>
+    
 	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
 		script</div>
 </body>
