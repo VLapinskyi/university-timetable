@@ -19,6 +19,7 @@ import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.LessonService;
+import ua.com.foxminded.service.LessonTimeService;
 
 @Controller
 public class ScheduleController {
@@ -27,12 +28,15 @@ public class ScheduleController {
     private LessonService lessonService;
     private LecturerService lecturerService;
     private GroupService groupService;
+    private LessonTimeService lessonTimeService;
     
     @Autowired
-    public ScheduleController (LessonService lessonService, LecturerService lecturerService, GroupService groupService) {
+    public ScheduleController (LessonService lessonService, LecturerService lecturerService,
+    		GroupService groupService, LessonTimeService lessonTimeService) {
         this.lessonService = lessonService;
         this.lecturerService = lecturerService;
         this.groupService = groupService;
+        this.lessonTimeService = lessonTimeService;
     }
     
     @GetMapping("/search-schedule")
@@ -40,7 +44,7 @@ public class ScheduleController {
         model.addAttribute("pageTitle", "Search schedule");
         model.addAttribute("lecturers", lecturerService.getAll());
         model.addAttribute("groups", groupService.getAll());
-        return "schedule/search-schedule";
+        return "schedule/search-schedule/search-schedule";
     }
     
     @GetMapping(path="/result-schedule", params={"people-role-radio=lecturer", "lecturer-value", "period-radio=week"})
@@ -50,7 +54,7 @@ public class ScheduleController {
         model.addAttribute("weekLessons", lessonService.getLecturerWeekLessons(lecturerId));
         model.addAttribute("pageTitle", "Schedule of a lecturer " + lecturer.getFirstName() + " " + lecturer.getLastName() + " for a week");
         
-        return "schedule/lecturer-week-schedule";
+        return "schedule/search-schedule/lecturer-week-schedule";
     }
     
     @GetMapping(path="/result-schedule", params={"people-role-radio=lecturer", "lecturer-value", "period-radio=month", "month-value"})
@@ -63,7 +67,7 @@ public class ScheduleController {
         model.addAttribute("month", month.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
         model.addAttribute("year", month.getYear());
         
-        return "schedule/lecturer-month-schedule";
+        return "schedule/search-schedule/lecturer-month-schedule";
     }
     
     @GetMapping(path="/result-schedule", params={"people-role-radio=group", "group-value", "period-radio=week"})
@@ -73,7 +77,7 @@ public class ScheduleController {
         model.addAttribute("weekLessons", lessonService.getGroupWeekLessons(groupId));
         model.addAttribute("pageTitle", "Schedule of a group " + group.getName() + " for a week");
         
-        return "schedule/group-week-schedule";
+        return "schedule/search-schedule/group-week-schedule";
     }
     
     @GetMapping(path="/result-schedule", params={"people-role-radio=group", "group-value", "period-radio=month", "month-value"})
@@ -86,7 +90,15 @@ public class ScheduleController {
         model.addAttribute("month", month.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH));
         model.addAttribute("year", month.getYear());
         
-        return "schedule/group-month-schedule";
+        return "schedule/search-schedule/group-month-schedule";
+    }
+    
+    @GetMapping("/lesson-time-parameters")
+    public String getLessonTimeParameters (Model model) {
+    	model.addAttribute("pageTitle", "Lesson time parameters");
+    	System.out.println(lessonTimeService.getAll());
+    	model.addAttribute("lessonTimes", lessonTimeService.getAll());
+    	return "schedule/lesson-time-parameters";
     }
     
     @GetMapping("/lessons-new")
