@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head th:replace="fragments :: head" />
+<body>
+	<header th:replace="fragments :: header-navigation"> </header>
+	<form th:action="@{/lesson-time-parameters}" th:method="POST" th:object="${lessonTime}">
+	<div class = "container">
+		<fieldset class="form-control">
+			<legend>Add new lesson time parameter</legend>
+			<label for="start-time-id">Start time</label>
+            <br/>
+            <input type="time" th:field="*{startTime}" id="start-time-id" required>
+            
+            <br/>
+            <br/>
+            
+            <label for="end-time-id">End time</label>
+            <br/>
+            <input type="time" th:field="*{endTime}" id="end-time-id" required>
+			<br/>
+            <br/>
+            
+            <button type="submit" class="btn btn-primary">Add!</button>
+		</fieldset>
+	</div>
+	
+	</form>
+</body>
+</html>

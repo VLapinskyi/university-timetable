@@ -16,14 +16,16 @@
 		<tbody>
 			<tr th:if="${!lessonTimes.isEmpty()}" th:each="lessonTime, iStat:${lessonTimes}">
 				<th scope="row" th:text="${iStat.count}">#</th>
-				<td th:utext="${#temporals.format(lessonTime.startTime, 'HH:mm')"></td>
-				<td th:utext="${#temporals.format(lessonTime.endTime, 'HH:mm')"></td>					
+				<td th:utext="${#temporals.format(lessonTime.startTime, 'HH:mm')}"></td>
+				<td th:utext="${#temporals.format(lessonTime.endTime, 'HH:mm')}"></td>					
 			</tr>
 		</tbody>
 	</table>
     </div>
     
-    <form th:action="@{/lessonTime/new}">
+    <br/>
+    
+    <form th:action="@{/lesson-time-parameters/new}">
         <div class="position-relative">
             <div class="position-absolute top-100 start-50 translate-middle">
                 <button type="submit" class="btn btn-primary">Create new lesson time parameter</button>

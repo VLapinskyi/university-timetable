@@ -21,16 +21,13 @@
             <br/>
             <br/>
             
-            <label for="start-time-id">Start time</label>
-            <br/>
-            <input type="time" value="start-time" id="start-time-id" required>
-            
-            <br/>
-            <br/>
-            
-            <label for="end-time-id">End time</label>
-            <br/>
-            <input type="time" value="end-time" id="end-time-id" required>
+            <label for="lesson-time-field-id">LessonTime</label>
+             <br/>
+            <select class="form-control" name="lesson-time-value" id="lesson-time-field-id" required>
+                <option value="" selected disabled hidden label="Select a time for a lesson"></option>
+                <option th:each="lessonTime: ${lessonTimes}" th:value="${lessonTime.id}"
+                     th:ulabel="${lessonTime.start}"></option>
+            </select>
             
             <br/>
             <br/>

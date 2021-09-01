@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
+import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.LessonService;
@@ -96,16 +97,27 @@ public class ScheduleController {
     @GetMapping("/lesson-time-parameters")
     public String getLessonTimeParameters (Model model) {
     	model.addAttribute("pageTitle", "Lesson time parameters");
-    	System.out.println(lessonTimeService.getAll());
     	model.addAttribute("lessonTimes", lessonTimeService.getAll());
-    	return "schedule/lesson-time-parameters";
+    	return "schedule/lesson-time-parameters/lesson-time-parameters";
+    }
+    
+    @GetMapping("/lesson-time-parameters/new")
+    public String addLessonParatemer(@ModelAttribute("lessonTime") LessonTime lessonTime) {
+    	return "schedule/lesson-time-parameters/new-lesson-time-parameter";
+    }
+    
+    @PostMapping("lesson-time-parameters")
+    public String addLessonTimeParameter(@ModelAttribute("lessonTIme") LessonTime lessonTime) {
+    	lessonTimeService.create(lessonTime);
+    	return "redirect:/schedule/lesson-time-parameters/lesson-time-parameters";
     }
     
     @GetMapping("/lessons-new")
     public String addLesson(@ModelAttribute("lesson") Lesson lesson, Model model) {
         model.addAttribute("groups", groupService.getAll());
         model.addAttribute("lecturers", lecturerService.getAll());
-        return "/schedule/new";
+        model.addAttribute("lessonTimes", lessonTimeService.getAll());
+        return "/schedule/new-lesson";
     }
     
     @PostMapping("/search-schedule")

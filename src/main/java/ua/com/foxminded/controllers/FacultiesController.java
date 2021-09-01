@@ -33,8 +33,8 @@ public class FacultiesController {
     @GetMapping("/{id}")
     public String getFaculty(@PathVariable("id") int id, Model model) {
         Faculty faculty = facultyService.getById(id);
-            model.addAttribute("pageTitle", faculty.getName());
-            model.addAttribute("faculty", faculty);
+        model.addAttribute("pageTitle", faculty.getName());
+        model.addAttribute("faculty", faculty);
         
         return "faculties/faculty";
     }
