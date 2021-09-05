@@ -1,5 +1,6 @@
 package ua.com.foxminded.controllers;
 
+import java.time.DayOfWeek;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.Locale;
@@ -48,7 +49,7 @@ public class ScheduleController {
         return "schedule/search-schedule/search-schedule";
     }
     
-    @GetMapping(path="/result-schedule", params={"people-role-radio=lecturer", "lecturer-value", "period-radio=week"})
+    @GetMapping(path="/lessons", params={"people-role-radio=lecturer", "lecturer-value", "period-radio=week"})
     public String getLecturerWeekSchedule (@RequestParam("lecturer-value") int lecturerId, Model model) {
         Lecturer lecturer = lecturerService.getById(lecturerId);
         model.addAttribute("lecturer", lecturer);
@@ -58,7 +59,7 @@ public class ScheduleController {
         return "schedule/search-schedule/lecturer-week-schedule";
     }
     
-    @GetMapping(path="/result-schedule", params={"people-role-radio=lecturer", "lecturer-value", "period-radio=month", "month-value"})
+    @GetMapping(path="/lessons", params={"people-role-radio=lecturer", "lecturer-value", "period-radio=month", "month-value"})
     public String getLecturerMonthSchedule (@RequestParam("lecturer-value") int lecturerId, @RequestParam("month-value") String monthValue, Model model) {
         Lecturer lecturer = lecturerService.getById(lecturerId);
         YearMonth month = YearMonth.parse(monthValue);
@@ -71,7 +72,7 @@ public class ScheduleController {
         return "schedule/search-schedule/lecturer-month-schedule";
     }
     
-    @GetMapping(path="/result-schedule", params={"people-role-radio=group", "group-value", "period-radio=week"})
+    @GetMapping(path="/lessons", params={"people-role-radio=group", "group-value", "period-radio=week"})
     public String getGroupWeekSchedule (@RequestParam("group-value") int groupId, Model model) {
         Group group = groupService.getById(groupId);
         model.addAttribute("group", group);
@@ -81,7 +82,7 @@ public class ScheduleController {
         return "schedule/search-schedule/group-week-schedule";
     }
     
-    @GetMapping(path="/result-schedule", params={"people-role-radio=group", "group-value", "period-radio=month", "month-value"})
+    @GetMapping(path="/lessons", params={"people-role-radio=group", "group-value", "period-radio=month", "month-value"})
     public String getGroupMonthSchedule (@RequestParam("group-value") int groupId, @RequestParam("month-value") String monthValue, Model model) {
         Group group = groupService.getById(groupId);
         YearMonth month = YearMonth.parse(monthValue);
@@ -122,6 +123,17 @@ public class ScheduleController {
     
     @PostMapping("/search-schedule")
     public String createLesson(@ModelAttribute("lesson") Lesson lesson, @RequestParam Map<String, String> allParams) {
-        return null;
+        LessonTime lessonTime = lessonTimeService.getById(Integer.parseInt(allParams.get("lesson-time-value")));
+        DayOfWeek day = DayOfWeek.valueOf(allParams.get("day-value"));
+        Group group = groupService.getById(Integer.parseInt(allParams.get("group-value")));
+        Lecturer lecturer = lecturerService.getById(Integer.parseInt(allParams.get("lecturer-value")));
+        
+        lesson.setLessonTime(lessonTime);
+        lesson.setDay(day);
+        lesson.setGroup(group);
+        lesson.setLecturer(lecturer);
+        
+    	lessonService.create(lesson);
+    	return "redirect:/search-schedule";
     }
 }

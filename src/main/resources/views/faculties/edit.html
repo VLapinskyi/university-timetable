@@ -3,15 +3,15 @@
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
-    <form th:action="@{/faculties}" th:method="POST"
-        th:object="${faculty}">
+    <form th:action="@{/faculties/{id}(id=${faculty.id})}"
+        th:method="PATCH" th:object="${faculty}">
         <div class="container">
             <fieldset class="form-control">
-                <legend>Create a faculty</legend>
-                <label for="name">Name</label> <br /> <input type="text"
-                    th:field="*{name}" id="name" required> <br />
-                <br />
-                <button type="submit" class="btn btn-primary">Create!</button>
+                <legend>Update a faculty</legend>
+                <label for="name">Name</label> <br /> <input
+                    type="text" th:field="*{name}" id="name" required>
+                <br /> <br />
+                <button type="submit" class="btn btn-primary">Update!</button>
             </fieldset>
         </div>
     </form>

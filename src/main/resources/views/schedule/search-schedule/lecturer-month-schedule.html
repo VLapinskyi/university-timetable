@@ -4,12 +4,13 @@
 
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
-    
+
     <div class="container">
         <h2 align="center">
-            <span th:text="${'Schedule of a lecturer ' + lecturer.firstName + ' ' + lecturer.lastName + ' for a month ' + month + ' of ' +  year + ' year:'}">Header</span>
+            <span
+                th:text="${'Schedule of a lecturer ' + lecturer.firstName + ' ' + lecturer.lastName + ' for a month ' + month + ' of ' +  year + ' year:'}">Header</span>
         </h2>
-        
+
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -19,39 +20,58 @@
                     <th align="center" valign="middle">Lesson</th>
                     <th align="center" valign="middle">Lecturer</th>
                     <th align="center" valign="middle">Group</th>
+                    <th align="center" valign="middle">Action</th>
                 </tr>
             </thead>
             </tbody>
-            
+
             <tbody th:each="dayLessons : ${monthLessons}">
-                <tr th:if="${!dayLessons.value.isEmpty()}" th:each="lesson, iStat : ${dayLessons.value}">
-                        <td th:if="${iStat.index == 0}" th:rowspan="${iStat.size}"
-                            th:utext="${#temporals.format(dayLessons.key, 'dd.MM.yyyy')
-                             + '&lt;br /&gt;' + #temporals.format(dayLessons.key, 'EEEE', 'en')}" align="center" valign="middle">Day</td>
-                        <td th:utext="${#temporals.format(lesson.lessonTime.startTime, 'HH:mm')
-                            + '&lt;br /&gt;' + #temporals.format(lesson.lessonTime.endTime, 'HH:mm')}" align="center" valign="middle"></td>
-                        <td th:text="${lesson.audience}" align="center" valign="middle"></td>
-                        <td th:text="${lesson.name}" align="center" valign="middle"></td>
-                        <td align="center" valign="middle"><a class="text-decoration-none"
-                            th:href="@{/lecturers/{id}(id=${lesson.lecturer.id})}"
-                            th:text="${lesson.lecturer.firstName} + ' ' + ${lesson.lecturer.lastName}">lecturer</a></td>
-                        <td align="center" valign="middle"><a class="text-decoration-none"
-                            th:href="@{/groups/{id}(id=${lesson.group.id})}"
-                            th:text="${lesson.group.name}">group</a></td>
-                    </tr>
-                    <tr th:if="${dayLessons.value.isEmpty()}">
-                        <td th:utext="${#temporals.format(dayLessons.key, 'dd.MM.yyyy')
-                             + '&lt;br /&gt;' + #temporals.format(dayLessons.key, 'EEEE', 'en')}" align="center" valign="middle"></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                <tr th:if="${!dayLessons.value.isEmpty()}"
+                    th:each="lesson, iStat : ${dayLessons.value}">
+                    <td th:if="${iStat.index == 0}"
+                        th:rowspan="${iStat.size}"
+                        th:utext="${#temporals.format(dayLessons.key, 'dd.MM.yyyy')
+                             + '&lt;br /&gt;' + #temporals.format(dayLessons.key, 'EEEE', 'en')}"
+                        align="center" valign="middle">Day</td>
+                    <td
+                        th:utext="${#temporals.format(lesson.lessonTime.startTime, 'HH:mm')
+                            + '&lt;br /&gt;' + #temporals.format(lesson.lessonTime.endTime, 'HH:mm')}"
+                        align="center" valign="middle"></td>
+                    <td th:text="${lesson.audience}" align="center"
+                        valign="middle"></td>
+                    <td th:text="${lesson.name}" align="center"
+                        valign="middle"></td>
+                    <td align="center" valign="middle"><a
+                        class="text-decoration-none"
+                        th:href="@{/lecturers/{id}(id=${lesson.lecturer.id})}"
+                        th:text="${lesson.lecturer.firstName} + ' ' + ${lesson.lecturer.lastName}">lecturer</a></td>
+                    <td align="center" valign="middle"><a
+                        class="text-decoration-none"
+                        th:href="@{/groups/{id}(id=${lesson.group.id})}"
+                        th:text="${lesson.group.name}">group</a></td>
+                    <td><a class="text-decoration-none"
+                        th:href="@{/search-schedule/{id}/edit(id=${lesson.id})}"
+                        th:text="Edit"></a> <span> | </span> <a
+                        class="text-decoration-none link-danger"
+                        th:href="@{/search-schedule/{id}(id=${lesson.id})}"
+                        th:text="Delete"></a></td>
+                </tr>
+                <tr th:if="${dayLessons.value.isEmpty()}">
+                    <td
+                        th:utext="${#temporals.format(dayLessons.key, 'dd.MM.yyyy')
+                             + '&lt;br /&gt;' + #temporals.format(dayLessons.key, 'EEEE', 'en')}"
+                        align="center" valign="middle"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
             </tbody>
         </table>
     </div>
-    
+
     <div th:replace="fragments :: bootstrap-script">Get a
         bootstrap script</div>
 </body>

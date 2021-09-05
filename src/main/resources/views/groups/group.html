@@ -3,7 +3,7 @@
 <head>
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
+    <header th:replace="fragments :: header-navigation"> </header>
     <div class="container">
         <table class="table">
             <tr>
@@ -20,9 +20,18 @@
                     th:href="@{/faculties/{id}(id=${group.faculty.id})}"
                     th:text="${group.faculty.name}">faculty</a></td>
             </tr>
+            <tr>
+                <td colspan="2" align="center"><a
+                    class="text-decoration-none"
+                    th:href="@{/groups/{id}/edit(id=${group.id})}"
+                    th:text="Edit"></a> <span> | </span> <a
+                    class="text-decoration-none link-danger"
+                    th:href="@{/groups/{id}(id=${group.id})}"
+                    th:text="Delete"></a></td>
+            </tr>
         </table>
     </div>
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>

@@ -230,7 +230,7 @@ class ScheduleControllerTest {
         
         when(lessonService.getLecturerWeekLessons(lecturerId)).thenReturn(lecturerWeekLessons);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "lecturer")
                 .param("lecturer-value", Integer.toString(lecturerId))
                 .param("period-radio", "week"))
@@ -316,7 +316,7 @@ class ScheduleControllerTest {
         
         when(lessonService.getLecturerMonthLessons(lecturerId, month)).thenReturn(lecturerMonthLessons);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "lecturer")
                 .param("lecturer-value", Integer.toString(lecturerId))
                 .param("period-radio", "month")
@@ -399,7 +399,7 @@ class ScheduleControllerTest {
         
         when(lessonService.getGroupWeekLessons(groupId)).thenReturn(groupWeekLessons);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "group")
                 .param("group-value", Integer.toString(groupId))
                 .param("period-radio", "week"))
@@ -488,7 +488,7 @@ class ScheduleControllerTest {
         
         when(lessonService.getGroupMonthLessons(groupId, month)).thenReturn(groupMonthLessons);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "group")
                 .param("group-value", Integer.toString(groupId))
                 .param("period-radio", "month")
@@ -531,7 +531,7 @@ class ScheduleControllerTest {
         
         when(lecturerService.getById(lecturerId)).thenThrow(serviceWithDAOException);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "lecturer")
                 .param("lecturer-value", Integer.toString(lecturerId))
                 .param("period-radio", "week"))
@@ -544,7 +544,7 @@ class ScheduleControllerTest {
         int groupId = 3;
         when(groupService.getById(groupId)).thenThrow(serviceWithIllegalArgumentException);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "group")
                 .param("group-value", Integer.toString(groupId))
                 .param("period-radio", "week"))
@@ -566,7 +566,7 @@ class ScheduleControllerTest {
         when(groupService.getById(groupId)).thenReturn(group);
         when(lessonService.getGroupMonthLessons(groupId, month)).thenThrow(ServiceException.class);
         
-        mockMvc.perform(get("/result-schedule")
+        mockMvc.perform(get("/lessons")
                 .param("people-role-radio", "group")
                 .param("group-value", Integer.toString(groupId))
                 .param("period-radio", "month")

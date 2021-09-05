@@ -5,11 +5,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
+import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.service.FacultyService;
 import ua.com.foxminded.service.GroupService;
@@ -44,6 +48,7 @@ public class GroupsController {
     
     @GetMapping("/new")
     public String newGroup (@ModelAttribute("group") Group group, Model model) {
+        model.addAttribute("pageTitle", "Create a new group");
         model.addAttribute("faculties", facultyService.getAll());
         return "groups/new";
     }
@@ -52,6 +57,25 @@ public class GroupsController {
     public String createGroup(@ModelAttribute("group") Group group, @RequestParam("faculty-value") int facultyId) {
         group.setFaculty(facultyService.getById(facultyId));
         groupService.create(group);
+        return "redirect:/groups";
+    }
+    
+    @GetMapping("/{id}/edit")
+    public String editGroup(Model model, @PathVariable("id") int id) {
+        Group group = groupService.getById(id);
+        List<Faculty> faculties = facultyService.getAll();
+        faculties.remove(group.getFaculty());
+        model.addAttribute("pageTitle", "Edit " + group.getName());
+        model.addAttribute("group", group);
+        model.addAttribute("faculties", faculties);
+        return "groups/edit";
+    }
+    
+    @PatchMapping("/{id}")
+    public String updateGroup(@ModelAttribute("group") Group group, @RequestParam("faculty-value") int facultyId) {
+        Faculty faculty = facultyService.getById(facultyId);
+        group.setFaculty(faculty);
+        groupService.update(group);
         return "redirect:/groups";
     }
 }

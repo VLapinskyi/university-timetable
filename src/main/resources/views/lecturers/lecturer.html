@@ -3,8 +3,8 @@
 <head>
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
-    
+    <header th:replace="fragments :: header-navigation"> </header>
+
     <div class="container">
         <table class="table">
             <tr>
@@ -13,7 +13,8 @@
             </tr>
             <tr>
                 <td>Lecturer's name:</td>
-                <td th:text="${lecturer.firstName + ' ' + lecturer.lastName}"></td>
+                <td
+                    th:text="${lecturer.firstName + ' ' + lecturer.lastName}"></td>
             </tr>
             <tr>
                 <td>Lecturer's gender:</td>
@@ -27,9 +28,18 @@
                 <td>Lecturer's email:</td>
                 <td th:text="${lecturer.email}"></td>
             </tr>
+            <tr>
+                <td colspan="2" align="center"><a
+                    class="text-decoration-none"
+                    th:href="@{/lecturers/{id}/edit(id=${lecturer.id})}"
+                    th:text="Edit"></a> <span> | </span> <a
+                    class="text-decoration-none link-danger"
+                    th:href="@{/lecturers/{id}(id=${lecturer.id})}"
+                    th:text="Delete"></a></td>
+            </tr>
         </table>
     </div>
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>

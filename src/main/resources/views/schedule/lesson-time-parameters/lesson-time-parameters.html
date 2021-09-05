@@ -2,38 +2,50 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
-	
-	<div class="container">
-	<table class="table">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Lesson start time</th>
-				<th scope="col">Lesson end time</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr th:if="${!lessonTimes.isEmpty()}" th:each="lessonTime, iStat:${lessonTimes}">
-				<th scope="row" th:text="${iStat.count}">#</th>
-				<td th:utext="${#temporals.format(lessonTime.startTime, 'HH:mm')}"></td>
-				<td th:utext="${#temporals.format(lessonTime.endTime, 'HH:mm')}"></td>					
-			</tr>
-		</tbody>
-	</table>
+    <header th:replace="fragments :: header-navigation"> </header>
+
+    <div class="container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Lesson start time</th>
+                    <th scope="col">Lesson end time</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${!lessonTimes.isEmpty()}"
+                    th:each="lessonTime, iStat:${lessonTimes}">
+                    <th scope="row" th:text="${iStat.count}">#</th>
+                    <td
+                        th:utext="${#temporals.format(lessonTime.startTime, 'HH:mm')}"></td>
+                    <td
+                        th:utext="${#temporals.format(lessonTime.endTime, 'HH:mm')}"></td>
+                    <td><a class="text-decoration-none"
+                        th:href="@{/lesson-time-parameters/{id}/edit(id=${lessonTime.id})}"
+                        th:text="Edit"></a> <span> | </span> <a
+                        class="text-decoration-none link-danger"
+                        th:href="@{/lesson-time-parameters/{id}(id=${lessonTime.id})}"
+                        th:text="Delete"></a></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <br/>
-    
+
+    <br />
+
     <form th:action="@{/lesson-time-parameters/new}">
         <div class="position-relative">
-            <div class="position-absolute top-100 start-50 translate-middle">
-                <button type="submit" class="btn btn-primary">Create new lesson time parameter</button>
+            <div
+                class="position-absolute top-100 start-50 translate-middle">
+                <button type="submit" class="btn btn-primary">Create
+                    new lesson time parameter</button>
             </div>
         </div>
     </form>
-	
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>

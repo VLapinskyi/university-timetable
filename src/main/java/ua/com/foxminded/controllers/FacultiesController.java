@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,13 +41,28 @@ public class FacultiesController {
     }
     
     @GetMapping("/new")
-    public String newFaculty (@ModelAttribute("faculty") Faculty faculty) {
+    public String newFaculty (@ModelAttribute("faculty") Faculty faculty, Model model) {
+        model.addAttribute("pageTitle", "Create a new faculty");
         return "faculties/new";
     }
     
     @PostMapping()
     public String createFaculty(@ModelAttribute("faculty") Faculty faculty) {
         facultyService.create(faculty);
+        return "redirect:/faculties";
+    }
+    
+    @GetMapping("/{id}/edit")
+    public String editFaculty (Model model, @PathVariable("id") int id) {
+        Faculty faculty = facultyService.getById(id);
+        model.addAttribute("pageTitle", "Edit " + faculty.getName());
+        model.addAttribute("faculty", faculty);
+        return "faculties/edit";
+    }
+    
+    @PatchMapping("/{id}")
+    public String updateFaculty(@ModelAttribute("faculty") Faculty faculty) {
+        facultyService.update(faculty);
         return "redirect:/faculties";
     }
 }

@@ -2,37 +2,39 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
+    <header th:replace="fragments :: header-navigation"> </header>
     <div class="container">
-	<table class="table">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Faculty's name</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr th:each="faculty, iStat:${faculties}">
-				<th scope="row" th:text="${iStat.count}">#</th>
-				<td><a class="text-decoration-none"
-					th:href="@{/faculties/{id}(id=${faculty.id})}"
-					th:text="${faculty.name}">faculty</a></td>
-			</tr>
-		</tbody>
-	</table>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Faculty's name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="faculty, iStat:${faculties}">
+                    <th scope="row" th:text="${iStat.count}">#</th>
+                    <td><a class="text-decoration-none"
+                        th:href="@{/faculties/{id}(id=${faculty.id})}"
+                        th:text="${faculty.name}">faculty</a></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <br/>
-    
+
+    <br />
+
     <form th:action="@{/faculties/new}">
         <div class="position-relative">
-            <div class="position-absolute top-100 start-50 translate-middle">
-                <button type="submit" class="btn btn-primary">Create a new faculty</button>
+            <div
+                class="position-absolute top-100 start-50 translate-middle">
+                <button type="submit" class="btn btn-primary">Create
+                    a new faculty</button>
             </div>
         </div>
     </form>
-    
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>
