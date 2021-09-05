@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
@@ -13,8 +15,11 @@
             </thead>
             <tbody>
                 <tr th:each="student, iStat:${students}">
-                    <th scope="row" th:text="${iStat.count}">#</th>
-                    <td><a class="text-decoration-none"
+                    <th
+                        scope="row"
+                        th:text="${iStat.count}">#</th>
+                    <td><a
+                        class="text-decoration-none"
                         th:href="@{/students/{id}(id=${student.id})}"
                         th:text="${student.firstName} + ' ' + ${student.lastName}">student</a></td>
                 </tr>
@@ -26,8 +31,10 @@
         <div class="position-relative">
             <div
                 class="position-absolute top-100 start-50 translate-middle">
-                <button type="submit" class="btn btn-primary">Create
-                    a new student</button>
+                <button
+                    type="submit"
+                    class="btn btn-primary">Create a new
+                    student</button>
             </div>
         </div>
     </form>

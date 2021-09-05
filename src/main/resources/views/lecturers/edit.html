@@ -1,34 +1,55 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
-    <form th:action="@{/lecturers/{id}(id=${lecturer.id})}"
-        th:method="PATCH" th:object="${lecturer}">
+    <form
+        th:action="@{/lecturers/{id}(id=${lecturer.id})}"
+        th:method="PATCH"
+        th:object="${lecturer}">
         <div class="container">
             <fieldset class="form-control">
                 <legend>Update a lecturer</legend>
                 <label for="first-name-id">First name</label> <br /> <input
-                    type="text" th:field="*{firstName}"
-                    id="first-name-id" required> <br /> <br />
-                <label for="last-name-id">Last name</label> <br /> <input
-                    type="text" th:field="*{lastName}" id="last-name-id"
+                    type="text"
+                    th:field="*{firstName}"
+                    id="first-name-id"
+                    required> <br /> <br /> <label
+                    for="last-name-id">Last name</label> <br /> <input
+                    type="text"
+                    th:field="*{lastName}"
+                    id="last-name-id"
                     required> <br /> <br /> <label
                     for="gender-field-id">Gender</label> <br /> <select
-                    class="form-control" name="gender-value"
-                    id="gender-field-id" required>
-                    <option th:value="*{gender}" selected></option>
-                    <option value="MALE" label="Male"></option>
-                    <option value="FEMALE" label="Female"></option>
+                    class="form-control"
+                    name="gender-value"
+                    id="gender-field-id"
+                    required>
+                    <option
+                        th:value="*{gender}"
+                        th:label="*{gender}"
+                        selected></option>
+                    <option
+                        th:each="gender : ${genders}"
+                        th:value="${gender}"
+                        th:label="${gender.toString()}"></option>
                 </select> <br /> <br /> <label for="phone-number-id">Phone
-                    number</label> <br /> <input type="tel"
-                    th:field="*{phoneNumber}" id="phone-number-id"
+                    number</label> <br /> <input
+                    type="tel"
+                    th:field="*{phoneNumber}"
+                    id="phone-number-id"
                     required> <br /> <br /> <label
                     for="email-id">Email</label> <br /> <input
-                    type="email" th:field="*{email}" id="email-id"
+                    type="email"
+                    th:field="*{email}"
+                    id="email-id"
                     required> <br /> <br />
 
-                <button type="submit" class="btn btn-primary">Create!</button>
+                <button
+                    type="submit"
+                    class="btn btn-primary">Update!</button>
             </fieldset>
         </div>
     </form>

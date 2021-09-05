@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
@@ -15,14 +17,18 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:if="${!lessonTimes.isEmpty()}"
+                <tr
+                    th:if="${!lessonTimes.isEmpty()}"
                     th:each="lessonTime, iStat:${lessonTimes}">
-                    <th scope="row" th:text="${iStat.count}">#</th>
+                    <th
+                        scope="row"
+                        th:text="${iStat.count}">#</th>
                     <td
                         th:utext="${#temporals.format(lessonTime.startTime, 'HH:mm')}"></td>
                     <td
                         th:utext="${#temporals.format(lessonTime.endTime, 'HH:mm')}"></td>
-                    <td><a class="text-decoration-none"
+                    <td><a
+                        class="text-decoration-none"
                         th:href="@{/lesson-time-parameters/{id}/edit(id=${lessonTime.id})}"
                         th:text="Edit"></a> <span> | </span> <a
                         class="text-decoration-none link-danger"
@@ -39,8 +45,10 @@
         <div class="position-relative">
             <div
                 class="position-absolute top-100 start-50 translate-middle">
-                <button type="submit" class="btn btn-primary">Create
-                    new lesson time parameter</button>
+                <button
+                    type="submit"
+                    class="btn btn-primary">Create new lesson
+                    time parameter</button>
             </div>
         </div>
     </form>

@@ -1,48 +1,74 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
 
-    <form action="" th:action="@{/lessons}" method="get">
+    <form
+        action=""
+        th:action="@{/lessons}"
+        method="get">
         <div class="container">
             <fieldset class="form-control">
                 <legend>Get schedule for:</legend>
                 <div class="row">
                     <div class="col">
-                        <input class="form-check-input" type="radio"
+                        <input
+                            class="form-check-input"
+                            type="radio"
                             name="people-role-radio"
-                            id="lecturer-radio-id" value="lecturer"
+                            id="lecturer-radio-id"
+                            value="lecturer"
                             required> <label
                             for="lecturer-radio-id">Lecturer</label>
                     </div>
                     <div class="col">
-                        <input class="form-check-input" type="radio"
-                            name="people-role-radio" id="group-radio-id"
-                            value="group" required> <label
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="people-role-radio"
+                            id="group-radio-id"
+                            value="group"
+                            required> <label
                             for="group-radio-id">Group</label>
                     </div>
 
                     <div class="col">
-                        <input class="form-control"
+                        <input
+                            class="form-control"
                             id="default-people-role-field-id"
                             placeholder="Choose an option on the left"
                             disabled> <select
                             class="form-control visually-hidden"
-                            name="lecturer-value" id="lecturer-field-id">
-                            <option value="" selected disabled hidden
+                            name="lecturer-value"
+                            id="lecturer-field-id">
+                            <option
+                                value=""
+                                selected
+                                disabled
+                                hidden
                                 id="default-lecturer-option"
                                 label="Select a lecturer"></option>
-                            <option th:each="lecturer : ${lecturers}"
+                            <option
+                                th:each="lecturer : ${lecturers}"
                                 th:value="${lecturer.id}"
                                 th:label="${lecturer.firstName + ' ' + lecturer.lastName}">
                             </option>
-                        </select> <select class="form-control visually-hidden"
-                            name="group-value" id="group-field-id">
-                            <option value="" selected disabled hidden
+                        </select> <select
+                            class="form-control visually-hidden"
+                            name="group-value"
+                            id="group-field-id">
+                            <option
+                                value=""
+                                selected
+                                disabled
+                                hidden
                                 id="default-group-option"
                                 label="Select a group"></option>
-                            <option th:each="group : ${groups}"
+                            <option
+                                th:each="group : ${groups}"
                                 th:value="${group.id}"
                                 th:label="${group.name}"></option>
                         </select>
@@ -55,19 +81,30 @@
                 <legend>Period:</legend>
                 <div class="row">
                     <div class="col">
-                        <input class="form-check-input" type="radio"
-                            name="period-radio" id="week-radio-id"
-                            value="week" required> <label
-                            for="week-radio-id">Week</label>
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="period-radio"
+                            id="week-radio-id"
+                            value="week"
+                            required> <label for="week-radio-id">Week</label>
                     </div>
                     <div class="col input-period">
-                        <input class="form-check-input" type="radio"
-                            id="month-radio-id" name="period-radio"
-                            value="month" required> <label
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            id="month-radio-id"
+                            name="period-radio"
+                            value="month"
+                            required> <label
                             for="month-radio-id">Month</label>
                     </div>
-                    <div class="col" id="input-period">
-                        <input class="form-control" id="period-id"
+                    <div
+                        class="col"
+                        id="input-period">
+                        <input
+                            class="form-control"
+                            id="period-id"
                             type="text"
                             placeholder="Choose a period on the left"
                             disabled>
@@ -79,8 +116,9 @@
             <div class="position-relative">
                 <div
                     class="position-absolute top-100 start-50 translate-middle">
-                    <button type="submit" class="btn btn-primary">Get
-                        schedule</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary">Get schedule</button>
                 </div>
             </div>
         </div>
@@ -88,7 +126,8 @@
 
     <div th:replace="fragments :: bootstrap-script">Get a
         bootstrap script</div>
-    <script type="text/javascript"
+    <script
+        type="text/javascript"
         th:src="@{/js/schedule-form-script.js}"></script>
 </body>
 </html>

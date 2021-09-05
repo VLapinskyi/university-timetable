@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
@@ -13,8 +15,11 @@
             </thead>
             <tbody>
                 <tr th:each="group, iStat:${groups}">
-                    <th scope="row" th:text="${iStat.count}">#</th>
-                    <td><a class="text-decoration-none"
+                    <th
+                        scope="row"
+                        th:text="${iStat.count}">#</th>
+                    <td><a
+                        class="text-decoration-none"
                         th:href="@{/groups/{id}(id=${group.id})}"
                         th:text="${group.name}">group</a></td>
                 </tr>
@@ -26,8 +31,9 @@
         <div class="position-relative">
             <div
                 class="position-absolute top-100 start-50 translate-middle">
-                <button type="submit" class="btn btn-primary">Create
-                    a new group</button>
+                <button
+                    type="submit"
+                    class="btn btn-primary">Create a new group</button>
             </div>
         </div>
     </form>

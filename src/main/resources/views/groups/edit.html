@@ -1,25 +1,40 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
-    <form th:action="@{/groups/{id}(id=${group.id})}" th:method="PATCH"
+    <form
+        th:action="@{/groups/{id}(id=${group.id})}"
+        th:method="PATCH"
         th:object="${group}">
         <div class="container">
             <fieldset class="form-control">
                 <legend>Update a group</legend>
                 <label for="name">Name</label> <br /> <input
-                    type="text" th:field="*{name}" id="name" required>
-                <br /> <br /> <label for="faculty-field-id">Faculty</label>
-                <br /> <select class="form-control"
-                    name="faculty-value" id="faculty-field-id" required>
-                    <option th:value="*{faculty.id}" th:label="*{faculty.name}" selected></option>
-                    <option th:each="faculty : ${faculties}"
+                    type="text"
+                    th:field="*{name}"
+                    id="name"
+                    required> <br /> <br /> <label
+                    for="faculty-field-id">Faculty</label> <br /> <select
+                    class="form-control"
+                    name="faculty-value"
+                    id="faculty-field-id"
+                    required>
+                    <option
+                        th:value="*{faculty.id}"
+                        th:label="*{faculty.name}"
+                        selected></option>
+                    <option
+                        th:each="faculty : ${faculties}"
                         th:value="${faculty.id}"
                         th:label="${faculty.name}"></option>
                 </select> <br /> <br />
 
-                <button type="submit" class="btn btn-primary">Update!</button>
+                <button
+                    type="submit"
+                    class="btn btn-primary">Update!</button>
             </fieldset>
         </div>
     </form>

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head>
 <head th:replace="fragments :: head" />
 <body>
@@ -22,7 +24,8 @@
             </tr>
             <tr>
                 <td>Group:</td>
-                <td><a class="text-decoration-none"
+                <td><a
+                    class="text-decoration-none"
                     th:href="@{/groups/{id}(id=${student.group.id})}"
                     th:text="${student.group.name}">group</a></td>
             </tr>
@@ -35,7 +38,9 @@
                 <td th:text="${student.email}"></td>
             </tr>
             <tr>
-                <td colspan="2" align="center"><a
+                <td
+                    colspan="2"
+                    align="center"><a
                     class="text-decoration-none"
                     th:href="@{/students/{id}/edit(id=${student.id})}"
                     th:text="Edit"></a> <span> | </span> <a

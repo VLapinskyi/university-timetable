@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head>
 <head th:replace="fragments :: head" />
 <body>
@@ -29,7 +31,9 @@
                 <td th:text="${lecturer.email}"></td>
             </tr>
             <tr>
-                <td colspan="2" align="center"><a
+                <td
+                    colspan="2"
+                    align="center"><a
                     class="text-decoration-none"
                     th:href="@{/lecturers/{id}/edit(id=${lecturer.id})}"
                     th:text="Edit"></a> <span> | </span> <a
