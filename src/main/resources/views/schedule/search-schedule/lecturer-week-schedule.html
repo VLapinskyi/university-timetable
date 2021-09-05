@@ -64,23 +64,31 @@
                         valign="middle"></td>
                     <td
                         align="center"
-                        valign="middle"><a
-                        class="text-decoration-none"
-                        th:href="@{/lecturers/{id}(id=${lesson.lecturer.id})}"
-                        th:text="${lesson.lecturer.firstName} + ' ' + ${lesson.lecturer.lastName}">lecturer</a></td>
+                        valign="middle">
+                        <a
+                            class="text-decoration-none"
+                            th:href="@{/lecturers/{id}(id=${lesson.lecturer.id})}"
+                            th:text="${lesson.lecturer.firstName} + ' ' + ${lesson.lecturer.lastName}">lecturer</a>
+                    </td>
                     <td
                         align="center"
-                        valign="middle"><a
-                        class="text-decoration-none"
-                        th:href="@{/groups/{id}(id=${lesson.group.id})}"
-                        th:text="${lesson.group.name}">group</a></td>
-                    <td><a
-                        class="text-decoration-none"
-                        th:href="@{/search-schedule/{id}/edit(id=${lesson.id})}"
-                        th:text="Edit"></a> <span> | </span> <a
-                        class="text-decoration-none link-danger"
-                        th:href="@{/search-schedule/{id}(id=${lesson.id})}"
-                        th:text="Delete"></a></td>
+                        valign="middle">
+                        <a
+                            class="text-decoration-none"
+                            th:href="@{/groups/{id}(id=${lesson.group.id})}"
+                            th:text="${lesson.group.name}">group</a>
+                    </td>
+                    <td>
+                        <a
+                            class="text-decoration-none"
+                            th:href="@{/search-schedule/{id}/edit(id=${lesson.id})}"
+                            th:text="Edit"></a>
+                        <span> | </span>
+                        <a
+                            class="text-decoration-none link-danger"
+                            th:href="@{/search-schedule/{id}(id=${lesson.id})}"
+                            th:text="Delete"></a>
+                    </td>
                 </tr>
                 <tr th:if="${dayLessons.value.isEmpty()}">
                     <td

@@ -12,17 +12,26 @@
         <div class="container">
             <fieldset class="form-control">
                 <legend>Create a lesson</legend>
-                <label for="name-id">Lesson name</label> <br /> <input
+                <label for="name-id">Lesson name</label>
+                <br />
+                <input
                     type="text"
                     th:field="*{name}"
                     id="name-id"
-                    required> <br /> <br /> <label
-                    for="audience-id">Audience</label> <br /> <input
+                    required>
+                <br />
+                <br />
+                <label for="audience-id">Audience</label>
+                <br />
+                <input
                     type="text"
                     th:field="*{audience}"
                     id="audience-id"
-                    required> <br /> <br /> <label
-                    for="lesson-time-field-id">LessonTime</label> <br />
+                    required>
+                <br />
+                <br />
+                <label for="lesson-time-field-id">LessonTime</label>
+                <br />
                 <select
                     class="form-control"
                     name="lesson-time-value"
@@ -38,7 +47,11 @@
                         th:each="lessonTime: ${lessonTimes}"
                         th:value="${lessonTime.id}"
                         th:label="${lessonTime.startTime + ' - ' + lessonTime.endTime}"></option>
-                </select> <br /> <br /> <label for="day-id">Day</label> <br />
+                </select>
+                <br />
+                <br />
+                <label for="day-id">Day</label>
+                <br />
                 <select
                     class="form-control"
                     name="day-value"
@@ -71,8 +84,12 @@
                     <option
                         value="SATURDAY"
                         label="Saturday"></option>
-                </select> <br /> <br /> <label for="group-field-id">Group</label>
-                <br /> <select
+                </select>
+                <br />
+                <br />
+                <label for="group-field-id">Group</label>
+                <br />
+                <select
                     class="form-control"
                     name="group-value"
                     id="group-field-id"
@@ -87,8 +104,12 @@
                         th:each="group: ${groups}"
                         th:value="${group.id}"
                         th:label="${group.name}"></option>
-                </select> <br /> <br /> <label for="lecturer-id">Lecturer</label>
-                <br /> <select
+                </select>
+                <br />
+                <br />
+                <label for="lecturer-id">Lecturer</label>
+                <br />
+                <select
                     class="form-control"
                     name="lecturer-value"
                     id="lecturer-id"
@@ -103,7 +124,9 @@
                         th:each="lecturer: ${lecturers}"
                         th:value="${lecturer.id}"
                         th:label="${lecturer.firstName + ' ' + lecturer.lastName}"></option>
-                </select> <br /> <br />
+                </select>
+                <br />
+                <br />
 
                 <button
                     type="submit"

@@ -46,7 +46,8 @@ public class LecturersController {
     }
     
     @GetMapping("/new")
-    public String newLecturer(@ModelAttribute("lecturer") Lecturer lecturer) {
+    public String newLecturer(@ModelAttribute("lecturer") Lecturer lecturer, Model model) {
+        model.addAttribute("genders", Gender.values());
         return "/lecturers/new";
     }
     

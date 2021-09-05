@@ -24,10 +24,12 @@
             </tr>
             <tr>
                 <td>Group:</td>
-                <td><a
-                    class="text-decoration-none"
-                    th:href="@{/groups/{id}(id=${student.group.id})}"
-                    th:text="${student.group.name}">group</a></td>
+                <td>
+                    <a
+                        class="text-decoration-none"
+                        th:href="@{/groups/{id}(id=${student.group.id})}"
+                        th:text="${student.group.name}">group</a>
+                </td>
             </tr>
             <tr>
                 <td>Student's phone number:</td>
@@ -40,13 +42,17 @@
             <tr>
                 <td
                     colspan="2"
-                    align="center"><a
-                    class="text-decoration-none"
-                    th:href="@{/students/{id}/edit(id=${student.id})}"
-                    th:text="Edit"></a> <span> | </span> <a
-                    class="text-decoration-none link-danger"
-                    th:href="@{/students/{id}(id=${student.id})}"
-                    th:text="Delete"></a></td>
+                    align="center">
+                    <a
+                        class="text-decoration-none"
+                        th:href="@{/students/{id}/edit(id=${student.id})}"
+                        th:text="Edit"></a>
+                    <span> | </span>
+                    <a
+                        class="text-decoration-none link-danger"
+                        th:href="@{/students/{id}(id=${student.id})}"
+                        th:text="Delete"></a>
+                </td>
             </tr>
         </table>
     </div>

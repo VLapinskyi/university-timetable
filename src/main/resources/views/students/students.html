@@ -18,10 +18,12 @@
                     <th
                         scope="row"
                         th:text="${iStat.count}">#</th>
-                    <td><a
-                        class="text-decoration-none"
-                        th:href="@{/students/{id}(id=${student.id})}"
-                        th:text="${student.firstName} + ' ' + ${student.lastName}">student</a></td>
+                    <td>
+                        <a
+                            class="text-decoration-none"
+                            th:href="@{/students/{id}(id=${student.id})}"
+                            th:text="${student.firstName} + ' ' + ${student.lastName}">student</a>
+                    </td>
                 </tr>
             </tbody>
         </table>

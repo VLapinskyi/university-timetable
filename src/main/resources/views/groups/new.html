@@ -12,12 +12,18 @@
         <div class="container">
             <fieldset class="form-control">
                 <legend>Create a group</legend>
-                <label for="name">Name</label> <br /> <input
+                <label for="name">Name</label>
+                <br />
+                <input
                     type="text"
                     th:field="*{name}"
                     id="name"
-                    required> <br /> <br /> <label
-                    for="faculty-field-id">Faculty</label> <br /> <select
+                    required>
+                <br />
+                <br />
+                <label for="faculty-field-id">Faculty</label>
+                <br />
+                <select
                     class="form-control"
                     name="faculty-value"
                     id="faculty-field-id"
@@ -32,7 +38,9 @@
                         th:each="faculty : ${faculties}"
                         th:value="${faculty.id}"
                         th:label="${faculty.name}"></option>
-                </select> <br /> <br />
+                </select>
+                <br />
+                <br />
 
                 <button
                     type="submit"
