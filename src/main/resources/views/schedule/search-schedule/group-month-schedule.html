@@ -84,12 +84,12 @@
                     <td>
                         <a
                             class="text-decoration-none"
-                            th:href="@{/search-schedule/{id}/edit(id=${lesson.id})}"
+                            th:href="@{/lessons/{id}/edit(id=${lesson.id})}"
                             th:text="Edit"></a>
                         <span> | </span>
                         <a
                             class="text-decoration-none link-danger"
-                            th:href="@{/search-schedule/{id}(id=${lesson.id})}"
+                            th:href="@{/lessons/{id}(id=${lesson.id})}"
                             th:text="Delete"></a>
                     </td>
                 </tr>

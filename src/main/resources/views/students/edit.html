@@ -6,8 +6,8 @@
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
     <form
-        th:action="@{/students}"
-        th:method="POST"
+        th:action="@{/students/{id}(id=${student.id})}"
+        th:method="PATCH"
         th:object="${student}">
         <div class="container">
             <fieldset class="form-control">

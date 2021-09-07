@@ -68,8 +68,11 @@ public class StudentsController {
         Student student = studentService.getById(id);
         List<Gender> genders = new ArrayList<>(Arrays.asList(Gender.values()));
         genders.remove(student.getGender());
+        
+        Group studentGroup = groupService.getById(student.getGroup().getId());
         List<Group> groups = groupService.getAll();
-        groups.remove(student.getGroup());
+        groups.remove(studentGroup);
+        
         model.addAttribute("pageTitle", "Edit " + student.getFirstName() + " " + student.getLastName());
         model.addAttribute("student", student);
         model.addAttribute("genders", genders);
