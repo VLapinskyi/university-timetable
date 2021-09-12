@@ -21,106 +21,114 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Aspect
 @Configuration
 public class FacultyAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FacultyAspect.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FacultyAspect.class);
 
-    private Validator validator;
-    
-    @Autowired
-    public FacultyAspect (Validator validator) {
-        this.validator = validator;
-    }
+	private Validator validator;
 
-    @Pointcut("execution (void ua.com.foxminded.service.FacultyService.create(ua.com.foxminded.domain.Faculty))")
-    private void createMethod() {
-    }
+	@Autowired
+	public FacultyAspect(Validator validator) {
+		this.validator = validator;
+	}
 
-    @Pointcut("execution (void ua.com.foxminded.service.FacultyService.update(ua.com.foxminded.domain.Faculty))")
-    private void updateMethod() {
-    }
+	@Pointcut("execution (void ua.com.foxminded.service.FacultyService.create(ua.com.foxminded.domain.Faculty))")
+	private void createMethod() {
+	}
 
-    @Before("createMethod()")
-    void beforeCreateAdvice(JoinPoint joinPoint) {
-        Faculty faculty = (Faculty) joinPoint.getArgs()[0];
+	@Pointcut("execution (void ua.com.foxminded.service.FacultyService.update(ua.com.foxminded.domain.Faculty))")
+	private void updateMethod() {
+	}
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a new faculty: {}.", faculty);
-        }
+	@Before("createMethod()")
+	void beforeCreateAdvice(JoinPoint joinPoint) {
+		Faculty faculty = (Faculty) joinPoint.getArgs()[0];
 
-        try {        
-            if (faculty == null) {
-                IllegalArgumentException exception = new IllegalArgumentException("A faculty can't be null when create.");
-                LOGGER.error("A faculty {} can't be null when create.", faculty, exception);
-                throw exception;
-            }
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Try to create a new faculty: {}.", faculty);
+		}
 
-            Set<ConstraintViolation<Faculty>> violations = validator.validate(faculty);
-            
-            if (!violations.isEmpty()) {
-                StringJoiner errorMessages = new StringJoiner("; ");
+		try {
+			if (faculty == null) {
+				IllegalArgumentException exception = new IllegalArgumentException(
+						"A faculty can't be null when create.");
+				LOGGER.error("A faculty {} can't be null when create.", faculty, exception);
+				throw exception;
+			}
 
-                for (ConstraintViolation<Faculty> violation : violations) {
-                    errorMessages.add(violation.getMessage());
-                }
+			Set<ConstraintViolation<Faculty>> violations = validator.validate(faculty);
 
-                ConstraintViolationException exception = new ConstraintViolationException("When create the faculty is not valid: " + errorMessages, violations);
-                LOGGER.error("The faculty {} is not valid when create. There are errors: {}.", faculty, errorMessages, exception);
-                throw exception;
-            }
+			if (!violations.isEmpty()) {
+				StringJoiner errorMessages = new StringJoiner("; ");
 
-            int facultyId = faculty.getId();
+				for (ConstraintViolation<Faculty> violation : violations) {
+					errorMessages.add(violation.getMessage());
+				}
 
-            if (facultyId != 0) {
-                IllegalArgumentException exception = new IllegalArgumentException("A faculty id isn't 0 when create.");
-                LOGGER.error("A faculty {} has wrong id {} which is not equal zero when create.", faculty, facultyId, exception);
-                throw exception;
-            }
-        } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("A given faculty isn't legal when create.", illegalArgumentException);
-        } catch (ConstraintViolationException constraintViolationException) {
-            throw new ServiceException("A given faculty isn't valid when create.", constraintViolationException);
-        }
-    }
+				ConstraintViolationException exception = new ConstraintViolationException(
+						"When create the faculty is not valid: " + errorMessages, violations);
+				LOGGER.error("The faculty {} is not valid when create. There are errors: {}.", faculty, errorMessages,
+						exception);
+				throw exception;
+			}
 
-    @Before("updateMethod()")
-    void beforeUpdateAdvice(JoinPoint joinPoint) {
-        Faculty faculty = (Faculty) joinPoint.getArgs()[0];
+			int facultyId = faculty.getId();
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a faculty: {}.", faculty);
-        }
+			if (facultyId != 0) {
+				IllegalArgumentException exception = new IllegalArgumentException("A faculty id isn't 0 when create.");
+				LOGGER.error("A faculty {} has wrong id {} which is not equal zero when create.", faculty, facultyId,
+						exception);
+				throw exception;
+			}
+		} catch (IllegalArgumentException illegalArgumentException) {
+			throw new ServiceException("A given faculty isn't legal when create.", illegalArgumentException);
+		} catch (ConstraintViolationException constraintViolationException) {
+			throw new ServiceException("A given faculty isn't valid when create.", constraintViolationException);
+		}
+	}
 
-        try {
-            if (faculty == null) {
-                IllegalArgumentException exception = new IllegalArgumentException("An updated faculty is null.");
-                LOGGER.error("An updated faculty {} is null.", faculty, exception);
-                throw exception;
-            }
+	@Before("updateMethod()")
+	void beforeUpdateAdvice(JoinPoint joinPoint) {
+		Faculty faculty = (Faculty) joinPoint.getArgs()[0];
 
-            Set<ConstraintViolation<Faculty>> violations = validator.validate(faculty);
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Try to update a faculty: {}.", faculty);
+		}
 
-            if (!violations.isEmpty()) {
-                StringJoiner errorMessages = new StringJoiner("; ");
+		try {
+			if (faculty == null) {
+				IllegalArgumentException exception = new IllegalArgumentException("An updated faculty is null.");
+				LOGGER.error("An updated faculty {} is null.", faculty, exception);
+				throw exception;
+			}
 
-                for (ConstraintViolation<Faculty> violation : violations) {
-                    errorMessages.add(violation.getMessage());
-                }
+			Set<ConstraintViolation<Faculty>> violations = validator.validate(faculty);
 
-                ConstraintViolationException exception = new ConstraintViolationException("When update the faculty is not valid: " + errorMessages, violations);
-                LOGGER.error("The faculty {} is not valid when update. There are errors: {}.", faculty, errorMessages, exception);
-                throw exception;
-            }
+			if (!violations.isEmpty()) {
+				StringJoiner errorMessages = new StringJoiner("; ");
 
-            int facultyId = faculty.getId();
+				for (ConstraintViolation<Faculty> violation : violations) {
+					errorMessages.add(violation.getMessage());
+				}
 
-            if (facultyId < 1) {
-                IllegalArgumentException exception = new IllegalArgumentException("A faculty id isn't positive for existing object.");
-                LOGGER.error("An updated faculty {} has wrong id {} which is not positive.", faculty, facultyId, exception);
-                throw exception;
-            }
-        } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("A given faculty isn't legal when update.", illegalArgumentException);
-        } catch (ConstraintViolationException constraintViolationException) {
-            throw new ServiceException("A given faculty isn't valid when update.", constraintViolationException);
-        }
-    }
+				ConstraintViolationException exception = new ConstraintViolationException(
+						"When update the faculty is not valid: " + errorMessages, violations);
+				LOGGER.error("The faculty {} is not valid when update. There are errors: {}.", faculty, errorMessages,
+						exception);
+				throw exception;
+			}
+
+			int facultyId = faculty.getId();
+
+			if (facultyId < 1) {
+				IllegalArgumentException exception = new IllegalArgumentException(
+						"A faculty id isn't positive for existing object.");
+				LOGGER.error("An updated faculty {} has wrong id {} which is not positive.", faculty, facultyId,
+						exception);
+				throw exception;
+			}
+		} catch (IllegalArgumentException illegalArgumentException) {
+			throw new ServiceException("A given faculty isn't legal when update.", illegalArgumentException);
+		} catch (ConstraintViolationException constraintViolationException) {
+			throw new ServiceException("A given faculty isn't valid when update.", constraintViolationException);
+		}
+	}
 }

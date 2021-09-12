@@ -23,67 +23,71 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(20)
 public class LecturerAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LecturerAspect.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LecturerAspect.class);
 
-    private Validator validator;
-    
-    @Autowired
-    public LecturerAspect (Validator validator) {
-        this.validator = validator;
-    }
-    
-    @Pointcut("execution (void ua.com.foxminded.service.LecturerService.create(ua.com.foxminded.domain.Lecturer))")
-    private void createMethod() {
-    }
-    
-    @Pointcut("execution (void ua.com.foxminded.service.LecturerService.update(ua.com.foxminded.domain.Lecturer))")
-    private void updateMethod() {
-    }
-    
-    @Before("createMethod()")
-    void beforeCreateAdvice(JoinPoint joinPoint) {
-        Lecturer lecturer = (Lecturer) joinPoint.getArgs()[0];
+	private Validator validator;
 
-        try {
-            
-            Set<ConstraintViolation<Lecturer>> violations = validator.validate(lecturer);
+	@Autowired
+	public LecturerAspect(Validator validator) {
+		this.validator = validator;
+	}
 
-            if (!violations.isEmpty()) {
-                StringJoiner errorMessages = new StringJoiner("; ");
+	@Pointcut("execution (void ua.com.foxminded.service.LecturerService.create(ua.com.foxminded.domain.Lecturer))")
+	private void createMethod() {
+	}
 
-                for (ConstraintViolation<Lecturer> violation : violations) {
-                    errorMessages.add(violation.getMessage());
-                }
+	@Pointcut("execution (void ua.com.foxminded.service.LecturerService.update(ua.com.foxminded.domain.Lecturer))")
+	private void updateMethod() {
+	}
 
-                ConstraintViolationException exception = new ConstraintViolationException("When create the lecturer is not valid: " + errorMessages, violations);
-                LOGGER.error("The lecturer {} is not valid when create. There are errors: {}.", lecturer, errorMessages, exception);
-                throw exception;
-            }
-        } catch (ConstraintViolationException constraintViolationException) {
-            throw new ServiceException("A given lecturer isn't valid when create.", constraintViolationException);
-        }
-    }
-    
-    @Before("updateMethod()")
-    void beforeUpdateAdvice(JoinPoint joinPoint) {
-        Lecturer lecturer = (Lecturer) joinPoint.getArgs()[0];
-        
-        try {            
-            Set<ConstraintViolation<Lecturer>> violations = validator.validate(lecturer);
-            
-            if (!violations.isEmpty()) {
-                StringJoiner errorMessages = new StringJoiner("; ");
-                
-                for (ConstraintViolation<Lecturer> violation : violations) {
-                    errorMessages.add(violation.getMessage());
-                }
-                
-                ConstraintViolationException exception = new ConstraintViolationException("When update the lecturer is not valid:" + errorMessages, violations);
-                LOGGER.error("The lecturer {} is not valid when update. There are errors: {}.", lecturer, errorMessages, exception);
-                throw exception;
-            }
-        } catch (ConstraintViolationException constraintViolationException) {
-            throw new ServiceException("A given lecturer isn't valid when update.", constraintViolationException);
-        }
-    }
+	@Before("createMethod()")
+	void beforeCreateAdvice(JoinPoint joinPoint) {
+		Lecturer lecturer = (Lecturer) joinPoint.getArgs()[0];
+
+		try {
+
+			Set<ConstraintViolation<Lecturer>> violations = validator.validate(lecturer);
+
+			if (!violations.isEmpty()) {
+				StringJoiner errorMessages = new StringJoiner("; ");
+
+				for (ConstraintViolation<Lecturer> violation : violations) {
+					errorMessages.add(violation.getMessage());
+				}
+
+				ConstraintViolationException exception = new ConstraintViolationException(
+						"When create the lecturer is not valid: " + errorMessages, violations);
+				LOGGER.error("The lecturer {} is not valid when create. There are errors: {}.", lecturer, errorMessages,
+						exception);
+				throw exception;
+			}
+		} catch (ConstraintViolationException constraintViolationException) {
+			throw new ServiceException("A given lecturer isn't valid when create.", constraintViolationException);
+		}
+	}
+
+	@Before("updateMethod()")
+	void beforeUpdateAdvice(JoinPoint joinPoint) {
+		Lecturer lecturer = (Lecturer) joinPoint.getArgs()[0];
+
+		try {
+			Set<ConstraintViolation<Lecturer>> violations = validator.validate(lecturer);
+
+			if (!violations.isEmpty()) {
+				StringJoiner errorMessages = new StringJoiner("; ");
+
+				for (ConstraintViolation<Lecturer> violation : violations) {
+					errorMessages.add(violation.getMessage());
+				}
+
+				ConstraintViolationException exception = new ConstraintViolationException(
+						"When update the lecturer is not valid:" + errorMessages, violations);
+				LOGGER.error("The lecturer {} is not valid when update. There are errors: {}.", lecturer, errorMessages,
+						exception);
+				throw exception;
+			}
+		} catch (ConstraintViolationException constraintViolationException) {
+			throw new ServiceException("A given lecturer isn't valid when update.", constraintViolationException);
+		}
+	}
 }

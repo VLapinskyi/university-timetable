@@ -23,106 +23,115 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(10)
 public class LessonTimeAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LessonTimeAspect.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LessonTimeAspect.class);
 
-    private Validator validator;
+	private Validator validator;
 
-    @Autowired
-    public LessonTimeAspect (Validator validator) {
-        this.validator = validator;
-    }
+	@Autowired
+	public LessonTimeAspect(Validator validator) {
+		this.validator = validator;
+	}
 
-    @Pointcut ("execution (void ua.com.foxminded.service.LessonTimeService.create(ua.com.foxminded.domain.LessonTime))")
-    private void createMethod() {
-    }
+	@Pointcut("execution (void ua.com.foxminded.service.LessonTimeService.create(ua.com.foxminded.domain.LessonTime))")
+	private void createMethod() {
+	}
 
-    @Pointcut ("execution (void ua.com.foxminded.service.LessonTimeService.update(ua.com.foxminded.domain.LessonTime))")
-    private void updateMethod() {
-    }
+	@Pointcut("execution (void ua.com.foxminded.service.LessonTimeService.update(ua.com.foxminded.domain.LessonTime))")
+	private void updateMethod() {
+	}
 
-    @Before("createMethod()")
-    void beforeCreateAdvice(JoinPoint joinPoint) {
-        LessonTime lessonTime = (LessonTime) joinPoint.getArgs()[0];
+	@Before("createMethod()")
+	void beforeCreateAdvice(JoinPoint joinPoint) {
+		LessonTime lessonTime = (LessonTime) joinPoint.getArgs()[0];
 
-        if(LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a lessonTime: {}.", lessonTime);
-        }
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Try to create a lessonTime: {}.", lessonTime);
+		}
 
-        try {
-            if (lessonTime == null) {
-                IllegalArgumentException exception = new IllegalArgumentException("A lessonTime can't be null when create.");
-                LOGGER.error("A lessonTime {} can't be null when create.", lessonTime, exception);
-                throw exception;
-            }
-            
-            Set<ConstraintViolation<LessonTime>> violations = validator.validate(lessonTime);
-            
-            if (!violations.isEmpty()) {
-                StringJoiner errorMessages = new StringJoiner("; ");
+		try {
+			if (lessonTime == null) {
+				IllegalArgumentException exception = new IllegalArgumentException(
+						"A lessonTime can't be null when create.");
+				LOGGER.error("A lessonTime {} can't be null when create.", lessonTime, exception);
+				throw exception;
+			}
 
-                for (ConstraintViolation<LessonTime> violation : violations) {
-                    errorMessages.add(violation.getMessage());
-                }
+			Set<ConstraintViolation<LessonTime>> violations = validator.validate(lessonTime);
 
-                ConstraintViolationException exception = new ConstraintViolationException("When create a lessonTime is not valid: " + errorMessages, violations);
-                LOGGER.error("The lessonTime {} is not valid when create. There are errors: {}.", lessonTime, errorMessages, exception);
-                throw exception;
-            }
+			if (!violations.isEmpty()) {
+				StringJoiner errorMessages = new StringJoiner("; ");
 
-            int lessonTimeId = lessonTime.getId();
+				for (ConstraintViolation<LessonTime> violation : violations) {
+					errorMessages.add(violation.getMessage());
+				}
 
-            if (lessonTimeId != 0) {
-                IllegalArgumentException exception = new IllegalArgumentException("A LessonTime id isn't 0 when create.");
-                LOGGER.error("The lessonTime {} has wrong id {} which is not zero when create.", lessonTime, lessonTimeId, exception);
-                throw exception;
-            }
-        } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("A given lessonTime isn't legal when create.", illegalArgumentException);
-        } catch (ConstraintViolationException constraintViolationException) {
-            throw new ServiceException("A given lessonTime isn't valid when create.", constraintViolationException);
-        }
-    }
-    
-    @Before("updateMethod()")
-    void beforeUpdateAdvice(JoinPoint joinPoint) {
-        LessonTime lessonTime = (LessonTime) joinPoint.getArgs()[0];
+				ConstraintViolationException exception = new ConstraintViolationException(
+						"When create a lessonTime is not valid: " + errorMessages, violations);
+				LOGGER.error("The lessonTime {} is not valid when create. There are errors: {}.", lessonTime,
+						errorMessages, exception);
+				throw exception;
+			}
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a lessonTime: {}.", lessonTime);
-        }
+			int lessonTimeId = lessonTime.getId();
 
-        try {
-            if (lessonTime == null) {
-                IllegalArgumentException exception = new IllegalArgumentException("An updated lessonTime is null.");
-                LOGGER.error("An updated lessonTime {} is null.", lessonTime, exception);
-                throw exception;
-            }
+			if (lessonTimeId != 0) {
+				IllegalArgumentException exception = new IllegalArgumentException(
+						"A LessonTime id isn't 0 when create.");
+				LOGGER.error("The lessonTime {} has wrong id {} which is not zero when create.", lessonTime,
+						lessonTimeId, exception);
+				throw exception;
+			}
+		} catch (IllegalArgumentException illegalArgumentException) {
+			throw new ServiceException("A given lessonTime isn't legal when create.", illegalArgumentException);
+		} catch (ConstraintViolationException constraintViolationException) {
+			throw new ServiceException("A given lessonTime isn't valid when create.", constraintViolationException);
+		}
+	}
 
-            Set<ConstraintViolation<LessonTime>> violations = validator.validate(lessonTime);
+	@Before("updateMethod()")
+	void beforeUpdateAdvice(JoinPoint joinPoint) {
+		LessonTime lessonTime = (LessonTime) joinPoint.getArgs()[0];
 
-            if (!violations.isEmpty()) {
-                StringJoiner errorMessages = new StringJoiner("; ");
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Try to update a lessonTime: {}.", lessonTime);
+		}
 
-                for (ConstraintViolation<LessonTime> violation : violations) {
-                    errorMessages.add(violation.getMessage());
-                }
+		try {
+			if (lessonTime == null) {
+				IllegalArgumentException exception = new IllegalArgumentException("An updated lessonTime is null.");
+				LOGGER.error("An updated lessonTime {} is null.", lessonTime, exception);
+				throw exception;
+			}
 
-                ConstraintViolationException exception = new ConstraintViolationException("When update the lessonTime is not valid: " + errorMessages, violations);
-                LOGGER.error("The lessonTime {} is not valid when update. There are errors: {}.", lessonTime, errorMessages, exception);
-                throw exception;
-            }
+			Set<ConstraintViolation<LessonTime>> violations = validator.validate(lessonTime);
 
-            int lessonTimeId = lessonTime.getId();
+			if (!violations.isEmpty()) {
+				StringJoiner errorMessages = new StringJoiner("; ");
 
-            if (lessonTimeId < 1) {
-                IllegalArgumentException exception = new IllegalArgumentException("A lessonTime id isn't positive for existing object.");
-                LOGGER.error("An updated lessonTime {} has wrong id {} which is not positive.", lessonTime, lessonTimeId, exception);
-                throw exception;
-            }
-        } catch (IllegalArgumentException illegalArgumentException) {
-            throw new ServiceException("A given lessonTime isn't legal when update.", illegalArgumentException);
-        } catch (ConstraintViolationException constraintViolationException) {
-            throw new ServiceException("A given lessonTime isn't valid when update.", constraintViolationException);
-        }
-    }
+				for (ConstraintViolation<LessonTime> violation : violations) {
+					errorMessages.add(violation.getMessage());
+				}
+
+				ConstraintViolationException exception = new ConstraintViolationException(
+						"When update the lessonTime is not valid: " + errorMessages, violations);
+				LOGGER.error("The lessonTime {} is not valid when update. There are errors: {}.", lessonTime,
+						errorMessages, exception);
+				throw exception;
+			}
+
+			int lessonTimeId = lessonTime.getId();
+
+			if (lessonTimeId < 1) {
+				IllegalArgumentException exception = new IllegalArgumentException(
+						"A lessonTime id isn't positive for existing object.");
+				LOGGER.error("An updated lessonTime {} has wrong id {} which is not positive.", lessonTime,
+						lessonTimeId, exception);
+				throw exception;
+			}
+		} catch (IllegalArgumentException illegalArgumentException) {
+			throw new ServiceException("A given lessonTime isn't legal when update.", illegalArgumentException);
+		} catch (ConstraintViolationException constraintViolationException) {
+			throw new ServiceException("A given lessonTime isn't valid when update.", constraintViolationException);
+		}
+	}
 }

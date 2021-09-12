@@ -14,48 +14,45 @@ import ua.com.foxminded.mapper.GroupMapper;
 
 @Repository
 public class GroupDAO implements GenericDAO<Group> {
-    private JdbcTemplate jdbcTemplate;
-    private Environment environment;
+	private JdbcTemplate jdbcTemplate;
+	private Environment environment;
 
-    @Autowired
-    public GroupDAO (JdbcTemplate jdbcTemplate, Environment environment) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.environment = environment;
-    }    
+	@Autowired
+	public GroupDAO(JdbcTemplate jdbcTemplate, Environment environment) {
+		this.jdbcTemplate = jdbcTemplate;
+		this.environment = environment;
+	}
 
-    @Override
-    public void create(Group group) {
-        jdbcTemplate.update(environment.getProperty("create.group"), group.getName());
-    }
+	@Override
+	public void create(Group group) {
+		jdbcTemplate.update(environment.getProperty("create.group"), group.getName());
+	}
 
-    @Override
-    public List<Group> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.groups"),
-                new GroupMapper());
-    }
+	@Override
+	public List<Group> findAll() {
+		return jdbcTemplate.query(environment.getProperty("find.all.groups"), new GroupMapper());
+	}
 
-    @Override
-    public Group findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.group.by.id"),
-                new GroupMapper(), id);
-    }
+	@Override
+	public Group findById(int id) {
+		return jdbcTemplate.queryForObject(environment.getProperty("find.group.by.id"), new GroupMapper(), id);
+	}
 
-    @Override
-    public void update(int id, Group group) {
-        jdbcTemplate.update(environment.getProperty("update.group"), group.getName(), id);
-    }
+	@Override
+	public void update(int id, Group group) {
+		jdbcTemplate.update(environment.getProperty("update.group"), group.getName(), id);
+	}
 
-    @Override
-    public void deleteById(int id) {
-        jdbcTemplate.update(environment.getProperty("delete.group"), id);
-    }
+	@Override
+	public void deleteById(int id) {
+		jdbcTemplate.update(environment.getProperty("delete.group"), id);
+	}
 
-    public void setGroupFaculty (int facultyId, int groupId) {
-        jdbcTemplate.update(environment.getProperty("set.group.faculty"), facultyId, groupId);
-    }
+	public void setGroupFaculty(int facultyId, int groupId) {
+		jdbcTemplate.update(environment.getProperty("set.group.faculty"), facultyId, groupId);
+	}
 
-    public Faculty getGroupFaculty (int groupId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.group.faculty"),
-                new FacultyMapper(), groupId);
-    }
+	public Faculty getGroupFaculty(int groupId) {
+		return jdbcTemplate.queryForObject(environment.getProperty("get.group.faculty"), new FacultyMapper(), groupId);
+	}
 }

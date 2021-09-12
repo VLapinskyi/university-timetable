@@ -79,15 +79,15 @@
                             th:text="${lesson.group.name}">group</a>
                     </td>
                     <td>
-                        <a
-                            class="text-decoration-none"
-                            th:href="@{/lessons/{id}/edit(id=${lesson.id})}"
-                            th:text="Edit"></a>
-                        <span> | </span>
-                        <a
-                            class="text-decoration-none link-danger"
-                            th:href="@{/lessons/{id}(id=${lesson.id})}"
-                            th:text="Delete"></a>
+                        <form th:action="@{/lessons/{id}(id=${lesson.id})}" th:method="DELETE">
+                            <a th:href="@{/lessons/{id}/edit(id=${lesson.id})}">
+                                <input
+                                    type="button"
+                                    class="btn btn-outline-primary"
+                                    value="Edit"/></a>
+                            <span> | </span>
+                            <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                        </form>
                     </td>
                 </tr>
                 <tr th:if="${dayLessons.value.isEmpty()}">

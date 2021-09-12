@@ -29,15 +29,14 @@
                 <td
                     colspan="2"
                     align="center">
-                    <a
-                        class="text-decoration-none"
-                        th:href="@{/groups/{id}/edit(id=${group.id})}"
-                        th:text="Edit"></a>
-                    <span> | </span>
-                    <a
-                        class="text-decoration-none link-danger"
-                        th:href="@{/groups/{id}(id=${group.id})}"
-                        th:text="Delete"></a>
+                    <form th:action="@{/groups/{id}(id=${group.id})}" th:method="DELETE">
+                        <a th:href="@{/groups/{id}/edit(id=${group.id})}">
+                            <input type="button"
+                                class="btn btn-outline-primary"
+                                value="Edit" /></a>
+                        <span> | </span>
+                        <input type="submit" value="Delete"class="btn btn-outline-danger"/>
+                    </form>
                 </td>
             </tr>
         </table>

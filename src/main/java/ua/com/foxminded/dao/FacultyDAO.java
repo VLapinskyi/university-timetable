@@ -12,39 +12,37 @@ import ua.com.foxminded.mapper.FacultyMapper;
 
 @Repository
 public class FacultyDAO implements GenericDAO<Faculty> {
-    private JdbcTemplate jdbcTemplate;
-    private Environment environment;
+	private JdbcTemplate jdbcTemplate;
+	private Environment environment;
 
-    @Autowired
-    public FacultyDAO(JdbcTemplate jdbcTemplate, Environment environment) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.environment = environment;
-    }
+	@Autowired
+	public FacultyDAO(JdbcTemplate jdbcTemplate, Environment environment) {
+		this.jdbcTemplate = jdbcTemplate;
+		this.environment = environment;
+	}
 
-    @Override
-    public void create(Faculty faculty) {
-        jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
-    }
+	@Override
+	public void create(Faculty faculty) {
+		jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
+	}
 
-    @Override
-    public List<Faculty> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.faculties"),
-                new FacultyMapper());
-    }
+	@Override
+	public List<Faculty> findAll() {
+		return jdbcTemplate.query(environment.getProperty("find.all.faculties"), new FacultyMapper());
+	}
 
-    @Override
-    public Faculty findById(int id) {        
-        return jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"),
-                new FacultyMapper(), id);
-    }
+	@Override
+	public Faculty findById(int id) {
+		return jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"), new FacultyMapper(), id);
+	}
 
-    @Override
-    public void update(int id, Faculty faculty) {
-        jdbcTemplate.update(environment.getProperty("update.faculty"), faculty.getName(), id);
-    }
+	@Override
+	public void update(int id, Faculty faculty) {
+		jdbcTemplate.update(environment.getProperty("update.faculty"), faculty.getName(), id);
+	}
 
-    @Override
-    public void deleteById(int id) {
-        jdbcTemplate.update(environment.getProperty("delete.faculty"), id);
-    }
+	@Override
+	public void deleteById(int id) {
+		jdbcTemplate.update(environment.getProperty("delete.faculty"), id);
+	}
 }

@@ -9,11 +9,11 @@ import ua.com.foxminded.domain.Group;
 
 public class GroupMapper implements RowMapper<Group> {
 
-    @Override
-    public Group mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Group group = new Group();
-        group.setId(rs.getInt("id"));
-        group.setName(rs.getString("name"));
-        return group;
-    }
+	@Override
+	public Group mapRow(ResultSet rs, int rowNum) throws SQLException {
+		Group group = new Group();
+		group.setId(rs.getInt("id"));
+		group.setName(rs.getString("name"));
+		return group;
+	}
 }

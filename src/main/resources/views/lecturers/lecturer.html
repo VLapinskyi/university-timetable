@@ -34,15 +34,17 @@
                 <td
                     colspan="2"
                     align="center">
-                    <a
-                        class="text-decoration-none"
-                        th:href="@{/lecturers/{id}/edit(id=${lecturer.id})}"
-                        th:text="Edit"></a>
-                    <span> | </span>
-                    <a
-                        class="text-decoration-none link-danger"
-                        th:href="@{/lecturers/{id}(id=${lecturer.id})}"
-                        th:text="Delete"></a>
+                    <form th:href="@{/lecturers/{id}(id=${lecturer.id})}" th:method="DELETE">
+                        <a th:href="@{/lecturers/{id}/edit(id=${lecturer.id})}">
+                            <input
+                                type="button"
+                                class="btn btn-outline-primary"
+                                value="Edit"/></a>
+                            
+                        <span> | </span>
+                        <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                        
+                   </form>
                 </td>
             </tr>
         </table>

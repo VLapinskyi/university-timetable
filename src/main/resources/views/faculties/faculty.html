@@ -19,15 +19,15 @@
                 <td
                     colspan="2"
                     align="center">
-                    <a
-                        class="text-decoration-none"
-                        th:href="@{/faculties/{id}/edit(id=${faculty.id})}"
-                        th:text="Edit"></a>
-                    <span> | </span>
-                    <a
-                        class="text-decoration-none link-danger"
-                        th:href="@{/faculties/{id}(id=${faculty.id})}"
-                        th:text="Delete"></a>
+                    <form th:action="@{/faculties/{id}(id=${faculty.id})}" th:method="DELETE">
+                        <a th:href="@{/faculties/{id}/edit(id=${faculty.id})}">
+                        <input
+                            type="button"
+                            class="btn btn-outline-primary"
+                            value="Edit"/></a>
+                        <span> | </span>
+                        <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                    </form>
                 </td>
             </tr>
         </table>

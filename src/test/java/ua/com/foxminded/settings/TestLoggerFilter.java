@@ -6,13 +6,13 @@ import ch.qos.logback.core.spi.FilterReply;
 
 public class TestLoggerFilter extends Filter<ILoggingEvent> {
 
-    @Override
-    public FilterReply decide(ILoggingEvent event) {
-        if (event.getLoggerName().contains("ua.com.foxminded")) {
-          return FilterReply.ACCEPT;  
-        } else {
-            return FilterReply.DENY;
-        }
-    }
+	@Override
+	public FilterReply decide(ILoggingEvent event) {
+		if (event.getLoggerName().contains("ua.com.foxminded")) {
+			return FilterReply.ACCEPT;
+		} else {
+			return FilterReply.DENY;
+		}
+	}
 
 }
