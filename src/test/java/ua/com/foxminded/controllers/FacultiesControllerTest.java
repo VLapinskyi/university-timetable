@@ -3,8 +3,10 @@ package ua.com.foxminded.controllers;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 
@@ -98,6 +100,21 @@ class FacultiesControllerTest {
 				.andExpect(model().attribute("faculty", hasProperty("name", is("First faculty"))));
 
 		verify(facultyService).getById(1);
+	}
+	
+	@Test
+	void shouldGenerateRightPageWhenNewFaculty() throws Exception {
+	    mockMvc.perform(get("/faculties/new")).andExpect(status().isOk())
+	        .andExpect(view().name("faculties/new"))
+	        .andExpect(model().attribute("pageTitle", "Create a new faculty"));
+	}
+	
+	@Test
+	void shouldCreateFaculty() throws Exception {
+	    Faculty testFaculty = new Faculty();
+	    testFaculty.setName("Test faculty");
+	    //mockMvc.perform(post("/faculties", ))
+	    fail();
 	}
 
 	@Test
