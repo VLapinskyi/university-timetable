@@ -4,9 +4,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
 
@@ -36,129 +37,174 @@ import ua.com.foxminded.settings.SpringConfiguration;
 @WebAppConfiguration
 class FacultiesControllerTest {
 
-	@Autowired
-	private WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
-	@Autowired
-	private FacultiesController facultiesController;
+    @Autowired
+    private FacultiesController facultiesController;
 
-	@Mock
-	private FacultyService facultyService;
+    @Mock
+    private FacultyService facultyService;
 
-	private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-	private DAOException daoException = new DAOException("DAO exception",
-			new QueryTimeoutException("Exception message"));
-	private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private DAOException daoException = new DAOException("DAO exception",
+            new QueryTimeoutException("Exception message"));
+    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
 
-	private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-			new IllegalArgumentException());
+    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
+            new IllegalArgumentException());
 
-	@BeforeEach
-	void init() {
-		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		MockitoAnnotations.openMocks(this);
-		ReflectionTestUtils.setField(facultiesController, "facultyService", facultyService);
-	}
+    @BeforeEach
+    void init() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(facultiesController, "facultyService", facultyService);
+    }
 
-	@Test
-	void shouldAddToModelListWhenGetFaculties() throws Exception {
-		Faculty firstFaculty = new Faculty();
-		firstFaculty.setId(1);
-		firstFaculty.setName("First faculty");
+    @Test
+    void shouldAddToModelListWhenGetFaculties() throws Exception {
+        Faculty firstFaculty = new Faculty();
+        firstFaculty.setId(1);
+        firstFaculty.setName("First faculty");
 
-		Faculty secondFaculty = new Faculty();
-		secondFaculty.setId(2);
-		secondFaculty.setName("Second faculty");
+        Faculty secondFaculty = new Faculty();
+        secondFaculty.setId(2);
+        secondFaculty.setName("Second faculty");
 
-		when(facultyService.getAll()).thenReturn(Arrays.asList(firstFaculty, secondFaculty));
+        when(facultyService.getAll()).thenReturn(Arrays.asList(firstFaculty, secondFaculty));
 
-		mockMvc.perform(get("/faculties")).andExpect(status().isOk()).andExpect(view().name("faculties/faculties"))
-				.andExpect(model().attribute("pageTitle", equalTo("Faculties")))
-				.andExpect(model().attribute("faculties", hasSize(2)))
-				.andExpect(model().attribute("faculties",
-						hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First faculty"))))))
-				.andExpect(model().attribute("faculties",
-						hasItem(allOf(hasProperty("id", is(2)), hasProperty("name", is("Second faculty"))))));
+        mockMvc.perform(get("/faculties")).andExpect(status().isOk()).andExpect(view().name("faculties/faculties"))
+            .andExpect(model().attribute("pageTitle", equalTo("Faculties")))
+            .andExpect(model().attribute("faculties", hasSize(2)))
+            .andExpect(model().attribute("faculties",
+                hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First faculty"))))))
+            .andExpect(model().attribute("faculties",
+                hasItem(allOf(hasProperty("id", is(2)), hasProperty("name", is("Second faculty"))))));
 
-		verify(facultyService).getAll();
-	}
+        verify(facultyService).getAll();
+    }
 
-	@Test
-	void shouldAddToModelFoundedEntityWhenGetFaculty() throws Exception {
-		int id = 1;
-		Faculty firstFaculty = new Faculty();
-		firstFaculty.setId(id);
-		firstFaculty.setName("First faculty");
+    @Test
+    void shouldAddToModelFoundedEntityWhenGetFaculty() throws Exception {
+        int id = 1;
+        Faculty firstFaculty = new Faculty();
+        firstFaculty.setId(id);
+        firstFaculty.setName("First faculty");
 
-		when(facultyService.getById(id)).thenReturn(firstFaculty);
+        when(facultyService.getById(id)).thenReturn(firstFaculty);
 
-		mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isOk())
-				.andExpect(view().name("faculties/faculty"))
-				.andExpect(model().attribute("pageTitle", equalTo(firstFaculty.getName())))
-				.andExpect(model().attribute("faculty", hasProperty("id", is(id))))
-				.andExpect(model().attribute("faculty", hasProperty("name", is("First faculty"))));
+        mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isOk())
+            .andExpect(view().name("faculties/faculty"))
+            .andExpect(model().attribute("pageTitle", equalTo(firstFaculty.getName())))
+            .andExpect(model().attribute("faculty", hasProperty("id", is(id))))
+            .andExpect(model().attribute("faculty", hasProperty("name", is("First faculty"))));
 
-		verify(facultyService).getById(1);
-	}
-	
-	@Test
-	void shouldGenerateRightPageWhenNewFaculty() throws Exception {
-	    mockMvc.perform(get("/faculties/new")).andExpect(status().isOk())
-	        .andExpect(view().name("faculties/new"))
-	        .andExpect(model().attribute("pageTitle", "Create a new faculty"));
-	}
-	
-	@Test
-	void shouldCreateFaculty() throws Exception {
-	    Faculty testFaculty = new Faculty();
-	    testFaculty.setName("Test faculty");
-	    //mockMvc.perform(post("/faculties", ))
-	    fail();
-	}
+        verify(facultyService).getById(1);
+    }
 
-	@Test
-	void shouldReturnError500WhenDAOExceptionWhileGetFaculties() throws Exception {
-		when(facultyService.getAll()).thenThrow(serviceWithDAOException);
+    @Test
+    void shouldGenerateRightPageWhenNewFaculty() throws Exception {
+        mockMvc.perform(get("/faculties/new")).andExpect(status().isOk())
+            .andExpect(view().name("faculties/new"))
+            .andExpect(model().attribute("pageTitle", "Create a new faculty"));
+    }
 
-		mockMvc.perform(get("/faculties")).andExpect(status().isInternalServerError());
-		verify(facultyService).getAll();
-	}
+    @Test
+    void shouldCreateFaculty() throws Exception {
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName("Test faculty");
+        mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
+            .andExpect(view().name("redirect:/faculties"))
+            .andExpect(status().is3xxRedirection());
+        verify(facultyService).create(testFaculty);
+    }
 
-	@Test
-	void shouldReturnError404WhenServiceExceptionWhileGetFaculties() throws Exception {
-		when(facultyService.getAll()).thenThrow(ServiceException.class);
+    @Test
+    void shouldGenerateRightPageWhenEditFaculty() throws Exception {
+        int testId = 1;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setId(testId);
+        testFaculty.setName("Test faculty");
 
-		mockMvc.perform(get("/faculties")).andExpect(status().isNotFound());
-		verify(facultyService).getAll();
-	}
+        when(facultyService.getById(testId)).thenReturn(testFaculty);
 
-	@Test
-	void shouldReturnError500WhenDAOExceptionWhileGetFaculty() throws Exception {
-		int id = 2;
+        mockMvc.perform(get("/faculties/{id}/edit", testId))
+            .andExpect(view().name("faculties/edit"))
+            .andExpect(model().attribute("pageTitle", equalTo("Edit " + testFaculty.getName())))
+            .andExpect(model().attribute("faculty", hasProperty("id", is(testId))))
+            .andExpect(model().attribute("faculty", hasProperty("name", is(testFaculty.getName()))));
 
-		when(facultyService.getById(id)).thenThrow(serviceWithDAOException);
+        verify(facultyService).getById(testId);
+    }
 
-		mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isInternalServerError());
-		verify(facultyService).getById(id);
-	}
+    @Test
+    void shouldUpdateFaculty() throws Exception {
+        int testId = 10;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setId(testId);
+        testFaculty.setName("Test faculty");
 
-	@Test
-	void shouldReturnError400WhenIllegalArgumentExceptionWhileGetFaculty() throws Exception {
-		int id = 5;
+        mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
+            .andExpect(view().name("redirect:/faculties"))
+            .andExpect(status().is3xxRedirection());
+        
+        verify(facultyService).update(testFaculty);
+    }
+    
+    @Test
+    void shouldDeleteFaculty() throws Exception {
+        int testId = 2;
+        
+        mockMvc.perform(delete("/faculties/{id}", testId))
+            .andExpect(view().name("redirect:/faculties"))
+            .andExpect(status().is3xxRedirection());
+        
+        verify(facultyService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileGetFaculties() throws Exception {
+        when(facultyService.getAll()).thenThrow(serviceWithDAOException);
 
-		when(facultyService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
-		mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/faculties")).andExpect(status().isInternalServerError());
+        verify(facultyService).getAll();
+    }
 
-		verify(facultyService).getById(id);
-	}
+    @Test
+    void shouldReturnError404WhenServiceExceptionWhileGetFaculties() throws Exception {
+        when(facultyService.getAll()).thenThrow(ServiceException.class);
 
-	@Test
-	void shouldReturnError404WhenEntityIsNotFoundWhileGetFaculty() throws Exception {
-		int id = 1;
-		when(facultyService.getById(id)).thenThrow(ServiceException.class);
-		mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isNotFound());
-		verify(facultyService).getById(id);
-	}
+        mockMvc.perform(get("/faculties")).andExpect(status().isNotFound());
+        verify(facultyService).getAll();
+    }
+
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileGetFaculty() throws Exception {
+        int id = 2;
+
+        when(facultyService.getById(id)).thenThrow(serviceWithDAOException);
+
+        mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isInternalServerError());
+        verify(facultyService).getById(id);
+    }
+
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileGetFaculty() throws Exception {
+        int id = 5;
+
+        when(facultyService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isBadRequest());
+
+        verify(facultyService).getById(id);
+    }
+
+    @Test
+    void shouldReturnError404WhenEntityIsNotFoundWhileGetFaculty() throws Exception {
+        int id = 1;
+        when(facultyService.getById(id)).thenThrow(ServiceException.class);
+        mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isNotFound());
+        verify(facultyService).getById(id);
+    }
 
 }

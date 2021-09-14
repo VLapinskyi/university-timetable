@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.ConstraintViolationException;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
@@ -25,6 +26,10 @@ public class GeneralControllerAspect {
 	@Pointcut("execution(public String ua.com.foxminded.controllers.*.get*(int, org.springframework.ui.Model))")
 	private void getObjectMethods() {
 	}
+	
+	@Pointcut("execution(public String ua.com.foxminded.controllers.*.create*(ua.com.foxminded.service.*))")
+    private void createObjectMethods() {
+    }
 
 	@Around("getObjectsMethods()")
 	public String aroundGetObjectsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
@@ -73,4 +78,31 @@ public class GeneralControllerAspect {
 			}
 		}
 	}
+	
+	@Around("createObjectMethods()")
+    public String aroundCreateObjectAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        Object object = proceedingJoinPoint.getArgs()[0];
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to create object {}.", object);
+        }
+
+        try {
+            return (String) proceedingJoinPoint.proceed();
+
+        } catch (ServiceException serviceException) {
+            if (serviceException.getException() instanceof DAOException) {
+                LOGGER.error("There are some errors in dao layer when create an object {}.", object, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else if (serviceException.getException() instanceof ConstraintViolationException ) {
+                LOGGER.error("There are errors with given data when create object {}.", object, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else {
+                LOGGER.error("There is some error in service layer when create an object {}.", object, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, serviceException.getServiceExceptionMessage());
+            }
+        }
+    }
 }
