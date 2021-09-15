@@ -27,8 +27,16 @@ public class GeneralControllerAspect {
     private void getObjectMethods() {
     }
 
-    @Pointcut("execution(public String ua.com.foxminded.controllers.*.create*(ua.com.foxminded.service.*))")
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.create*(ua.com.foxminded.domain.*))")
     private void createObjectMethods() {
+    }
+    
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.update*(ua.com.foxminded.domain.*))")
+    private void updateObjectMethods() {
+    }
+    
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.delete*(int))")
+    private void deleteObjectMethods() {
     }
 
     @Around("getObjectsMethods()")
@@ -95,12 +103,72 @@ public class GeneralControllerAspect {
                 LOGGER.error("There are some errors in dao layer when create an object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
-            } else if (serviceException.getException() instanceof ConstraintViolationException) {
+            } else if (serviceException.getException() instanceof ConstraintViolationException 
+                    || serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when create object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
             } else {
                 LOGGER.error("There is some error in service layer when create an object {}.", object,
+                        serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            }
+        }
+    }
+    
+    @Around("updateObjectMethods()")
+    public String aroundUpdateObjectAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        Object object = proceedingJoinPoint.getArgs()[0];
+        
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to update object {}.", object);
+        }
+
+        try {
+            return (String) proceedingJoinPoint.proceed();
+
+        } catch (ServiceException serviceException) {
+            if (serviceException.getException() instanceof DAOException) {
+                LOGGER.error("There are some errors in dao layer when update an object {}.", object, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else if (serviceException.getException() instanceof ConstraintViolationException 
+                    || serviceException.getException() instanceof IllegalArgumentException) {
+                LOGGER.error("There are errors with given data when update object {}.", object, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else {
+                LOGGER.error("There is some error in service layer when update an object {}.", object,
+                        serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            }
+        }
+    }
+    
+    @Around("deleteObjectMethods()")
+    public String aroundDeleteObjectAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        int id = (int) proceedingJoinPoint.getArgs()[0];
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to delete object with id {}.", id);
+        }
+
+        try {
+            return (String) proceedingJoinPoint.proceed();
+
+        } catch (ServiceException serviceException) {
+            if (serviceException.getException() instanceof DAOException) {
+                LOGGER.error("There are some errors in dao layer when delete object with id {}.", id, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else if (serviceException.getException() instanceof IllegalArgumentException) {
+                LOGGER.error("There are errors with given data when delete object with id {}.", id, serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else {
+                LOGGER.error("There is some error in service layer when delete object with id {}.", id,
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());

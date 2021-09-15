@@ -2,6 +2,7 @@ package ua.com.foxminded.controllers;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import jakarta.validation.ConstraintViolationException;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.service.FacultyService;
@@ -54,6 +56,9 @@ class FacultiesControllerTest {
 
     private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
             new IllegalArgumentException());
+    
+    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
+            new ConstraintViolationException(null));
 
     @BeforeEach
     void init() {
@@ -201,5 +206,152 @@ class FacultiesControllerTest {
         mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isNotFound());
         verify(facultyService).getById(id);
     }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileCreateFaculty() throws Exception {
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName("Test faculty");
+        
+        doThrow(serviceWithDAOException).when(facultyService).create(testFaculty);
 
+        mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).create(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenConstraintViolationExceptionWhileCreateFaculty() throws Exception {
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName("Test faculty");
+        
+        doThrow(serviceWithConstraintViolationException).when(facultyService).create(testFaculty);
+
+        mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).create(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenIllegalArgumentExceptionWhileCreateFaculty() throws Exception {
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName("Test faculty");
+        
+        doThrow(serviceWithIllegalArgumentException).when(facultyService).create(testFaculty);
+
+        mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).create(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileCreateFaculty() throws Exception {
+        Faculty testFaculty = new Faculty();
+        testFaculty.setName("Test faculty");
+        
+        doThrow(ServiceException.class).when(facultyService).create(testFaculty);
+
+        mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).create(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileUpdateFaculty() throws Exception {
+        int testId = 4;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setId(testId);
+        testFaculty.setName("Test faculty");
+        
+        doThrow(serviceWithDAOException).when(facultyService).update(testFaculty);
+
+        mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).update(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenConstraintViolationExceptionWhileUpdateFaculty() throws Exception {
+        int testId = 8;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setId(testId);
+        testFaculty.setName("Test faculty");
+        
+        doThrow(serviceWithConstraintViolationException).when(facultyService).update(testFaculty);
+
+        mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).update(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenIllegalArgumentExceptionWhileUpdateFaculty() throws Exception {
+        int testId = 10;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setId(testId);
+        testFaculty.setName("Test faculty");
+        
+        doThrow(serviceWithIllegalArgumentException).when(facultyService).update(testFaculty);
+
+        mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).update(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileUpdateFaculty() throws Exception {
+        int testId = 10;
+        Faculty testFaculty = new Faculty();
+        testFaculty.setId(testId);
+        testFaculty.setName("Test faculty");
+        
+        doThrow(ServiceException.class).when(facultyService).update(testFaculty);
+
+        mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).update(testFaculty);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileDeleteFaculty() throws Exception {
+        int testId = 75;
+        
+        doThrow(serviceWithDAOException).when(facultyService).deleteById(testId);
+
+        mockMvc.perform(delete("/faculties/{id}", testId))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenIllegalArgumentExceptionWhileDeleteFaculty() throws Exception {
+        int testId = 14;
+        
+        doThrow(serviceWithIllegalArgumentException).when(facultyService).deleteById(testId);
+
+        mockMvc.perform(delete("/faculties/{id}", testId))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileDeleteFaculty() throws Exception {
+        int testId = 41;
+        
+        doThrow(ServiceException.class).when(facultyService).deleteById(testId);
+
+        mockMvc.perform(delete("/faculties/{id}", testId))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).deleteById(testId);
+    }
 }
