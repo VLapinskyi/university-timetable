@@ -42,121 +42,121 @@ import ua.com.foxminded.settings.SpringConfiguration;
 @WebAppConfiguration
 class GroupsControllerTest {
 
-	@Autowired
-	private WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
-	@Autowired
-	private GroupsController groupsController;
+    @Autowired
+    private GroupsController groupsController;
 
-	@Mock
-	private GroupService groupService;
+    @Mock
+    private GroupService groupService;
 
-	private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-	private DAOException daoException = new DAOException("DAO exception",
-			new QueryTimeoutException("Exception message"));
-	private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private DAOException daoException = new DAOException("DAO exception",
+            new QueryTimeoutException("Exception message"));
+    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
 
-	private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-			new IllegalArgumentException());
+    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
+            new IllegalArgumentException());
 
-	private Faculty faculty = new Faculty();
+    private Faculty faculty = new Faculty();
 
-	@BeforeEach
-	void setUp() throws Exception {
-		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		MockitoAnnotations.openMocks(this);
-		ReflectionTestUtils.setField(groupsController, "groupService", groupService);
+    @BeforeEach
+    void setUp() throws Exception {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(groupsController, "groupService", groupService);
 
-		faculty.setId(1);
-		faculty.setName("Faculty");
-	}
+        faculty.setId(1);
+        faculty.setName("Faculty");
+    }
 
-	@Test
-	void shouldAddToModelListWhenGetGroups() throws Exception {
-		Group firstGroup = new Group();
-		firstGroup.setId(1);
-		firstGroup.setName("First group");
-		firstGroup.setFaculty(faculty);
+    @Test
+    void shouldAddToModelListWhenGetGroups() throws Exception {
+        Group firstGroup = new Group();
+        firstGroup.setId(1);
+        firstGroup.setName("First group");
+        firstGroup.setFaculty(faculty);
 
-		Group secondGroup = new Group();
-		secondGroup.setId(2);
-		secondGroup.setName("Second group");
-		secondGroup.setFaculty(faculty);
+        Group secondGroup = new Group();
+        secondGroup.setId(2);
+        secondGroup.setName("Second group");
+        secondGroup.setFaculty(faculty);
 
-		when(groupService.getAll()).thenReturn(Arrays.asList(firstGroup, secondGroup));
+        when(groupService.getAll()).thenReturn(Arrays.asList(firstGroup, secondGroup));
 
-		mockMvc.perform(get("/groups")).andExpect(status().isOk()).andExpect(view().name("groups/groups"))
-				.andExpect(model().attribute("pageTitle", equalTo("Groups")))
-				.andExpect(model().attribute("groups", hasSize(2)))
-				.andExpect(model().attribute("groups",
-						hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First group")),
-								hasProperty("faculty", equalTo(faculty))))))
-				.andExpect(model().attribute("groups", hasItem(allOf(hasProperty("id", is(2)),
-						hasProperty("name", is("Second group")), hasProperty("faculty", equalTo(faculty))))));
+        mockMvc.perform(get("/groups")).andExpect(status().isOk()).andExpect(view().name("groups/groups"))
+                .andExpect(model().attribute("pageTitle", equalTo("Groups")))
+                .andExpect(model().attribute("groups", hasSize(2)))
+                .andExpect(model().attribute("groups",
+                        hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First group")),
+                                hasProperty("faculty", equalTo(faculty))))))
+                .andExpect(model().attribute("groups", hasItem(allOf(hasProperty("id", is(2)),
+                        hasProperty("name", is("Second group")), hasProperty("faculty", equalTo(faculty))))));
 
-		verify(groupService).getAll();
-	}
+        verify(groupService).getAll();
+    }
 
-	@Test
-	void shouldAddToModelFoundedEntityWhenGetGroup() throws Exception {
-		int id = 2;
-		Group group = new Group();
-		group.setId(id);
-		group.setName("Group");
-		group.setFaculty(faculty);
+    @Test
+    void shouldAddToModelFoundedEntityWhenGetGroup() throws Exception {
+        int id = 2;
+        Group group = new Group();
+        group.setId(id);
+        group.setName("Group");
+        group.setFaculty(faculty);
 
-		when(groupService.getById(id)).thenReturn(group);
+        when(groupService.getById(id)).thenReturn(group);
 
-		mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isOk()).andExpect(view().name("groups/group"))
-				.andExpect(model().attribute("pageTitle", equalTo(group.getName())))
-				.andExpect(model().attribute("group", hasProperty("id", is(id))))
-				.andExpect(model().attribute("group", hasProperty("name", is("Group"))))
-				.andExpect(model().attribute("group", hasProperty("faculty", equalTo(faculty))));
+        mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isOk()).andExpect(view().name("groups/group"))
+                .andExpect(model().attribute("pageTitle", equalTo(group.getName())))
+                .andExpect(model().attribute("group", hasProperty("id", is(id))))
+                .andExpect(model().attribute("group", hasProperty("name", is("Group"))))
+                .andExpect(model().attribute("group", hasProperty("faculty", equalTo(faculty))));
 
-		verify(groupService).getById(id);
-	}
+        verify(groupService).getById(id);
+    }
 
-	@Test
-	void shouldReturnError500WhenDAOExceptionWhileGetGroups() throws Exception {
-		when(groupService.getAll()).thenThrow(serviceWithDAOException);
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileGetGroups() throws Exception {
+        when(groupService.getAll()).thenThrow(serviceWithDAOException);
 
-		mockMvc.perform(get("/groups")).andExpect(status().isInternalServerError());
-		verify(groupService).getAll();
-	}
+        mockMvc.perform(get("/groups")).andExpect(status().isInternalServerError());
+        verify(groupService).getAll();
+    }
 
-	@Test
-	void shouldReturnError404WhenServiceExceptionWhileGetGroups() throws Exception {
-		when(groupService.getAll()).thenThrow(ServiceException.class);
+    @Test
+    void shouldReturnError404WhenServiceExceptionWhileGetGroups() throws Exception {
+        when(groupService.getAll()).thenThrow(ServiceException.class);
 
-		mockMvc.perform(get("/groups")).andExpect(status().isNotFound());
-		verify(groupService).getAll();
-	}
+        mockMvc.perform(get("/groups")).andExpect(status().isNotFound());
+        verify(groupService).getAll();
+    }
 
-	@Test
-	void shouldReturnError500WhenDAOExceptionWhileGetGroup() throws Exception {
-		int id = 4;
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileGetGroup() throws Exception {
+        int id = 4;
 
-		when(groupService.getById(id)).thenThrow(serviceWithDAOException);
+        when(groupService.getById(id)).thenThrow(serviceWithDAOException);
 
-		mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isInternalServerError());
-		verify(groupService).getById(id);
-	}
+        mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isInternalServerError());
+        verify(groupService).getById(id);
+    }
 
-	@Test
-	void shouldReturnError400WhenIllegalArgumentExceptionWhileGetGroup() throws Exception {
-		int id = 1;
-		when(groupService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
-		mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isBadRequest());
-		verify(groupService).getById(id);
-	}
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileGetGroup() throws Exception {
+        int id = 1;
+        when(groupService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isBadRequest());
+        verify(groupService).getById(id);
+    }
 
-	@Test
-	void shouldReturnError404WhenEntityIsNotFoundWhileGetGroup() throws Exception {
-		int id = 2;
+    @Test
+    void shouldReturnError404WhenEntityIsNotFoundWhileGetGroup() throws Exception {
+        int id = 2;
 
-		when(groupService.getById(id)).thenThrow(ServiceException.class);
-		mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isNotFound());
-		verify(groupService).getById(id);
-	}
+        when(groupService.getById(id)).thenThrow(ServiceException.class);
+        mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isNotFound());
+        verify(groupService).getById(id);
+    }
 }

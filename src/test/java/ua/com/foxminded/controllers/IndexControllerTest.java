@@ -23,20 +23,20 @@ import ua.com.foxminded.settings.SpringConfiguration;
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class IndexControllerTest {
-	@Autowired
-	private WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
-	private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-	@BeforeEach
-	void setUp() throws Exception {
-		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-	}
+    @BeforeEach
+    void setUp() throws Exception {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
 
-	@Test
-	void shoulёёdReturnIndexViewWithCorrectModel() throws Exception {
-		mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("index"))
-				.andExpect(model().attribute("pageTitle", equalTo("University")));
-	}
+    @Test
+    void shoulёёdReturnIndexViewWithCorrectModel() throws Exception {
+        mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("index"))
+                .andExpect(model().attribute("pageTitle", equalTo("University")));
+    }
 
 }

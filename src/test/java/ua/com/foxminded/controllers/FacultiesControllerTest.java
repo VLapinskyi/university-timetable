@@ -75,12 +75,12 @@ class FacultiesControllerTest {
         when(facultyService.getAll()).thenReturn(Arrays.asList(firstFaculty, secondFaculty));
 
         mockMvc.perform(get("/faculties")).andExpect(status().isOk()).andExpect(view().name("faculties/faculties"))
-            .andExpect(model().attribute("pageTitle", equalTo("Faculties")))
-            .andExpect(model().attribute("faculties", hasSize(2)))
-            .andExpect(model().attribute("faculties",
-                hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First faculty"))))))
-            .andExpect(model().attribute("faculties",
-                hasItem(allOf(hasProperty("id", is(2)), hasProperty("name", is("Second faculty"))))));
+                .andExpect(model().attribute("pageTitle", equalTo("Faculties")))
+                .andExpect(model().attribute("faculties", hasSize(2)))
+                .andExpect(model().attribute("faculties",
+                        hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First faculty"))))))
+                .andExpect(model().attribute("faculties",
+                        hasItem(allOf(hasProperty("id", is(2)), hasProperty("name", is("Second faculty"))))));
 
         verify(facultyService).getAll();
     }
@@ -95,19 +95,18 @@ class FacultiesControllerTest {
         when(facultyService.getById(id)).thenReturn(firstFaculty);
 
         mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isOk())
-            .andExpect(view().name("faculties/faculty"))
-            .andExpect(model().attribute("pageTitle", equalTo(firstFaculty.getName())))
-            .andExpect(model().attribute("faculty", hasProperty("id", is(id))))
-            .andExpect(model().attribute("faculty", hasProperty("name", is("First faculty"))));
+                .andExpect(view().name("faculties/faculty"))
+                .andExpect(model().attribute("pageTitle", equalTo(firstFaculty.getName())))
+                .andExpect(model().attribute("faculty", hasProperty("id", is(id))))
+                .andExpect(model().attribute("faculty", hasProperty("name", is("First faculty"))));
 
         verify(facultyService).getById(1);
     }
 
     @Test
     void shouldGenerateRightPageWhenNewFaculty() throws Exception {
-        mockMvc.perform(get("/faculties/new")).andExpect(status().isOk())
-            .andExpect(view().name("faculties/new"))
-            .andExpect(model().attribute("pageTitle", "Create a new faculty"));
+        mockMvc.perform(get("/faculties/new")).andExpect(status().isOk()).andExpect(view().name("faculties/new"))
+                .andExpect(model().attribute("pageTitle", "Create a new faculty"));
     }
 
     @Test
@@ -115,8 +114,7 @@ class FacultiesControllerTest {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
-            .andExpect(view().name("redirect:/faculties"))
-            .andExpect(status().is3xxRedirection());
+                .andExpect(view().name("redirect:/faculties")).andExpect(status().is3xxRedirection());
         verify(facultyService).create(testFaculty);
     }
 
@@ -129,11 +127,10 @@ class FacultiesControllerTest {
 
         when(facultyService.getById(testId)).thenReturn(testFaculty);
 
-        mockMvc.perform(get("/faculties/{id}/edit", testId))
-            .andExpect(view().name("faculties/edit"))
-            .andExpect(model().attribute("pageTitle", equalTo("Edit " + testFaculty.getName())))
-            .andExpect(model().attribute("faculty", hasProperty("id", is(testId))))
-            .andExpect(model().attribute("faculty", hasProperty("name", is(testFaculty.getName()))));
+        mockMvc.perform(get("/faculties/{id}/edit", testId)).andExpect(view().name("faculties/edit"))
+                .andExpect(model().attribute("pageTitle", equalTo("Edit " + testFaculty.getName())))
+                .andExpect(model().attribute("faculty", hasProperty("id", is(testId))))
+                .andExpect(model().attribute("faculty", hasProperty("name", is(testFaculty.getName()))));
 
         verify(facultyService).getById(testId);
     }
@@ -146,23 +143,21 @@ class FacultiesControllerTest {
         testFaculty.setName("Test faculty");
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
-            .andExpect(view().name("redirect:/faculties"))
-            .andExpect(status().is3xxRedirection());
-        
+                .andExpect(view().name("redirect:/faculties")).andExpect(status().is3xxRedirection());
+
         verify(facultyService).update(testFaculty);
     }
-    
+
     @Test
     void shouldDeleteFaculty() throws Exception {
         int testId = 2;
-        
-        mockMvc.perform(delete("/faculties/{id}", testId))
-            .andExpect(view().name("redirect:/faculties"))
-            .andExpect(status().is3xxRedirection());
-        
+
+        mockMvc.perform(delete("/faculties/{id}", testId)).andExpect(view().name("redirect:/faculties"))
+                .andExpect(status().is3xxRedirection());
+
         verify(facultyService).deleteById(testId);
     }
-    
+
     @Test
     void shouldReturnError500WhenDAOExceptionWhileGetFaculties() throws Exception {
         when(facultyService.getAll()).thenThrow(serviceWithDAOException);

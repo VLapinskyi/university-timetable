@@ -10,30 +10,30 @@ import ua.com.foxminded.domain.Lecturer;
 
 @Service
 public class LecturerService {
-	private LecturerDAO lecturerDAO;
+    private LecturerDAO lecturerDAO;
 
-	@Autowired
-	public LecturerService(LecturerDAO lecturerDAO) {
-		this.lecturerDAO = lecturerDAO;
-	}
+    @Autowired
+    public LecturerService(LecturerDAO lecturerDAO) {
+        this.lecturerDAO = lecturerDAO;
+    }
 
-	public void create(Lecturer lecturer) {
-		lecturerDAO.create(lecturer);
-	}
+    public void create(Lecturer lecturer) {
+        lecturerDAO.create(lecturer);
+    }
 
-	public List<Lecturer> getAll() {
-		return lecturerDAO.findAll();
-	}
+    public List<Lecturer> getAll() {
+        return lecturerDAO.findAll();
+    }
 
-	public Lecturer getById(int lecturerId) {
-		return lecturerDAO.findById(lecturerId);
-	}
+    public Lecturer getById(int lecturerId) {
+        return lecturerDAO.findById(lecturerId);
+    }
 
-	public void update(Lecturer lecturer) {
-		lecturerDAO.update(lecturer.getId(), lecturer);
-	}
+    public void update(Lecturer lecturer) {
+        lecturerDAO.update(lecturer.getId(), lecturer);
+    }
 
-	public void deleteById(int lecturerId) {
-		lecturerDAO.deleteById(lecturerId);
-	}
+    public void deleteById(int lecturerId) {
+        lecturerDAO.deleteById(lecturerId);
+    }
 }

@@ -18,21 +18,21 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 @PropertySource("classpath:database.properties")
 @PropertySource("classpath:sql-queries.properties")
 public class SpringDAOTestConfiguration {
-	@Autowired
-	private Environment environment;
+    @Autowired
+    private Environment environment;
 
-	@Bean
-	public DataSource getDataSource() {
-		DriverManagerDataSource dataSource = new DriverManagerDataSource();
-		dataSource.setDriverClassName(environment.getProperty("driver.class.name"));
-		dataSource.setUrl(environment.getProperty("url"));
-		dataSource.setUsername(environment.getProperty("user"));
-		dataSource.setPassword(environment.getProperty("password"));
-		return dataSource;
-	}
+    @Bean
+    public DataSource getDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(environment.getProperty("driver.class.name"));
+        dataSource.setUrl(environment.getProperty("url"));
+        dataSource.setUsername(environment.getProperty("user"));
+        dataSource.setPassword(environment.getProperty("password"));
+        return dataSource;
+    }
 
-	@Bean
-	public JdbcTemplate getJdbcTemplate() {
-		return new JdbcTemplate(getDataSource());
-	}
+    @Bean
+    public JdbcTemplate getJdbcTemplate() {
+        return new JdbcTemplate(getDataSource());
+    }
 }

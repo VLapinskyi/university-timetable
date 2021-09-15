@@ -10,30 +10,30 @@ import ua.com.foxminded.domain.Faculty;
 
 @Service
 public class FacultyService {
-	private FacultyDAO facultyDAO;
+    private FacultyDAO facultyDAO;
 
-	@Autowired
-	public FacultyService(FacultyDAO facultyDAO) {
-		this.facultyDAO = facultyDAO;
-	}
+    @Autowired
+    public FacultyService(FacultyDAO facultyDAO) {
+        this.facultyDAO = facultyDAO;
+    }
 
-	public void create(Faculty faculty) {
-		facultyDAO.create(faculty);
-	}
+    public void create(Faculty faculty) {
+        facultyDAO.create(faculty);
+    }
 
-	public List<Faculty> getAll() {
-		return facultyDAO.findAll();
-	}
+    public List<Faculty> getAll() {
+        return facultyDAO.findAll();
+    }
 
-	public Faculty getById(int facultyId) {
-		return facultyDAO.findById(facultyId);
-	}
+    public Faculty getById(int facultyId) {
+        return facultyDAO.findById(facultyId);
+    }
 
-	public void update(Faculty updatedFaculty) {
-		facultyDAO.update(updatedFaculty.getId(), updatedFaculty);
-	}
+    public void update(Faculty updatedFaculty) {
+        facultyDAO.update(updatedFaculty.getId(), updatedFaculty);
+    }
 
-	public void deleteById(int facultyId) {
-		facultyDAO.deleteById(facultyId);
-	}
+    public void deleteById(int facultyId) {
+        facultyDAO.deleteById(facultyId);
+    }
 }

@@ -33,75 +33,75 @@ import jakarta.validation.ValidatorFactory;
 @PropertySource("classpath:database.properties")
 @PropertySource("classpath:sql-queries.properties")
 public class SpringConfiguration implements WebMvcConfigurer {
-	private final ApplicationContext context;
+    private final ApplicationContext context;
 
-	private Environment environment;
+    private Environment environment;
 
-	@Autowired
-	public SpringConfiguration(ApplicationContext context, Environment environment) {
-		this.context = context;
-		this.environment = environment;
-	}
+    @Autowired
+    public SpringConfiguration(ApplicationContext context, Environment environment) {
+        this.context = context;
+        this.environment = environment;
+    }
 
-	@Bean
-	public DataSource getDataSource() {
-		DriverManagerDataSource dataSource = new DriverManagerDataSource();
-		dataSource.setDriverClassName(environment.getProperty("driver.class.name"));
-		dataSource.setUrl(environment.getProperty("url"));
-		dataSource.setUsername(environment.getProperty("user"));
-		dataSource.setPassword(environment.getProperty("password"));
-		return dataSource;
-	}
+    @Bean
+    public DataSource getDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(environment.getProperty("driver.class.name"));
+        dataSource.setUrl(environment.getProperty("url"));
+        dataSource.setUsername(environment.getProperty("user"));
+        dataSource.setPassword(environment.getProperty("password"));
+        return dataSource;
+    }
 
-	@Bean
-	public JdbcTemplate getJdbcTemplate() {
-		return new JdbcTemplate(getDataSource());
-	}
+    @Bean
+    public JdbcTemplate getJdbcTemplate() {
+        return new JdbcTemplate(getDataSource());
+    }
 
-	@Bean
-	public Validator validator() {
-		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-		return factory.getValidator();
-	}
+    @Bean
+    public Validator validator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        return factory.getValidator();
+    }
 
-	@Bean
-	public SpringResourceTemplateResolver templateResolver() {
-		SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
-		templateResolver.setApplicationContext(context);
-		templateResolver.setPrefix("classpath:/views/");
-		templateResolver.setSuffix(".html");
-		templateResolver.setOrder(0);
-		return templateResolver;
-	}
+    @Bean
+    public SpringResourceTemplateResolver templateResolver() {
+        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
+        templateResolver.setApplicationContext(context);
+        templateResolver.setPrefix("classpath:/views/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setOrder(0);
+        return templateResolver;
+    }
 
-	@Bean
-	public ClassLoaderTemplateResolver scriptTemplateResolver() {
-		ClassLoaderTemplateResolver scriptTemplateResolver = new ClassLoaderTemplateResolver();
-		scriptTemplateResolver.setPrefix("classpath:/views/scripts");
-		scriptTemplateResolver.setOrder(1);
-		return scriptTemplateResolver;
-	}
+    @Bean
+    public ClassLoaderTemplateResolver scriptTemplateResolver() {
+        ClassLoaderTemplateResolver scriptTemplateResolver = new ClassLoaderTemplateResolver();
+        scriptTemplateResolver.setPrefix("classpath:/views/scripts");
+        scriptTemplateResolver.setOrder(1);
+        return scriptTemplateResolver;
+    }
 
-	@Bean
-	public SpringTemplateEngine templateEngine() {
-		SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-		templateEngine.addTemplateResolver(templateResolver());
-		templateEngine.addTemplateResolver(scriptTemplateResolver());
-		templateEngine.setEnableSpringELCompiler(true);
-		templateEngine.addDialect(new Java8TimeDialect());
-		return templateEngine;
-	}
+    @Bean
+    public SpringTemplateEngine templateEngine() {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.addTemplateResolver(templateResolver());
+        templateEngine.addTemplateResolver(scriptTemplateResolver());
+        templateEngine.setEnableSpringELCompiler(true);
+        templateEngine.addDialect(new Java8TimeDialect());
+        return templateEngine;
+    }
 
-	@Override
-	public void configureViewResolvers(ViewResolverRegistry registry) {
-		ThymeleafViewResolver resolver = new ThymeleafViewResolver();
-		resolver.setTemplateEngine(templateEngine());
-		registry.viewResolver(resolver);
-	}
+    @Override
+    public void configureViewResolvers(ViewResolverRegistry registry) {
+        ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+        resolver.setTemplateEngine(templateEngine());
+        registry.viewResolver(resolver);
+    }
 
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
 
-	}
+    }
 }

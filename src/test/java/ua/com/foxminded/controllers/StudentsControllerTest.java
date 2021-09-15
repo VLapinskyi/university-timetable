@@ -43,147 +43,147 @@ import ua.com.foxminded.settings.SpringConfiguration;
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class StudentsControllerTest {
-	@Autowired
-	private WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
-	@Autowired
-	private StudentsController studentsController;
+    @Autowired
+    private StudentsController studentsController;
 
-	@Mock
-	private StudentService studentService;
+    @Mock
+    private StudentService studentService;
 
-	private MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-	private DAOException daoException = new DAOException("DAO exception",
-			new QueryTimeoutException("Exception message"));
-	private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private DAOException daoException = new DAOException("DAO exception",
+            new QueryTimeoutException("Exception message"));
+    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
 
-	private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-			new IllegalArgumentException());
+    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
+            new IllegalArgumentException());
 
-	private Group group;
+    private Group group;
 
-	@BeforeEach
-	void setUp() throws Exception {
-		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-		MockitoAnnotations.openMocks(this);
-		ReflectionTestUtils.setField(studentsController, "studentService", studentService);
-		group = new Group();
-		group.setId(1);
-		group.setFaculty(new Faculty());
-		group.setName("Group");
-	}
+    @BeforeEach
+    void setUp() throws Exception {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(studentsController, "studentService", studentService);
+        group = new Group();
+        group.setId(1);
+        group.setFaculty(new Faculty());
+        group.setName("Group");
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	void shouldAddToModelListWhenGetStudents() throws Exception {
-		Student firstStudent = new Student();
-		firstStudent.setId(1);
-		firstStudent.setFirstName("Ivan");
-		firstStudent.setLastName("Ivanov");
-		firstStudent.setGender(Gender.MALE);
-		firstStudent.setEmail("ivanovivan@test.com");
-		firstStudent.setPhoneNumber("+380123456789");
-		firstStudent.setGroup(group);
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldAddToModelListWhenGetStudents() throws Exception {
+        Student firstStudent = new Student();
+        firstStudent.setId(1);
+        firstStudent.setFirstName("Ivan");
+        firstStudent.setLastName("Ivanov");
+        firstStudent.setGender(Gender.MALE);
+        firstStudent.setEmail("ivanovivan@test.com");
+        firstStudent.setPhoneNumber("+380123456789");
+        firstStudent.setGroup(group);
 
-		Student secondStudent = new Student();
-		secondStudent.setId(2);
-		secondStudent.setFirstName("Vasyl");
-		secondStudent.setLastName("Vasyliev");
-		secondStudent.setGender(Gender.MALE);
-		secondStudent.setEmail("vasylievvasyl@test.com");
-		secondStudent.setPhoneNumber("+380987654321");
-		secondStudent.setGroup(group);
+        Student secondStudent = new Student();
+        secondStudent.setId(2);
+        secondStudent.setFirstName("Vasyl");
+        secondStudent.setLastName("Vasyliev");
+        secondStudent.setGender(Gender.MALE);
+        secondStudent.setEmail("vasylievvasyl@test.com");
+        secondStudent.setPhoneNumber("+380987654321");
+        secondStudent.setGroup(group);
 
-		when(studentService.getAll()).thenReturn(Arrays.asList(firstStudent, secondStudent));
+        when(studentService.getAll()).thenReturn(Arrays.asList(firstStudent, secondStudent));
 
-		mockMvc.perform(get("/students")).andExpect(status().isOk()).andExpect(view().name("students/students"))
-				.andExpect(model().attribute("pageTitle", equalTo("Students")))
-				.andExpect(model().attribute("students", hasSize(2)))
-				.andExpect(model().attribute("students", hasItem(allOf(hasProperty("id", is(1)),
-						hasProperty("firstName", is("Ivan")), hasProperty("lastName", is("Ivanov")),
-						hasProperty("gender", is(Gender.MALE)), hasProperty("email", is("ivanovivan@test.com")),
-						hasProperty("phoneNumber", is("+380123456789")), hasProperty("group", equalTo((group)))))))
-				.andExpect(model().attribute("students",
-						hasItem(allOf(hasProperty("id", is(2)), hasProperty("firstName", is("Vasyl")),
-								hasProperty("lastName", is("Vasyliev")), hasProperty("gender", equalTo(Gender.MALE)),
-								hasProperty("email", is("vasylievvasyl@test.com")),
-								hasProperty("phoneNumber", is("+380987654321")), hasProperty("group", equalTo(group))
+        mockMvc.perform(get("/students")).andExpect(status().isOk()).andExpect(view().name("students/students"))
+                .andExpect(model().attribute("pageTitle", equalTo("Students")))
+                .andExpect(model().attribute("students", hasSize(2)))
+                .andExpect(model().attribute("students", hasItem(allOf(hasProperty("id", is(1)),
+                        hasProperty("firstName", is("Ivan")), hasProperty("lastName", is("Ivanov")),
+                        hasProperty("gender", is(Gender.MALE)), hasProperty("email", is("ivanovivan@test.com")),
+                        hasProperty("phoneNumber", is("+380123456789")), hasProperty("group", equalTo((group)))))))
+                .andExpect(model().attribute("students",
+                        hasItem(allOf(hasProperty("id", is(2)), hasProperty("firstName", is("Vasyl")),
+                                hasProperty("lastName", is("Vasyliev")), hasProperty("gender", equalTo(Gender.MALE)),
+                                hasProperty("email", is("vasylievvasyl@test.com")),
+                                hasProperty("phoneNumber", is("+380987654321")), hasProperty("group", equalTo(group))
 
-						))));
+                        ))));
 
-		verify(studentService).getAll();
-	}
+        verify(studentService).getAll();
+    }
 
-	@Test
-	void shouldAddToModelFoundedEntityWhenGetStudent() throws Exception {
-		int id = 2;
+    @Test
+    void shouldAddToModelFoundedEntityWhenGetStudent() throws Exception {
+        int id = 2;
 
-		Student student = new Student();
-		student.setId(id);
-		student.setFirstName("Petro");
-		student.setLastName("Petrov");
-		student.setGender(Gender.MALE);
-		student.setEmail("petrovpetro@test.com");
-		student.setPhoneNumber("+380784512369");
-		student.setGroup(group);
+        Student student = new Student();
+        student.setId(id);
+        student.setFirstName("Petro");
+        student.setLastName("Petrov");
+        student.setGender(Gender.MALE);
+        student.setEmail("petrovpetro@test.com");
+        student.setPhoneNumber("+380784512369");
+        student.setGroup(group);
 
-		when(studentService.getById(id)).thenReturn(student);
+        when(studentService.getById(id)).thenReturn(student);
 
-		mockMvc.perform(get("/students/{id}", id)).andExpect(status().isOk()).andExpect(view().name("students/student"))
-				.andExpect(
-						model().attribute("pageTitle", equalTo(student.getFirstName() + " " + student.getLastName())))
-				.andExpect(model().attribute("student", hasProperty("id", is(id))))
-				.andExpect(model().attribute("student", hasProperty("firstName", equalTo(student.getFirstName()))))
-				.andExpect(model().attribute("student", hasProperty("lastName", equalTo(student.getLastName()))))
-				.andExpect(model().attribute("student", hasProperty("gender", equalTo(Gender.MALE))))
-				.andExpect(model().attribute("student", hasProperty("email", equalTo("petrovpetro@test.com"))))
-				.andExpect(model().attribute("student", hasProperty("phoneNumber", equalTo("+380784512369"))))
-				.andExpect(model().attribute("student", hasProperty("group", equalTo(group))));
+        mockMvc.perform(get("/students/{id}", id)).andExpect(status().isOk()).andExpect(view().name("students/student"))
+                .andExpect(
+                        model().attribute("pageTitle", equalTo(student.getFirstName() + " " + student.getLastName())))
+                .andExpect(model().attribute("student", hasProperty("id", is(id))))
+                .andExpect(model().attribute("student", hasProperty("firstName", equalTo(student.getFirstName()))))
+                .andExpect(model().attribute("student", hasProperty("lastName", equalTo(student.getLastName()))))
+                .andExpect(model().attribute("student", hasProperty("gender", equalTo(Gender.MALE))))
+                .andExpect(model().attribute("student", hasProperty("email", equalTo("petrovpetro@test.com"))))
+                .andExpect(model().attribute("student", hasProperty("phoneNumber", equalTo("+380784512369"))))
+                .andExpect(model().attribute("student", hasProperty("group", equalTo(group))));
 
-		verify(studentService).getById(id);
-	}
+        verify(studentService).getById(id);
+    }
 
-	@Test
-	void sholdReturnError500WhenDAOExceptionWhileGetStudents() throws Exception {
-		when(studentService.getAll()).thenThrow(serviceWithDAOException);
+    @Test
+    void sholdReturnError500WhenDAOExceptionWhileGetStudents() throws Exception {
+        when(studentService.getAll()).thenThrow(serviceWithDAOException);
 
-		mockMvc.perform(get("/students")).andExpect(status().isInternalServerError());
-		verify(studentService).getAll();
-	}
+        mockMvc.perform(get("/students")).andExpect(status().isInternalServerError());
+        verify(studentService).getAll();
+    }
 
-	@Test
-	void shouldReturnError404WhenServiceExceptionWhileGetStudents() throws Exception {
-		when(studentService.getAll()).thenThrow(ServiceException.class);
+    @Test
+    void shouldReturnError404WhenServiceExceptionWhileGetStudents() throws Exception {
+        when(studentService.getAll()).thenThrow(ServiceException.class);
 
-		mockMvc.perform(get("/students")).andExpect(status().isNotFound());
-		verify(studentService).getAll();
-	}
+        mockMvc.perform(get("/students")).andExpect(status().isNotFound());
+        verify(studentService).getAll();
+    }
 
-	@Test
-	void shouldReturnError500WhenDAOExceptionWhileGetStudent() throws Exception {
-		int id = 7;
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileGetStudent() throws Exception {
+        int id = 7;
 
-		when(studentService.getById(id)).thenThrow(serviceWithDAOException);
+        when(studentService.getById(id)).thenThrow(serviceWithDAOException);
 
-		mockMvc.perform(get("/students/{id}", id)).andExpect(status().isInternalServerError());
-		verify(studentService).getById(id);
-	}
+        mockMvc.perform(get("/students/{id}", id)).andExpect(status().isInternalServerError());
+        verify(studentService).getById(id);
+    }
 
-	@Test
-	void shouldReturnError400WhenIllegalArgumentExceptionWhileGetStudent() throws Exception {
-		int id = 12;
-		when(studentService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
-		mockMvc.perform(get("/students/{id}", id)).andExpect(status().isBadRequest());
-		verify(studentService).getById(id);
-	}
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileGetStudent() throws Exception {
+        int id = 12;
+        when(studentService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        mockMvc.perform(get("/students/{id}", id)).andExpect(status().isBadRequest());
+        verify(studentService).getById(id);
+    }
 
-	@Test
-	void shouldReturnError404WhenEntityIsNotFoundWhileGetStudent() throws Exception {
-		int id = 62;
+    @Test
+    void shouldReturnError404WhenEntityIsNotFoundWhileGetStudent() throws Exception {
+        int id = 62;
 
-		when(studentService.getById(id)).thenThrow(ServiceException.class);
-		mockMvc.perform(get("/students/{id}", id)).andExpect(status().isNotFound());
-		verify(studentService).getById(id);
-	}
+        when(studentService.getById(id)).thenThrow(ServiceException.class);
+        mockMvc.perform(get("/students/{id}", id)).andExpect(status().isNotFound());
+        verify(studentService).getById(id);
+    }
 }
