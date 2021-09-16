@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -77,7 +78,7 @@ class GroupsControllerTest {
             new ConstraintViolationException(null));
 
     private Faculty faculty = new Faculty();
-    Faculty anotherFaculty = new Faculty();
+    private Faculty anotherFaculty = new Faculty();
 
     @BeforeEach
     void setUp() throws Exception {
@@ -250,6 +251,8 @@ class GroupsControllerTest {
         verify(groupService).deleteById(groupId);
     }
 
+    
+    
     @Test
     void shouldReturnError500WhenDAOExceptionWhileGetGroup() throws Exception {
         int id = 4;
@@ -275,5 +278,16 @@ class GroupsControllerTest {
         when(groupService.getById(id)).thenThrow(ServiceException.class);
         mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isNotFound());
         verify(groupService).getById(id);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileCreateGroup() throws Exception {
+        Group testGroup = new Group();
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+        
+        doThrow(serviceWithDAOException).when(groupService).create(testGroup);
+        
+        
     }
 }

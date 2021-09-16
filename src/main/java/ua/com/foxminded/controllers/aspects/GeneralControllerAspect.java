@@ -26,6 +26,10 @@ public class GeneralControllerAspect {
     @Pointcut("execution(public String ua.com.foxminded.controllers.*.get*(int, org.springframework.ui.Model))")
     private void getObjectMethods() {
     }
+    
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.new*(java.lang.Object, org.springframework.ui.Model))")
+    private void newObjectMethods() {
+    }
 
     @Pointcut("execution(public String ua.com.foxminded.controllers.*.create*(ua.com.foxminded.domain.*))")
     private void createObjectMethods() {
@@ -169,6 +173,34 @@ public class GeneralControllerAspect {
                         serviceException.getServiceExceptionMessage());
             } else {
                 LOGGER.error("There is some error in service layer when delete object with id {}.", id,
+                        serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            }
+        }
+    }
+    
+    @Around("newObjectMethods()")
+    public String aroundNewObjectAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to get a page for creating a new object.");
+        }
+
+        try {
+            return (String) proceedingJoinPoint.proceed();
+
+        } catch (ServiceException serviceException) {
+            if (serviceException.getException() instanceof DAOException) {
+                LOGGER.error("There are some errors in dao layer when delete object with id {}.", serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else if (serviceException.getException() instanceof IllegalArgumentException) {
+                LOGGER.error("There are errors with given data when delete object with id {}.", serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else {
+                LOGGER.error("There is some error in service layer when delete object with id {}.",
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
