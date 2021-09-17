@@ -281,13 +281,36 @@ class GroupsControllerTest {
     }
     
     @Test
+    void shouldReturnError500WhenDAOExceptionWhileNewGroup() throws Exception {
+        doThrow(serviceWithDAOException).when(facultyService).getAll();
+        
+        mockMvc.perform(get("/groups/new"))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).getAll();
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileNewGroup() throws Exception {
+        doThrow(ServiceException.class).when(facultyService).getAll();
+        
+        mockMvc.perform(get("/groups/new"))
+            .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).getAll();
+    }
+    
+    @Test
     void shouldReturnError500WhenDAOExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
         
-        doThrow(serviceWithDAOException).when(groupService).create(testGroup);
+        doThrow(serviceWithDAOException).when(facultyService).getById(faculty.getId());
         
-        
+        mockMvc.perform(post("/groups").flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(faculty.getId())))
+                .andExpect(status().isInternalServerError());
+        verify(facultyService).getById(faculty.getId());
     }
 }
