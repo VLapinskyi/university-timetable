@@ -313,4 +313,20 @@ class GroupsControllerTest {
                 .andExpect(status().isInternalServerError());
         verify(facultyService).getById(faculty.getId());
     }
+    
+    @Test
+    void shouldReturnError400WhenConstrantViolationExceptionWhileCreateGroup() throws Exception {
+        Group testGroup = new Group();
+        testGroup.setName(" Wrong name");
+        testGroup.setFaculty(anotherFaculty);
+        
+        doThrow(serviceWithConstraintViolationException).when(groupService).create(testGroup);
+        
+        mockMvc.perform(post("/groups").flashAttr("group", testGroup)
+            .param("faculty-value", Integer.toString(anotherFaculty.getId())))
+            .andExpect(status().isBadRequest());
+        
+        verify(facultyService).getById(anotherFaculty.getId());
+        verify(groupService).create(testGroup);
+    }
 }

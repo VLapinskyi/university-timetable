@@ -31,7 +31,7 @@ public class GeneralControllerAspect {
     private void newObjectMethods() {
     }
 
-    @Pointcut("execution(public String ua.com.foxminded.controllers.*.create*(*..))")
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.create*(..))")
     private void createObjectMethods() {
     }
     
@@ -110,7 +110,7 @@ public class GeneralControllerAspect {
             } else if (serviceException.getException() instanceof ConstraintViolationException 
                     || serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when create object {}.", object, serviceException);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         serviceException.getServiceExceptionMessage());
             } else {
                 LOGGER.error("There is some error in service layer when create an object {}.", object,
