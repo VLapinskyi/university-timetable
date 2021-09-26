@@ -221,27 +221,27 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenConstraintViolationExceptionWhileCreateFaculty() throws Exception {
+    void shouldReturnError400WhenConstraintViolationExceptionWhileCreateFaculty() throws Exception {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         
         doThrow(serviceWithConstraintViolationException).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
-            .andExpect(status().isInternalServerError());
+            .andExpect(status().isBadRequest());
         
         verify(facultyService).create(testFaculty);
     }
     
     @Test
-    void shouldReturnError500WhenIllegalArgumentExceptionWhileCreateFaculty() throws Exception {
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileCreateFaculty() throws Exception {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         
         doThrow(serviceWithIllegalArgumentException).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
-            .andExpect(status().isInternalServerError());
+            .andExpect(status().isBadRequest());
         
         verify(facultyService).create(testFaculty);
     }

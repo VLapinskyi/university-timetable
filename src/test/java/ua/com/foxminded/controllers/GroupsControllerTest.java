@@ -61,7 +61,7 @@ class GroupsControllerTest {
 
     @Mock
     private GroupService groupService;
-    
+
     @Mock
     private FacultyService facultyService;
 
@@ -73,7 +73,7 @@ class GroupsControllerTest {
 
     private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
             new IllegalArgumentException());
-    
+
     private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
             new ConstraintViolationException(null));
 
@@ -89,7 +89,7 @@ class GroupsControllerTest {
 
         faculty.setId(1);
         faculty.setName("Faculty");
-        
+
         anotherFaculty.setId(2);
         anotherFaculty.setName("Another Faculty");
     }
@@ -109,13 +109,13 @@ class GroupsControllerTest {
         when(groupService.getAll()).thenReturn(Arrays.asList(firstGroup, secondGroup));
 
         mockMvc.perform(get("/groups")).andExpect(status().isOk()).andExpect(view().name("groups/groups"))
-                .andExpect(model().attribute("pageTitle", equalTo("Groups")))
-                .andExpect(model().attribute("groups", hasSize(2)))
-                .andExpect(model().attribute("groups",
-                        hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First group")),
-                                hasProperty("faculty", equalTo(faculty))))))
-                .andExpect(model().attribute("groups", hasItem(allOf(hasProperty("id", is(2)),
-                        hasProperty("name", is("Second group")), hasProperty("faculty", equalTo(faculty))))));
+        .andExpect(model().attribute("pageTitle", equalTo("Groups")))
+        .andExpect(model().attribute("groups", hasSize(2)))
+        .andExpect(model().attribute("groups",
+                hasItem(allOf(hasProperty("id", is(1)), hasProperty("name", is("First group")),
+                        hasProperty("faculty", equalTo(faculty))))))
+        .andExpect(model().attribute("groups", hasItem(allOf(hasProperty("id", is(2)),
+                hasProperty("name", is("Second group")), hasProperty("faculty", equalTo(faculty))))));
 
         verify(groupService).getAll();
     }
@@ -131,12 +131,108 @@ class GroupsControllerTest {
         when(groupService.getById(id)).thenReturn(group);
 
         mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isOk()).andExpect(view().name("groups/group"))
-                .andExpect(model().attribute("pageTitle", equalTo(group.getName())))
-                .andExpect(model().attribute("group", hasProperty("id", is(id))))
-                .andExpect(model().attribute("group", hasProperty("name", is("Group"))))
-                .andExpect(model().attribute("group", hasProperty("faculty", equalTo(faculty))));
+        .andExpect(model().attribute("pageTitle", equalTo(group.getName())))
+        .andExpect(model().attribute("group", hasProperty("id", is(id))))
+        .andExpect(model().attribute("group", hasProperty("name", is("Group"))))
+        .andExpect(model().attribute("group", hasProperty("faculty", equalTo(faculty))));
 
         verify(groupService).getById(id);
+    }
+
+    @Test
+    void shouldGenerateRightPageWhenNewGroup() throws Exception {
+        List<Faculty> faculties = new ArrayList<>(Arrays.asList(faculty));
+
+        when(facultyService.getAll()).thenReturn(faculties);
+
+        mockMvc.perform(get("/groups/new"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("groups/new"))
+        .andExpect(model().attribute("pageTitle", "Create a new group"))
+        .andExpect(model().attribute("faculties", equalTo(faculties)));
+
+        verify(facultyService).getAll();
+    }
+
+    @Test
+    void shouldCreateGroup() throws Exception {
+        int facultyId = 1;
+
+        Group testGroup = new Group();
+        testGroup.setName("Test group");
+
+        Group expectedGroup = new Group();
+        expectedGroup.setName("Test group");
+        expectedGroup.setFaculty(faculty);
+
+        when(facultyService.getById(facultyId)).thenReturn(faculty);
+
+        mockMvc.perform(post("/groups").flashAttr("group", testGroup).param("faculty-value", Integer.toString(facultyId)))
+        .andExpect(view().name("redirect:/groups")).andExpect(status().is3xxRedirection());
+
+        verify(facultyService).getById(facultyId);
+        verify(groupService).create(expectedGroup);
+
+    }
+
+    @Test
+    void shouldGenerateRightPageWhenEditGroup()  throws Exception {
+        int groupId = 1;
+
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+
+        List<Faculty> allFaculties = new ArrayList<>(Arrays.asList(faculty, anotherFaculty));
+
+        List<Faculty> expectedListFaculties = new ArrayList<>(Arrays.asList(anotherFaculty));
+
+        when(groupService.getById(groupId)).thenReturn(testGroup);
+        when(facultyService.getAll()).thenReturn(allFaculties);
+
+        mockMvc.perform(get("/groups/{id}/edit", groupId))
+        .andExpect(view().name("groups/edit"))
+        .andExpect(model().attribute("pageTitle", equalTo("Edit " + testGroup.getName())))
+        .andExpect(model().attribute("group", equalTo(testGroup)))
+        .andExpect(model().attribute("faculties", expectedListFaculties));
+
+        verify(groupService).getById(groupId);
+        verify(facultyService).getAll();
+    }
+
+    @Test
+    void shouldUpdateGroup() throws Exception {
+        int groupId = 12;
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+
+        Group expectedGroup = new Group();
+        expectedGroup.setId(groupId);
+        expectedGroup.setName("Test group");
+        expectedGroup.setFaculty(anotherFaculty);
+
+        when(facultyService.getById(anotherFaculty.getId())).thenReturn(anotherFaculty);
+
+        mockMvc.perform(patch("/groups/{id}", groupId).flashAttr("group", testGroup).param("faculty-value", Integer.toString(anotherFaculty.getId())))
+        .andExpect(view().name("redirect:/groups"))
+        .andExpect(status().is3xxRedirection());
+
+        verify(facultyService).getById(anotherFaculty.getId());
+        verify(groupService).update(expectedGroup);
+    }
+
+    @Test
+    void shouldDeleteGroup() throws Exception {
+        int groupId = 4;
+
+        mockMvc.perform(delete("/groups/{id}", groupId))
+        .andExpect(view().name("redirect:/groups"))
+        .andExpect(status().is3xxRedirection());
+
+        verify(groupService).deleteById(groupId);
     }
 
     @Test
@@ -147,112 +243,14 @@ class GroupsControllerTest {
         verify(groupService).getAll();
     }
 
-   @Test
-   void shouldGenerateRightPageWhenNewGroup() throws Exception {
-       List<Faculty> faculties = new ArrayList<>(Arrays.asList(faculty));
-       
-       when(facultyService.getAll()).thenReturn(faculties);
-       
-       mockMvc.perform(get("/groups/new"))
-           .andExpect(status().isOk())
-           .andExpect(view().name("groups/new"))
-           .andExpect(model().attribute("pageTitle", "Create a new group"))
-           .andExpect(model().attribute("faculties", equalTo(faculties)));
-       
-       verify(facultyService).getAll();
-   }
-   
-   @Test
-   void shouldCreateGroup() throws Exception {
-       int facultyId = 1;
-       
-       Group testGroup = new Group();
-       testGroup.setName("Test group");
-       
-       Group expectedGroup = new Group();
-       expectedGroup.setName("Test group");
-       expectedGroup.setFaculty(faculty);
-       
-       when(facultyService.getById(facultyId)).thenReturn(faculty);
-       
-       mockMvc.perform(post("/groups").flashAttr("group", testGroup).param("faculty-value", Integer.toString(facultyId)))
-           .andExpect(view().name("redirect:/groups")).andExpect(status().is3xxRedirection());
-       
-       verify(facultyService).getById(facultyId);
-       verify(groupService).create(expectedGroup);
-       
-   }
-   
-   @Test
-   void shouldGenerateRightPageWhenEditGroup()  throws Exception {
-       int groupId = 1;
-       
-       Group testGroup = new Group();
-       testGroup.setId(groupId);
-       testGroup.setName("Test group");
-       testGroup.setFaculty(faculty);
-       
-       List<Faculty> allFaculties = new ArrayList<>(Arrays.asList(faculty, anotherFaculty));
-       
-       List<Faculty> expectedListFaculties = new ArrayList<>(Arrays.asList(anotherFaculty));
-       
-       when(groupService.getById(groupId)).thenReturn(testGroup);
-       when(facultyService.getAll()).thenReturn(allFaculties);
-       
-       mockMvc.perform(get("/groups/{id}/edit", groupId))
-           .andExpect(view().name("groups/edit"))
-           .andExpect(model().attribute("pageTitle", equalTo("Edit " + testGroup.getName())))
-           .andExpect(model().attribute("group", equalTo(testGroup)))
-           .andExpect(model().attribute("faculties", expectedListFaculties));
-       
-       verify(groupService).getById(groupId);
-       verify(facultyService).getAll();
-   }
-   
-   @Test
-   void shouldUpdateGroup() throws Exception {
-       int groupId = 12;
-       Group testGroup = new Group();
-       testGroup.setId(groupId);
-       testGroup.setName("Test group");
-       testGroup.setFaculty(faculty);
-       
-       Group expectedGroup = new Group();
-       expectedGroup.setId(groupId);
-       expectedGroup.setName("Test group");
-       expectedGroup.setFaculty(anotherFaculty);
-       
-       when(facultyService.getById(anotherFaculty.getId())).thenReturn(anotherFaculty);
-       
-       mockMvc.perform(patch("/groups/{id}", groupId).flashAttr("group", testGroup).param("faculty-value", Integer.toString(anotherFaculty.getId())))
-           .andExpect(view().name("redirect:/groups"))
-           .andExpect(status().is3xxRedirection());
-       
-       verify(facultyService).getById(anotherFaculty.getId());
-       verify(groupService).update(expectedGroup);
-   }
-    
     @Test
     void shouldReturnError404WhenServiceExceptionWhileGetGroups() throws Exception {
         when(groupService.getAll()).thenThrow(ServiceException.class);
 
         mockMvc.perform(get("/groups")).andExpect(status().isNotFound());
         verify(groupService).getAll();
-    }
-    
-    @Test
-    void shouldDeleteGroup() throws Exception {
-        int groupId = 4;
-        
-        mockMvc.perform(delete("/groups/{id}", groupId))
-            .andExpect(view().name("redirect:/groups"))
-            .andExpect(status().is3xxRedirection());
-        
-        verify(groupService).deleteById(groupId);
-    }
+    }    
 
-    
-    
     @Test
     void shouldReturnError500WhenDAOExceptionWhileGetGroup() throws Exception {
         int id = 4;
@@ -279,54 +277,69 @@ class GroupsControllerTest {
         mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isNotFound());
         verify(groupService).getById(id);
     }
-    
+
     @Test
     void shouldReturnError500WhenDAOExceptionWhileNewGroup() throws Exception {
         doThrow(serviceWithDAOException).when(facultyService).getAll();
-        
+
         mockMvc.perform(get("/groups/new"))
-            .andExpect(status().isInternalServerError());
-        
+        .andExpect(status().isInternalServerError());
+
         verify(facultyService).getAll();
     }
-    
+
     @Test
     void shouldReturnError500WhenServiceExceptionWhileNewGroup() throws Exception {
         doThrow(ServiceException.class).when(facultyService).getAll();
-        
+
         mockMvc.perform(get("/groups/new"))
-            .andExpect(status().isInternalServerError());
-        
+        .andExpect(status().isInternalServerError());
+
         verify(facultyService).getAll();
     }
-    
+
     @Test
     void shouldReturnError500WhenDAOExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
-        
+
         doThrow(serviceWithDAOException).when(facultyService).getById(faculty.getId());
-        
+
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(faculty.getId())))
-                .andExpect(status().isInternalServerError());
+        .andExpect(status().isInternalServerError());
         verify(facultyService).getById(faculty.getId());
     }
-    
+
     @Test
     void shouldReturnError400WhenConstrantViolationExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName(" Wrong name");
         testGroup.setFaculty(anotherFaculty);
-        
+
         doThrow(serviceWithConstraintViolationException).when(groupService).create(testGroup);
-        
+
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
-            .param("faculty-value", Integer.toString(anotherFaculty.getId())))
-            .andExpect(status().isBadRequest());
-        
+                .param("faculty-value", Integer.toString(anotherFaculty.getId())))
+        .andExpect(status().isBadRequest());
+
         verify(facultyService).getById(anotherFaculty.getId());
         verify(groupService).create(testGroup);
+    }
+
+    @Test
+    void shouldReturn400WhenIllegalArgumentExceptionWhileCreateGroup() throws Exception {
+        int wrongId = 5;
+        Group testGroup = new Group();
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+        testGroup.setId(wrongId);
+        
+        doThrow(serviceWithIllegalArgumentException).when(groupService).create(testGroup);
+        
+        mockMvc.perform(post("/faculties").flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(faculty.getId())))
+        .andExpect(status().isBadRequest());
     }
 }
