@@ -329,7 +329,7 @@ class GroupsControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenIllegalArgumentExceptionWhileCreateGroup() throws Exception {
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileCreateGroup() throws Exception {
         int wrongId = 5;
         Group testGroup = new Group();
         testGroup.setName("Test group");
@@ -338,8 +338,21 @@ class GroupsControllerTest {
         
         doThrow(serviceWithIllegalArgumentException).when(groupService).create(testGroup);
         
-        mockMvc.perform(post("/faculties").flashAttr("group", testGroup)
+        mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(faculty.getId())))
         .andExpect(status().isBadRequest());
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileCreateGroup() throws Exception {
+        Group testGroup = new Group();
+        testGroup.setName("Test group");
+        testGroup.setFaculty(anotherFaculty);
+        
+        doThrow(ServiceException.class).when(groupService).create(testGroup);
+        
+        mockMvc.perform(post("/groups").flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(anotherFaculty.getId())))
+        .andExpect(status().isInternalServerError());
     }
 }
