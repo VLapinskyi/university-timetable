@@ -18,12 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 
-import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -335,24 +332,172 @@ class GroupsControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
         testGroup.setId(wrongId);
-        
+
         doThrow(serviceWithIllegalArgumentException).when(groupService).create(testGroup);
-        
+
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(faculty.getId())))
         .andExpect(status().isBadRequest());
     }
-    
+
     @Test
     void shouldReturnError500WhenServiceExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName("Test group");
         testGroup.setFaculty(anotherFaculty);
-        
+
         doThrow(ServiceException.class).when(groupService).create(testGroup);
-        
+
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(anotherFaculty.getId())))
         .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileEditGroup() throws Exception {
+        int groupId = 1;
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+
+        when(groupService.getById(groupId)).thenReturn(testGroup);
+        doThrow(serviceWithDAOException).when(facultyService).getAll();
+
+        mockMvc.perform(get("/groups/{id}/edit", groupId))
+        .andExpect(status().isInternalServerError());
+
+        verify(groupService).getById(groupId);
+        verify(facultyService).getAll();
+    }
+
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileEditGroup() throws Exception {
+        int groupId = 2;
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test Group");
+        testGroup.setFaculty(faculty);
+
+        when(groupService.getById(groupId)).thenReturn(testGroup);
+        doThrow(ServiceException.class).when(facultyService).getAll();
+
+        mockMvc.perform(get("/groups/{id}/edit", groupId))
+        .andExpect(status().isInternalServerError());
+
+        verify(groupService).getById(groupId);
+        verify(facultyService).getAll();
+    }
+
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileUpdateGroup() throws Exception {
+        int groupId = 5;
+        int facultyId = anotherFaculty.getId();
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+
+        doThrow(serviceWithDAOException).when(facultyService).getById(facultyId);
+
+        mockMvc.perform(patch("/groups/{id}", groupId)
+                .flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(facultyId)))
+        .andExpect(status().isInternalServerError());
+
+        verify(facultyService).getById(facultyId);
+    }
+
+    @Test
+    void shouldReturnError400WhenConstraintViolationExceptionWhileUpdate() throws Exception {
+        int groupId = 2;
+        int facultyId = faculty.getId();
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(anotherFaculty);
+
+        doThrow(serviceWithConstraintViolationException).when(facultyService).getById(facultyId);
+
+        mockMvc.perform(patch("/groups/{id}", groupId)
+                .flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(facultyId)))
+        .andExpect(status().isBadRequest());
+
+        verify(facultyService).getById(facultyId);
+    }
+    
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileUpdate() throws Exception {
+        int groupId = 30;
+        int facultyId = anotherFaculty.getId();
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+
+        doThrow(serviceWithIllegalArgumentException).when(facultyService).getById(facultyId);
+
+        mockMvc.perform(patch("/groups/{id}", groupId)
+                .flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(facultyId)))
+        .andExpect(status().isBadRequest());
+
+        verify(facultyService).getById(facultyId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileUpdate() throws Exception {
+        int groupId = 41;
+        int facultyId = anotherFaculty.getId();
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("Test group");
+        testGroup.setFaculty(faculty);
+
+        doThrow(ServiceException.class).when(facultyService).getById(facultyId);
+
+        mockMvc.perform(patch("/groups/{id}", groupId)
+                .flashAttr("group", testGroup)
+                .param("faculty-value", Integer.toString(facultyId)))
+        .andExpect(status().isInternalServerError());
+
+        verify(facultyService).getById(facultyId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileDeleteGroup() throws Exception {
+        int testId = 2;
+        
+        doThrow(serviceWithDAOException).when(groupService).deleteById(testId);
+        
+        mockMvc.perform(delete("/groups/{id}", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(groupService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteGroup() throws Exception {
+        int testId = 7;
+        
+        doThrow(serviceWithIllegalArgumentException).when(groupService).deleteById(testId);
+        
+        mockMvc.perform(delete("/groups/{id}", testId))
+        .andExpect(status().isBadRequest());
+        
+        verify(groupService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenIllegalArgumentExceptionWhileDeleteGroup() throws Exception {
+        int testId = 6;
+        
+        doThrow(ServiceException.class).when(groupService).deleteById(testId);
+        
+        mockMvc.perform(delete("/groups/{id}", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(groupService).deleteById(testId);
     }
 }

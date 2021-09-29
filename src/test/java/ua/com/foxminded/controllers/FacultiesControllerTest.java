@@ -275,7 +275,7 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenConstraintViolationExceptionWhileUpdateFaculty() throws Exception {
+    void shouldReturnError400WhenConstraintViolationExceptionWhileUpdateFaculty() throws Exception {
         int testId = 8;
         Faculty testFaculty = new Faculty();
         testFaculty.setId(testId);
@@ -284,13 +284,13 @@ class FacultiesControllerTest {
         doThrow(serviceWithConstraintViolationException).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
-            .andExpect(status().isInternalServerError());
+            .andExpect(status().isBadRequest());
         
         verify(facultyService).update(testFaculty);
     }
     
     @Test
-    void shouldReturnError500WhenIllegalArgumentExceptionWhileUpdateFaculty() throws Exception {
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileUpdateFaculty() throws Exception {
         int testId = 10;
         Faculty testFaculty = new Faculty();
         testFaculty.setId(testId);
@@ -299,7 +299,7 @@ class FacultiesControllerTest {
         doThrow(serviceWithIllegalArgumentException).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
-            .andExpect(status().isInternalServerError());
+            .andExpect(status().isBadRequest());
         
         verify(facultyService).update(testFaculty);
     }
@@ -332,13 +332,13 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenIllegalArgumentExceptionWhileDeleteFaculty() throws Exception {
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteFaculty() throws Exception {
         int testId = 14;
         
         doThrow(serviceWithIllegalArgumentException).when(facultyService).deleteById(testId);
 
         mockMvc.perform(delete("/faculties/{id}", testId))
-            .andExpect(status().isInternalServerError());
+            .andExpect(status().isBadRequest());
         
         verify(facultyService).deleteById(testId);
     }

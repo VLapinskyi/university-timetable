@@ -35,7 +35,11 @@ public class GeneralControllerAspect {
     private void createObjectMethods() {
     }
     
-    @Pointcut("execution(public String ua.com.foxminded.controllers.*.update*(ua.com.foxminded.domain.*))")
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.edit*(org.springframework.ui.Model, *))")
+    private void editObjectMethods() {
+    }
+    
+    @Pointcut("execution(public String ua.com.foxminded.controllers.*.update*(..))")
     private void updateObjectMethods() {
     }
     
@@ -140,7 +144,7 @@ public class GeneralControllerAspect {
             } else if (serviceException.getException() instanceof ConstraintViolationException 
                     || serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when update object {}.", object, serviceException);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         serviceException.getServiceExceptionMessage());
             } else {
                 LOGGER.error("There is some error in service layer when update an object {}.", object,
@@ -169,7 +173,7 @@ public class GeneralControllerAspect {
                         serviceException.getServiceExceptionMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when delete object with id {}.", id, serviceException);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         serviceException.getServiceExceptionMessage());
             } else {
                 LOGGER.error("There is some error in service layer when delete object with id {}.", id,
@@ -197,6 +201,30 @@ public class GeneralControllerAspect {
                         serviceException.getServiceExceptionMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get a page for creating a new object.",
+                        serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            }
+        }
+    }
+    
+    @Around("editObjectMethods()")
+    public String aroundEditObjectAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Try to get a page for editing a new object.");
+        }
+
+        try {
+            return (String) proceedingJoinPoint.proceed();
+
+        } catch (ServiceException serviceException) {
+            if (serviceException.getException() instanceof DAOException) {
+                LOGGER.error("There are some errors in dao layer when get a page for editing a new object.", serviceException);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        serviceException.getServiceExceptionMessage());
+            } else {
+                LOGGER.error("There is some error in service layer when get a page for editing a new object.",
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
