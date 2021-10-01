@@ -138,6 +138,7 @@ class FacultiesControllerTest {
                 .andExpect(model().attribute("faculty", hasProperty("name", is(testFaculty.getName()))));
 
         verify(facultyService).getById(testId);
+        
     }
 
     @Test

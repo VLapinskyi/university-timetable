@@ -48,8 +48,9 @@ public class LecturersController {
 
     @GetMapping("/new")
     public String newLecturer(@ModelAttribute("lecturer") Lecturer lecturer, Model model) {
+        model.addAttribute("pageTitle", "Create a new lecturer");
         model.addAttribute("genders", Gender.values());
-        return "/lecturers/new";
+        return "lecturers/new";
     }
 
     @PostMapping()

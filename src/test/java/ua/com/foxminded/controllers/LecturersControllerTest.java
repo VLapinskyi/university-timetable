@@ -2,7 +2,11 @@ package ua.com.foxminded.controllers;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -30,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import jakarta.validation.ConstraintViolationException;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
@@ -60,6 +65,9 @@ class LecturersControllerTest {
     private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
             new IllegalArgumentException());
 
+    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
+            new ConstraintViolationException(null));
+    
     @BeforeEach
     void setUp() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -135,6 +143,85 @@ class LecturersControllerTest {
 
         verify(lecturerService).getById(id);
     }
+    
+    @Test
+    void shouldGenerateRightPageWhenNewLecturer() throws Exception {
+        mockMvc.perform(get("/lecturers/new"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("lecturers/new"))
+        .andExpect(model().attribute("pageTitle", "Create a new lecturer"))
+        .andExpect(model().attribute("genders", equalTo(Gender.values())));
+    }
+    
+    @Test
+    void shouldCreateLecturer() throws Exception {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Petro");
+        lecturer.setLastName("Petrov");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380967845123");
+        lecturer.setEmail("ppetrov@test.com");
+        
+        mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(view().name("redirect:/lecturers")).andExpect(status().is3xxRedirection());
+        
+        verify(lecturerService).create(lecturer);
+    }
+    
+    @Test
+    void shouldGenerateRightPageWhenEditLecturer() throws Exception {
+        int testId = 5;
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(testId);
+        lecturer.setFirstName("Vasyl");
+        lecturer.setLastName("Vasylov");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380786542321");
+        lecturer.setEmail("VVasylov@test.com");
+        
+        when(lecturerService.getById(testId)).thenReturn(lecturer);
+        
+        mockMvc.perform(get("/lecturers/{id}/edit", testId))
+        .andExpect(view().name("lecturers/edit"))
+        .andExpect(model().attribute("pageTitle", equalTo("Edit " + lecturer.getFirstName() + " " + lecturer.getLastName())))
+        .andExpect(model().attribute("lecturer", equalTo(lecturer)))
+        .andExpect(model().attribute("genders", Arrays.asList(Gender.FEMALE)))
+        .andExpect(status().isOk());
+        
+        verify(lecturerService).getById(testId);
+        
+    }
+    
+    @Test
+    void shouldUpdateLecturer() throws Exception {
+        int testId = 7;
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Ivan");
+        lecturer.setLastName("Ivanov");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setId(testId);
+        lecturer.setPhoneNumber("+380459865321");
+        lecturer.setEmail("IIvanov@test.com");
+        
+        mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(view().name("redirect:/lecturers"));
+        
+        verify(lecturerService).update(lecturer);
+    }
+    
+    @Test
+    void shouldDeleteLecturer() throws Exception {
+        int testId = 6;
+        
+        mockMvc.perform(delete("/lecturers/{id}", testId))
+        .andExpect(view().name("redirect:/lecturers"))
+        .andExpect(status().is3xxRedirection());
+        
+        verify(lecturerService).deleteById(testId);
+    }
 
     @Test
     void sholdReturnError500WhenDAOExceptionWhileGetLecturers() throws Exception {
@@ -177,5 +264,77 @@ class LecturersControllerTest {
         when(lecturerService.getById(id)).thenThrow(ServiceException.class);
         mockMvc.perform(get("/lecturers/{id}", id)).andExpect(status().isNotFound());
         verify(lecturerService).getById(id);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileCreate() throws Exception {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Mariia");
+        lecturer.setLastName("Romanova");
+        lecturer.setGender(Gender.FEMALE);
+        lecturer.setPhoneNumber("+380459865321");
+        lecturer.setEmail("MRomanova@test.com");
+        
+        doThrow(serviceWithDAOException).when(lecturerService).create(lecturer);
+        
+        mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.FEMALE.toString()))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).create(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError400ConstraintViolationExceptionWhileCreate() throws Exception {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Roman");
+        lecturer.setLastName("Kolomiiets");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380234598741");
+        lecturer.setEmail("RKolomiiets@test.com");
+        
+        doThrow(serviceWithConstraintViolationException).when(lecturerService).create(lecturer);
+        
+        mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().isBadRequest());
+        
+        verify(lecturerService).create(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError400IllegalArgumentExceptionWhileCreate() throws Exception {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Serhii");
+        lecturer.setLastName("Mazur");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380216598741");
+        lecturer.setEmail("SMazur@test.com");
+        
+        doThrow(serviceWithIllegalArgumentException).when(lecturerService).create(lecturer);
+        
+        mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().isBadRequest());
+        
+        verify(lecturerService).create(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError500ServiceExceptionWhileCreate() throws Exception {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setFirstName("Vita");
+        lecturer.setLastName("Didenko");
+        lecturer.setGender(Gender.FEMALE);
+        lecturer.setPhoneNumber("+3805698741");
+        lecturer.setEmail("VDidenko@test.com");
+        
+        doThrow(ServiceException.class).when(lecturerService).create(lecturer);
+        
+        mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.FEMALE.toString()))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).create(lecturer);
     }
 }
