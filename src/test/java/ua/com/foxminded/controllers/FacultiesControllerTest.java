@@ -261,6 +261,31 @@ class FacultiesControllerTest {
     }
     
     @Test
+    void shouldReturnError500WhenDAOExceptionWhileEditFaculty() throws Exception {
+        int testId = 9;
+        
+        doThrow(serviceWithDAOException).when(facultyService).getById(testId);
+        
+        mockMvc.perform(get("/faculties/{id}/edit", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).getById(testId);
+        
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileEditFaculty() throws Exception {
+        int testId = 21;
+        
+        doThrow(ServiceException.class).when(facultyService).getById(testId);
+        
+        mockMvc.perform(get("/faculties/{id}/edit", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(facultyService).getById(testId);
+    }
+    
+    @Test
     void shouldReturnError500WhenDAOExceptionWhileUpdateFaculty() throws Exception {
         int testId = 4;
         Faculty testFaculty = new Faculty();

@@ -490,7 +490,7 @@ class GroupsControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenIllegalArgumentExceptionWhileDeleteGroup() throws Exception {
+    void shouldReturnError500WhenServiceExceptionWhileDeleteGroup() throws Exception {
         int testId = 6;
         
         doThrow(ServiceException.class).when(groupService).deleteById(testId);

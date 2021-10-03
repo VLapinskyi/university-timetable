@@ -337,4 +337,147 @@ class LecturersControllerTest {
         
         verify(lecturerService).create(lecturer);
     }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileEdit() throws Exception {
+        int testId = 13;
+        
+        doThrow(serviceWithDAOException).when(lecturerService).getById(testId);
+        
+        mockMvc.perform(get("/lecturers/{id}/edit", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).getById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileEdit() throws Exception {
+        int testId = 4;
+        
+        doThrow(ServiceException.class).when(lecturerService).getById(testId);
+        
+        mockMvc.perform(get("/lecturers/{id}/edit", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).getById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileUpdate() throws Exception {
+        int testId = 1;
+        
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(testId);
+        lecturer.setFirstName("Vasyl");
+        lecturer.setLastName("Kolisnichenko");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380984563214");
+        lecturer.setEmail("VKolisnichenko@test.com");
+        
+        doThrow(serviceWithDAOException).when(lecturerService).update(lecturer);
+        
+        mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).update(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError400WhenConstraintViolationExceptionWhileUpdate() throws Exception {
+        int testId = 8;
+        
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(testId);
+        lecturer.setFirstName("Mykhailo");
+        lecturer.setLastName("Burlaka");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380956352741");
+        lecturer.setEmail("MBurlaka@test.com");
+        
+        doThrow(serviceWithConstraintViolationException).when(lecturerService).update(lecturer);
+        
+        mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().isBadRequest());
+        
+        verify(lecturerService).update(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileUpdate() throws Exception {
+        int testId = 9;
+        
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(testId);
+        lecturer.setFirstName("Oleksandr");
+        lecturer.setLastName("Ostapovets");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380974563214");
+        lecturer.setEmail("OOstapovets@test.com");
+        
+        doThrow(serviceWithIllegalArgumentException).when(lecturerService).update(lecturer);
+        
+        mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().isBadRequest());
+        
+        verify(lecturerService).update(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileUpdate() throws Exception {
+        int testId = 23;
+        
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(testId);
+        lecturer.setFirstName("Nataliia");
+        lecturer.setLastName("Shvets");
+        lecturer.setGender(Gender.FEMALE);
+        lecturer.setPhoneNumber("+380459685741");
+        lecturer.setEmail("NSvets@test.com");
+        
+        doThrow(ServiceException.class).when(lecturerService).update(lecturer);
+        
+        mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
+                .param("gender-value", Gender.MALE.toString()))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).update(lecturer);
+    }
+    
+    @Test
+    void shouldReturnError500WhenDAOExceptionWhileDelete() throws Exception {
+        int testId = 12;
+        
+        doThrow(serviceWithDAOException).when(lecturerService).deleteById(testId);
+        
+        mockMvc.perform(delete("/lecturers/{id}", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError400WhenIllegalArgumentExceptionWhileDelete() throws Exception {
+        int testId = 43;
+        doThrow(serviceWithIllegalArgumentException).when(lecturerService).deleteById(testId);
+        
+        mockMvc.perform(delete("/lecturers/{id}", testId))
+        .andExpect(status().isBadRequest());
+        
+        verify(lecturerService).deleteById(testId);
+    }
+    
+    @Test
+    void shouldReturnError500WhenServiceExceptionWhileDelete() throws Exception {
+        int testId = 134;
+        
+        doThrow(ServiceException.class).when(lecturerService).deleteById(testId);
+        
+        mockMvc.perform(delete("/lecturers/{id}", testId))
+        .andExpect(status().isInternalServerError());
+        
+        verify(lecturerService).deleteById(testId);
+    }
 }

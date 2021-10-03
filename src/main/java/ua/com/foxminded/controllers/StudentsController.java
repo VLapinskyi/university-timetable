@@ -51,9 +51,10 @@ public class StudentsController {
 
     @GetMapping("/new")
     public String newStudent(@ModelAttribute("student") Student student, Model model) {
+        model.addAttribute("pageTitle", "Create a new student");
         model.addAttribute("groups", groupService.getAll());
         model.addAttribute("genders", Gender.values());
-        return "/students/new";
+        return "students/new";
     }
 
     @PostMapping()
@@ -75,7 +76,7 @@ public class StudentsController {
         List<Group> groups = groupService.getAll();
         groups.remove(studentGroup);
 
-        model.addAttribute("pageTitle", "Edit " + student.getFirstName() + " " + student.getLastName());
+        model.addAttribute("pageTitle", "Edit a student " + student.getFirstName() + " " + student.getLastName());
         model.addAttribute("student", student);
         model.addAttribute("genders", genders);
         model.addAttribute("groups", groups);

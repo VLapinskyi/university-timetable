@@ -114,12 +114,13 @@ public class ScheduleController {
     }
 
     @GetMapping("/lesson-time-parameters/new")
-    public String addLessonParatemer(@ModelAttribute("lessonTime") LessonTime lessonTime) {
+    public String newLessonTimeParameter(@ModelAttribute("lessonTime") LessonTime lessonTime, Model model) {
+        model.addAttribute("pageTitle", "Create new lesson time parameter");
         return "schedule/lesson-time-parameters/new";
     }
 
-    @PostMapping("lesson-time-parameters")
-    public String addLessonTimeParameter(@ModelAttribute("lessonTIme") LessonTime lessonTime) {
+    @PostMapping("/lesson-time-parameters")
+    public String createLessonTimeParameter(@ModelAttribute("lessonTime") LessonTime lessonTime) {
         lessonTimeService.create(lessonTime);
         return "redirect:/lesson-time-parameters";
     }
@@ -138,21 +139,22 @@ public class ScheduleController {
         return "redirect:/lesson-time-parameters";
     }
 
-    @DeleteMapping("{lesson-time-parameters/{id}")
+    @DeleteMapping("/lesson-time-parameters/{id}")
     public String deleteLessonTimeParameter(@PathVariable("id") int id) {
         lessonTimeService.deleteById(id);
         return "redirect:/lesson-time-parameters";
     }
 
     @GetMapping("/lessons-new")
-    public String addLesson(@ModelAttribute("lesson") Lesson lesson, Model model) {
+    public String newLesson(@ModelAttribute("lesson") Lesson lesson, Model model) {
+        model.addAttribute("pageTitle", "Create a new lesson");
         model.addAttribute("groups", groupService.getAll());
         model.addAttribute("lecturers", lecturerService.getAll());
         model.addAttribute("lessonTimes", lessonTimeService.getAll());
-        return "/schedule/lessons/new";
+        return "schedule/lessons/new";
     }
 
-    @GetMapping("lessons/{id}/edit")
+    @GetMapping("/lessons/{id}/edit")
     public String editLesson(Model model, @PathVariable("id") int id) {
         Lesson lesson = lessonService.getById(id);
 
@@ -174,7 +176,7 @@ public class ScheduleController {
         model.addAttribute("lessonTimes", lessonTimes);
         model.addAttribute("lecturers", lecturers);
         model.addAttribute("groups", groups);
-        return "/schedule/lessons/edit";
+        return "schedule/lessons/edit";
     }
 
     @PatchMapping("/lessons/{id}")
