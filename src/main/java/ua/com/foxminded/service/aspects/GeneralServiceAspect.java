@@ -22,7 +22,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 public class GeneralServiceAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeneralServiceAspect.class);
 
-    @Pointcut ("execution (void ua.com.foxminded.service.*.create(*))")
+    @Pointcut("execution (void ua.com.foxminded.service.*.create(*))")
     private void createMethods() {
     }
 
@@ -43,12 +43,12 @@ public class GeneralServiceAspect {
     }
 
     @Around("createMethods()")
-    void aroundCreateAdvice (ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    void aroundCreateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object object = proceedingJoinPoint.getArgs()[0];
-        
-        try {        
+
+        try {
             proceedingJoinPoint.proceed();
-            
+
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The object {} was created.", object);
             }
@@ -87,7 +87,7 @@ public class GeneralServiceAspect {
         }
     }
 
-    @Around ("getByIdMethods()")
+    @Around("getByIdMethods()")
     Object aroundGetByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
@@ -97,11 +97,11 @@ public class GeneralServiceAspect {
 
         try {
             if (id < 1) {
-                IllegalArgumentException exception = new IllegalArgumentException("A given id is less than 1 when getById.");
+                IllegalArgumentException exception = new IllegalArgumentException(
+                        "A given id is less than 1 when getById.");
                 LOGGER.error("A given id {} is less than 1 when getById.", id, exception);
                 throw exception;
             }
-
 
             Object targetMethod = proceedingJoinPoint.proceed();
 
@@ -110,9 +110,10 @@ public class GeneralServiceAspect {
             }
 
             return targetMethod;
-        } catch (DAOException daoException) {            
+        } catch (DAOException daoException) {
             if (daoException.getDataAccessException() instanceof EmptyResultDataAccessException) {
-                NotFoundEntityException notFoundEntityException = new NotFoundEntityException(daoException, "The entity was not found wheh get by id.");
+                NotFoundEntityException notFoundEntityException = new NotFoundEntityException(daoException,
+                        "The entity was not found wheh get by id.");
                 LOGGER.error("The entity is not found when get object by id {}.", id, notFoundEntityException);
                 throw new ServiceException("The entity is not found when get object by id.", notFoundEntityException);
             } else {
@@ -124,7 +125,7 @@ public class GeneralServiceAspect {
         }
     }
 
-    @Around ("updateMethods()")
+    @Around("updateMethods()")
     void aroundUpdateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object updatedObject = proceedingJoinPoint.getArgs()[0];
         try {
@@ -139,7 +140,7 @@ public class GeneralServiceAspect {
         }
     }
 
-    @Around ("deleteByIdMethods()")
+    @Around("deleteByIdMethods()")
     void aroundDeleteByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
@@ -149,7 +150,8 @@ public class GeneralServiceAspect {
 
         try {
             if (id < 1) {
-                IllegalArgumentException exception = new IllegalArgumentException("A given id is less than 1 when deleteById.");
+                IllegalArgumentException exception = new IllegalArgumentException(
+                        "A given id is less than 1 when deleteById.");
                 LOGGER.error("A given id {} is less than 1 when deleteById.", id, exception);
                 throw exception;
             }

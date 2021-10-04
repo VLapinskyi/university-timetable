@@ -24,9 +24,9 @@ public class FacultyAspect {
     private static final Logger LOGGER = LoggerFactory.getLogger(FacultyAspect.class);
 
     private Validator validator;
-    
+
     @Autowired
-    public FacultyAspect (Validator validator) {
+    public FacultyAspect(Validator validator) {
         this.validator = validator;
     }
 
@@ -46,15 +46,16 @@ public class FacultyAspect {
             LOGGER.debug("Try to create a new faculty: {}.", faculty);
         }
 
-        try {        
+        try {
             if (faculty == null) {
-                IllegalArgumentException exception = new IllegalArgumentException("A faculty can't be null when create.");
+                IllegalArgumentException exception = new IllegalArgumentException(
+                        "A faculty can't be null when create.");
                 LOGGER.error("A faculty {} can't be null when create.", faculty, exception);
                 throw exception;
             }
 
             Set<ConstraintViolation<Faculty>> violations = validator.validate(faculty);
-            
+
             if (!violations.isEmpty()) {
                 StringJoiner errorMessages = new StringJoiner("; ");
 
@@ -62,8 +63,10 @@ public class FacultyAspect {
                     errorMessages.add(violation.getMessage());
                 }
 
-                ConstraintViolationException exception = new ConstraintViolationException("When create the faculty is not valid: " + errorMessages, violations);
-                LOGGER.error("The faculty {} is not valid when create. There are errors: {}.", faculty, errorMessages, exception);
+                ConstraintViolationException exception = new ConstraintViolationException(
+                        "When create the faculty is not valid: " + errorMessages, violations);
+                LOGGER.error("The faculty {} is not valid when create. There are errors: {}.", faculty, errorMessages,
+                        exception);
                 throw exception;
             }
 
@@ -71,7 +74,8 @@ public class FacultyAspect {
 
             if (facultyId != 0) {
                 IllegalArgumentException exception = new IllegalArgumentException("A faculty id isn't 0 when create.");
-                LOGGER.error("A faculty {} has wrong id {} which is not equal zero when create.", faculty, facultyId, exception);
+                LOGGER.error("A faculty {} has wrong id {} which is not equal zero when create.", faculty, facultyId,
+                        exception);
                 throw exception;
             }
         } catch (IllegalArgumentException illegalArgumentException) {
@@ -105,16 +109,20 @@ public class FacultyAspect {
                     errorMessages.add(violation.getMessage());
                 }
 
-                ConstraintViolationException exception = new ConstraintViolationException("When update the faculty is not valid: " + errorMessages, violations);
-                LOGGER.error("The faculty {} is not valid when update. There are errors: {}.", faculty, errorMessages, exception);
+                ConstraintViolationException exception = new ConstraintViolationException(
+                        "When update the faculty is not valid: " + errorMessages, violations);
+                LOGGER.error("The faculty {} is not valid when update. There are errors: {}.", faculty, errorMessages,
+                        exception);
                 throw exception;
             }
 
             int facultyId = faculty.getId();
 
             if (facultyId < 1) {
-                IllegalArgumentException exception = new IllegalArgumentException("A faculty id isn't positive for existing object.");
-                LOGGER.error("An updated faculty {} has wrong id {} which is not positive.", faculty, facultyId, exception);
+                IllegalArgumentException exception = new IllegalArgumentException(
+                        "A faculty id isn't positive for existing object.");
+                LOGGER.error("An updated faculty {} has wrong id {} which is not positive.", faculty, facultyId,
+                        exception);
                 throw exception;
             }
         } catch (IllegalArgumentException illegalArgumentException) {

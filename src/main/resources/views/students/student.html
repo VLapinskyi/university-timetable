@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head>
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
-    
+    <header th:replace="fragments :: header-navigation"> </header>
+
     <div class="container">
         <table class="table">
             <tr>
@@ -13,7 +15,8 @@
             </tr>
             <tr>
                 <td>Student's name:</td>
-                <td th:text="${student.firstName + ' ' + student.lastName}"></td>
+                <td
+                    th:text="${student.firstName + ' ' + student.lastName}"></td>
             </tr>
             <tr>
                 <td>Student's gender:</td>
@@ -21,9 +24,12 @@
             </tr>
             <tr>
                 <td>Group:</td>
-                <td><a class="text-decoration-none"
-                    th:href="@{/groups/{id}(id=${student.group.id})}"
-                    th:text="${student.group.name}">group</a></td>
+                <td>
+                    <a
+                        class="text-decoration-none"
+                        th:href="@{/groups/{id}(id=${student.group.id})}"
+                        th:text="${student.group.name}">group</a>
+                </td>
             </tr>
             <tr>
                 <td>Student's phone number:</td>
@@ -33,10 +39,25 @@
                 <td>Student's email:</td>
                 <td th:text="${student.email}"></td>
             </tr>
+            <tr>
+                <td
+                    colspan="2"
+                    align="center">
+                    <form th:action="@{/students/{id}(id=${student.id})}" th:method="DELETE">
+                        <a th:href="@{/students/{id}/edit(id=${student.id})}">
+                            <input 
+                                type="button"
+                                class="btn btn-outline-primary"
+                                value="Edit"/></a>
+                        <span> | </span>
+                        <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                    </form>
+                </td>
+            </tr>
         </table>
     </div>
-    
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>

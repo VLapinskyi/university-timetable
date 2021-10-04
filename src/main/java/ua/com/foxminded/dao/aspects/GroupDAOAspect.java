@@ -27,7 +27,7 @@ public class GroupDAOAspect {
     }
 
     @Around("setGroupFacultyMethod()")
-    void aroundSetGroupFacultyAdvice (ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    void aroundSetGroupFacultyAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int facultyId = (int) proceedingJoinPoint.getArgs()[0];
         int groupId = (int) proceedingJoinPoint.getArgs()[1];
 
@@ -38,12 +38,12 @@ public class GroupDAOAspect {
         try {
             proceedingJoinPoint.proceed();
 
-            if(LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The faculty with id {} was setted for the group with id {}.", 
-                        facultyId, groupId);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("The faculty with id {} was setted for the group with id {}.", facultyId, groupId);
             }
         } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't set a faculty with id {} for a group with id {}.", facultyId, groupId, dataAccessException);
+            LOGGER.error("Can't set a faculty with id {} for a group with id {}.", facultyId, groupId,
+                    dataAccessException);
             throw new DAOException("Can't set a faculty for a group.", dataAccessException);
         }
     }

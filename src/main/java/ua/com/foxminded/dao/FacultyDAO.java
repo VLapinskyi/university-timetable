@@ -28,14 +28,12 @@ public class FacultyDAO implements GenericDAO<Faculty> {
 
     @Override
     public List<Faculty> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.faculties"),
-                new FacultyMapper());
+        return jdbcTemplate.query(environment.getProperty("find.all.faculties"), new FacultyMapper());
     }
 
     @Override
-    public Faculty findById(int id) {        
-        return jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"),
-                new FacultyMapper(), id);
+    public Faculty findById(int id) {
+        return jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"), new FacultyMapper(), id);
     }
 
     @Override

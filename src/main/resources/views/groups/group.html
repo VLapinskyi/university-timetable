@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head>
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
+    <header th:replace="fragments :: header-navigation"> </header>
     <div class="container">
         <table class="table">
             <tr>
@@ -16,13 +18,30 @@
             </tr>
             <tr>
                 <td>Faculty:</td>
-                <td><a class="text-decoration-none"
-                    th:href="@{/faculties/{id}(id=${group.faculty.id})}"
-                    th:text="${group.faculty.name}">faculty</a></td>
+                <td>
+                    <a
+                        class="text-decoration-none"
+                        th:href="@{/faculties/{id}(id=${group.faculty.id})}"
+                        th:text="${group.faculty.name}">faculty</a>
+                </td>
+            </tr>
+            <tr>
+                <td
+                    colspan="2"
+                    align="center">
+                    <form th:action="@{/groups/{id}(id=${group.id})}" th:method="DELETE">
+                        <a th:href="@{/groups/{id}/edit(id=${group.id})}">
+                            <input type="button"
+                                class="btn btn-outline-primary"
+                                value="Edit" /></a>
+                        <span> | </span>
+                        <input type="submit" value="Delete"class="btn btn-outline-danger"/>
+                    </form>
+                </td>
             </tr>
         </table>
     </div>
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>

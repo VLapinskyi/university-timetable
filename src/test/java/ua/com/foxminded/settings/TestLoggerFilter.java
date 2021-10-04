@@ -9,7 +9,7 @@ public class TestLoggerFilter extends Filter<ILoggingEvent> {
     @Override
     public FilterReply decide(ILoggingEvent event) {
         if (event.getLoggerName().contains("ua.com.foxminded")) {
-          return FilterReply.ACCEPT;  
+            return FilterReply.ACCEPT;
         } else {
             return FilterReply.DENY;
         }

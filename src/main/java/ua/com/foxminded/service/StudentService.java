@@ -16,13 +16,13 @@ public class StudentService {
     private StudentDAO studentDAO;
 
     @Autowired
-    public StudentService (StudentDAO studentDAO) {
+    public StudentService(StudentDAO studentDAO) {
         this.studentDAO = studentDAO;
     }
 
     public void create(Student student) {
         studentDAO.create(student);
-        Optional<Student> createdStudent = studentDAO.findAll().stream().max(Comparator.comparing(Student :: getId));
+        Optional<Student> createdStudent = studentDAO.findAll().stream().max(Comparator.comparing(Student::getId));
         int studentId = 0;
         if (createdStudent.isPresent()) {
             studentId = createdStudent.get().getId();

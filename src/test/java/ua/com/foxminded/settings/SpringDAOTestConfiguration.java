@@ -32,7 +32,7 @@ public class SpringDAOTestConfiguration {
     }
 
     @Bean
-    public JdbcTemplate getJdbcTemplate () {
+    public JdbcTemplate getJdbcTemplate() {
         return new JdbcTemplate(getDataSource());
     }
 }

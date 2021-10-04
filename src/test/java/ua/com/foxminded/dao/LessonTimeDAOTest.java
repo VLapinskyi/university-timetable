@@ -38,7 +38,7 @@ import ua.com.foxminded.mapper.LessonTimeMapper;
 import ua.com.foxminded.settings.SpringDAOTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = {SpringDAOTestConfiguration.class})
+@ContextConfiguration(classes = { SpringDAOTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class LessonTimeDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -60,13 +60,12 @@ class LessonTimeDAOTest {
         MockitoAnnotations.openMocks(this);
         connection = jdbcTemplate.getDataSource().getConnection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
-        expectedLessonTimes = new ArrayList<>(Arrays.asList(
-                new LessonTime(), new LessonTime(), new LessonTime()));
+        expectedLessonTimes = new ArrayList<>(Arrays.asList(new LessonTime(), new LessonTime(), new LessonTime()));
         List<Integer> indexes = new ArrayList<>(Arrays.asList(1, 2, 3));
-        List<LocalTime> startTimes = new ArrayList<>(Arrays.asList(
-                LocalTime.of(9, 0), LocalTime.of(10, 45), LocalTime.of(12, 30)));
-        List<LocalTime> endTimes = new ArrayList<>(Arrays.asList(
-                LocalTime.of(10, 30), LocalTime.of(12, 15), LocalTime.of(14, 0)));
+        List<LocalTime> startTimes = new ArrayList<>(
+                Arrays.asList(LocalTime.of(9, 0), LocalTime.of(10, 45), LocalTime.of(12, 30)));
+        List<LocalTime> endTimes = new ArrayList<>(
+                Arrays.asList(LocalTime.of(10, 30), LocalTime.of(12, 15), LocalTime.of(14, 0)));
         for (int i = 0; i < expectedLessonTimes.size(); i++) {
             expectedLessonTimes.get(i).setId(indexes.get(i));
             expectedLessonTimes.get(i).setStartTime(startTimes.get(i));
@@ -100,7 +99,8 @@ class LessonTimeDAOTest {
     void shouldFindAllLessonTimes() {
         ScriptUtils.executeSqlScript(connection, testData);
         List<LessonTime> actualLessonTimes = lessonTimeDAO.findAll();
-        assertTrue(expectedLessonTimes.containsAll(actualLessonTimes) && actualLessonTimes.containsAll(expectedLessonTimes));
+        assertTrue(expectedLessonTimes.containsAll(actualLessonTimes)
+                && actualLessonTimes.containsAll(expectedLessonTimes));
     }
 
     @Test
@@ -143,36 +143,38 @@ class LessonTimeDAOTest {
         }
         lessonTimeDAO.deleteById(deletedId);
         List<LessonTime> actualLessonTimes = lessonTimeDAO.findAll();
-        assertTrue(expectedLessonTimes.containsAll(actualLessonTimes) && actualLessonTimes.containsAll(expectedLessonTimes));
+        assertTrue(expectedLessonTimes.containsAll(actualLessonTimes)
+                && actualLessonTimes.containsAll(expectedLessonTimes));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         assertThrows(DAOException.class, () -> lessonTimeDAO.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindAll() {
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.query(anyString(), any(LessonTimeMapper.class))).thenThrow(QueryTimeoutException.class);
         assertThrows(DAOException.class, () -> lessonTimeDAO.findAll());
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenEmptyResultDataAccessExceptionWhileFindById() {
         int testId = 1;
         assertThrows(DAOException.class, () -> lessonTimeDAO.findById(testId));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindById() {
         int testId = 1;
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(LessonTimeMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(LessonTimeMapper.class), anyInt()))
+                .thenThrow(QueryTimeoutException.class);
         assertThrows(DAOException.class, () -> lessonTimeDAO.findById(testId));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileUpdate() {
         int testId = 1;
@@ -181,7 +183,7 @@ class LessonTimeDAOTest {
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
         assertThrows(DAOException.class, () -> lessonTimeDAO.update(testId, testLessonTime));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileDeleteById() {
         int testId = 1;
@@ -196,13 +198,11 @@ class LessonTimeDAOTest {
         testLessonTime.setStartTime(LocalTime.of(15, 0));
         testLessonTime.setEndTime(LocalTime.of(16, 0));
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testLessonTime + ".",
-                "The object " + testLessonTime + " was inserted."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to insert a new object: " + testLessonTime + ".",
+                        "The object " + testLessonTime + " was inserted."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -224,13 +224,11 @@ class LessonTimeDAOTest {
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileCreateLessonTime() {
         LessonTime testLessonTime = new LessonTime();
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testLessonTime + ".",
-                "Can't insert the object: " + testLessonTime + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to insert a new object: " + testLessonTime + ".",
+                        "Can't insert the object: " + testLessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -240,7 +238,7 @@ class LessonTimeDAOTest {
         try {
             lessonTimeDAO.create(testLessonTime);
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -254,13 +252,10 @@ class LessonTimeDAOTest {
 
     @Test
     void shouldGenerateLogsWhenFindAllIsEmpty() {
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.WARN));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all objects.",
-                "There are not any objects in the result when findAll."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to find all objects.", "There are not any objects in the result when findAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -281,13 +276,10 @@ class LessonTimeDAOTest {
     @Test
     void shouldGenerateLogsWhenFindAllHasResult() {
         ScriptUtils.executeSqlScript(connection, testData);
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all objects.",
-                "The result is: " + expectedLessonTimes + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to find all objects.", "The result is: " + expectedLessonTimes + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -310,13 +302,10 @@ class LessonTimeDAOTest {
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.query(anyString(), any(LessonTimeMapper.class))).thenThrow(QueryTimeoutException.class);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all objects.",
-                "Can't find all objects."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to find all objects.", "Can't find all objects."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -343,13 +332,11 @@ class LessonTimeDAOTest {
     void shouldGenerateLogsWhenFindById() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 2;
-        LessonTime expectedLessonTime = expectedLessonTimes.stream().filter(lessonTime -> lessonTime.getId() == testId).findFirst().get();
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find an object by id: " + testId + ".",
+        LessonTime expectedLessonTime = expectedLessonTimes.stream().filter(lessonTime -> lessonTime.getId() == testId)
+                .findFirst().get();
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
                 "The result object with id " + testId + " is " + expectedLessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -371,12 +358,9 @@ class LessonTimeDAOTest {
     @Test
     void shouldGenerateLogsWhenThrowEmptyResultDataAccessExceptionWhileFindById() {
         int testId = 2;
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
                 "There is no result when find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -387,7 +371,7 @@ class LessonTimeDAOTest {
         try {
             lessonTimeDAO.findById(testId);
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -404,14 +388,12 @@ class LessonTimeDAOTest {
         int testId = 2;
 
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(LessonTimeMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(LessonTimeMapper.class), anyInt()))
+                .thenThrow(QueryTimeoutException.class);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
                 "Can't find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -423,7 +405,7 @@ class LessonTimeDAOTest {
             lessonTimeDAO.findById(testId);
             verify(mockedJdbcTemplate).queryForObject(anyString(), any(LessonTimeMapper.class), anyInt());
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -443,13 +425,11 @@ class LessonTimeDAOTest {
         testLessonTime.setStartTime(LocalTime.of(16, 0));
         testLessonTime.setEndTime(LocalTime.of(17, 30));
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object " + testLessonTime + " with id " + testId + ".",
-                "The object " + testLessonTime + " with id " + testId + " was updated."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to update an object " + testLessonTime + " with id " + testId + ".",
+                        "The object " + testLessonTime + " with id " + testId + " was updated."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -475,15 +455,14 @@ class LessonTimeDAOTest {
         testLessonTime.setEndTime(LocalTime.of(17, 30));
 
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), any(LocalTime.class), any(LocalTime.class), anyInt());
+        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), any(LocalTime.class),
+                any(LocalTime.class), anyInt());
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object " + testLessonTime + " with id " + testId + ".",
-                "Can't update an object " + testLessonTime + " with id " + testId + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to update an object " + testLessonTime + " with id " + testId + ".",
+                        "Can't update an object " + testLessonTime + " with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -494,7 +473,7 @@ class LessonTimeDAOTest {
             lessonTimeDAO.update(testId, testLessonTime);
             verify(mockedJdbcTemplate).update(anyString(), any(LocalTime.class), any(LocalTime.class), anyInt());
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -510,12 +489,9 @@ class LessonTimeDAOTest {
     void shouldGenerateLogsWhenDeleteById() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 3;
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
                 "The object was deleted by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -541,12 +517,9 @@ class LessonTimeDAOTest {
         ReflectionTestUtils.setField(lessonTimeDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
                 "Can't delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {

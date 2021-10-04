@@ -34,12 +34,12 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration (classes = {SpringConfiguration.class})
+@ContextConfiguration(classes = { SpringConfiguration.class })
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LecturerServiceTest {
     private TestAppender testAppender = new TestAppender();
-    
+
     @Autowired
     private LecturerService lecturerService;
 
@@ -51,7 +51,7 @@ class LecturerServiceTest {
         MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(lecturerService, "lecturerDAO", lecturerDAO);
     }
-    
+
     @AfterEach
     void tearDown() {
         testAppender.cleanEventList();
@@ -102,13 +102,13 @@ class LecturerServiceTest {
         lecturerService.deleteById(testLecturerId);
         verify(lecturerDAO).deleteById(testLecturerId);
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerIsNullWhileCreate() {
         Lecturer lecturer = null;
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsNotZeroWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -118,10 +118,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380963852741");
         lecturer.setEmail("ivan@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerFirstNameIsNullWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -129,10 +129,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380741852963");
         lecturer.setEmail("smith@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerFirstNameIsShortWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -141,10 +141,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("English@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerFirstNameStartsWithWhiteSpaceWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -153,10 +153,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("jonson@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerLastNameIsNullWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -164,10 +164,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380741852963");
         lecturer.setEmail("smith@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerLastNameIsShortWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -176,10 +176,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("English@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerLastNameStartsWithWhiteSpaceWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -188,21 +188,21 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("jonson@test.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerGenderIsNullWhileCreate() {
-        Lecturer lecturer =  new Lecturer();
+        Lecturer lecturer = new Lecturer();
         lecturer.setFirstName("Olha");
         lecturer.setLastName("Skladenko");
         lecturer.setPhoneNumber("+380987654321");
         lecturer.setEmail("olhaskladenko@gmail.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerPhoneNumberIsNullWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -210,10 +210,10 @@ class LecturerServiceTest {
         lecturer.setLastName("Syrhiienko");
         lecturer.setGender(Gender.FEMALE);
         lecturer.setEmail("NSyrhiienko@gmail.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerPhoneNumberIsInvalidWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -222,10 +222,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380475");
         lecturer.setEmail("NSyrhiienko@gmail.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerEmailIsNullWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -233,10 +233,10 @@ class LecturerServiceTest {
         lecturer.setLastName("Matviichuk");
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+301234567846");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerEmailIsInvalidWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -245,10 +245,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+301234567846");
         lecturer.setEmail("matviichuk");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -257,37 +257,37 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380961234567");
         lecturer.setEmail("VIaremenko@gmail.com");
-        
+
         doThrow(DAOException.class).when(lecturerDAO).create(lecturer);
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileGetAll() {
         when(lecturerDAO.findAll()).thenThrow(DAOException.class);
         assertThrows(ServiceException.class, () -> lecturerService.getAll());
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileGetById() {
         int testId = 0;
         assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileGetById() {
         int testId = 3;
         when(lecturerDAO.findById(testId)).thenThrow(DAOException.class);
         assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerIsNullWhileUpdate() {
         Lecturer lecturer = null;
         assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerIsInvalidWhileUpdate() {
         Lecturer lecturer = new Lecturer();
@@ -297,10 +297,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("olhaskladenko@gmail.com");
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
         Lecturer lecturer = new Lecturer();
@@ -310,34 +310,31 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380981234567");
         lecturer.setEmail("izakharchuk@gmail.com");
-        
+
         doThrow(DAOException.class).when(lecturerDAO).update(lecturer.getId(), lecturer);
-        
+
         assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileDeleteById() {
         int testId = 0;
         assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
     }
-    
+
     @Test
     void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
         int testId = 5;
         doThrow(DAOException.class).when(lecturerDAO).deleteById(testId);
         assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIsNullWhileCreate() {
         Lecturer lecturer = null;
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new person: " + lecturer + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new person: " + lecturer + ".",
                 "A person " + lecturer + " can't be null when create."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -348,7 +345,7 @@ class LecturerServiceTest {
         try {
             lecturerService.create(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -357,9 +354,9 @@ class LecturerServiceTest {
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }    
+        }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIdIsNotZeroWhileCreate() {
         int testId = 4;
@@ -370,13 +367,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380459876543");
         lecturer.setEmail("OFeshenko@gmail.com");
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new person: " + lecturer + ".",
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new person: " + lecturer + ".",
                 "A person " + lecturer + " has wrong id " + testId + " which is not equal zero when create."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -387,7 +381,7 @@ class LecturerServiceTest {
         try {
             lecturerService.create(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -396,9 +390,9 @@ class LecturerServiceTest {
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }    
+        }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIsInvalidWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -407,15 +401,12 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("0961275963");
         lecturer.setEmail("test@test.com");
-        
+
         String violationMessage = "Person phone number should starts from symbol \"+\" and additional twelve numbers";
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new person: " + lecturer + ".",
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new person: " + lecturer + ".",
                 "The lecturer " + lecturer + " is not valid when create. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -426,7 +417,7 @@ class LecturerServiceTest {
         try {
             lecturerService.create(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -435,9 +426,9 @@ class LecturerServiceTest {
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }    
+        }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
         Lecturer lecturer = new Lecturer();
@@ -446,26 +437,23 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380759514235");
         lecturer.setEmail("nkohan@test.com");
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new person: " + lecturer + ".",
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new person: " + lecturer + ".",
                 "There is some error in dao layer when create an object " + lecturer + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         doThrow(DAOException.class).when(lecturerDAO).create(lecturer);
 
         try {
             lecturerService.create(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -474,9 +462,9 @@ class LecturerServiceTest {
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }    
+        }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenCreate() {
         Lecturer lecturer = new Lecturer();
@@ -485,13 +473,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+380426479245");
         lecturer.setEmail("roma@test.com");
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a new person: " + lecturer + ".",
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new person: " + lecturer + ".",
                 "The object " + lecturer + " was created."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -499,7 +484,7 @@ class LecturerServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-            lecturerService.create(lecturer);
+        lecturerService.create(lecturer);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -507,18 +492,15 @@ class LecturerServiceTest {
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }    
+        }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenResultIsEmptyWhileGetAll() {
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.WARN));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all objects.",
-                "There are not any objects in the result when getAll."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get all objects.", "There are not any objects in the result when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -535,16 +517,13 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all objects.",
-                "There is some error in dao layer when getAll."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get all objects.", "There is some error in dao layer when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -556,7 +535,7 @@ class LecturerServiceTest {
         try {
             lecturerService.getAll();
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -567,22 +546,18 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenGetAll() {
-        List<Lecturer> expectedLecturers = new ArrayList<>(Arrays.asList(
-                new Lecturer(), new Lecturer(), new Lecturer()));
-        List<String> firstNames = new ArrayList<>(Arrays.asList(
-                "Alla", "Inna", "Oleksii"));
-        List<String> lastNames = new ArrayList<>(Arrays.asList(
-                "Matviichuk", "Khimoroda", "Burlachenko"));
-        List<Gender> genders = new ArrayList<>(Arrays.asList(
-                Gender.FEMALE, Gender.FEMALE, Gender.MALE));
-        List<String> phoneNumbers = new ArrayList<>(Arrays.asList(
-                "+380159635741", "+380657964256", "+380436942675"));
-        List<String> emails = new ArrayList<>(Arrays.asList(
-                "matviichuk@gmail.com", "khimoroda@gmail.com", "burlachenko@gmail.com"));
-        
+        List<Lecturer> expectedLecturers = new ArrayList<>(
+                Arrays.asList(new Lecturer(), new Lecturer(), new Lecturer()));
+        List<String> firstNames = new ArrayList<>(Arrays.asList("Alla", "Inna", "Oleksii"));
+        List<String> lastNames = new ArrayList<>(Arrays.asList("Matviichuk", "Khimoroda", "Burlachenko"));
+        List<Gender> genders = new ArrayList<>(Arrays.asList(Gender.FEMALE, Gender.FEMALE, Gender.MALE));
+        List<String> phoneNumbers = new ArrayList<>(Arrays.asList("+380159635741", "+380657964256", "+380436942675"));
+        List<String> emails = new ArrayList<>(
+                Arrays.asList("matviichuk@gmail.com", "khimoroda@gmail.com", "burlachenko@gmail.com"));
+
         for (int i = 0; i < expectedLecturers.size(); i++) {
             int index = i + 1;
             expectedLecturers.get(i).setId(index);
@@ -594,15 +569,11 @@ class LecturerServiceTest {
         }
 
         when(lecturerDAO.findAll()).thenReturn(expectedLecturers);
-        
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all objects.",
-                "The result is: " + expectedLecturers+ "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get all objects.", "The result is: " + expectedLecturers + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -619,17 +590,14 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIdIsNegativeWhileGetById() {
         int negativeId = -6;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + negativeId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + negativeId + ".",
                 "A given id " + negativeId + " is less than 1 when getById."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -640,7 +608,7 @@ class LecturerServiceTest {
         try {
             lecturerService.getById(negativeId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -651,31 +619,28 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenEntityIsNotFoundInDatabaseWhileGetById() {
         int testId = 3;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + testId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
                 "The entity is not found when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
         when(lecturerDAO.findById(testId)).thenThrow(daoException);
 
         try {
             lecturerService.getById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -686,17 +651,14 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
         int testId = 6;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + testId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
                 "There is some error in dao layer when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -709,7 +671,7 @@ class LecturerServiceTest {
         try {
             lecturerService.getById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -720,7 +682,7 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenGetById() {
         int testId = 1;
@@ -735,12 +697,9 @@ class LecturerServiceTest {
 
         when(lecturerDAO.findById(testId)).thenReturn(lecturer);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + testId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
                 "The result object with id " + testId + " is " + lecturer + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -758,17 +717,14 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIsNullWhileUpdate() {
         Lecturer lecturer = null;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a person: " + lecturer + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a person: " + lecturer + ".",
                 "An updated person " + lecturer + " is null."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -779,7 +735,7 @@ class LecturerServiceTest {
         try {
             lecturerService.update(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -790,7 +746,7 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIdIsZeroWhileUpdate() {
         Lecturer lecturer = new Lecturer();
@@ -800,12 +756,9 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380657832145");
         lecturer.setEmail("gudym@test.com");
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a person: " + lecturer + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a person: " + lecturer + ".",
                 "An updated person " + lecturer + " has wrong id " + lecturer.getId() + " which is not positive."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -816,7 +769,7 @@ class LecturerServiceTest {
         try {
             lecturerService.update(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -827,7 +780,7 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLecturerIsInvalidWhileUpdate() {
         Lecturer lecturer = new Lecturer();
@@ -837,15 +790,12 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setEmail("leonenko@test.com");
         lecturer.setPhoneNumber("+380126945321");
-        
+
         String violationMessage = "Person lastname must have at least two symbols and start with non-white space";
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a person: " + lecturer + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a person: " + lecturer + ".",
                 "The lecturer " + lecturer + " is not valid when update. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -856,7 +806,7 @@ class LecturerServiceTest {
         try {
             lecturerService.update(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -867,7 +817,7 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
         Lecturer lecturer = new Lecturer();
@@ -880,12 +830,9 @@ class LecturerServiceTest {
 
         doThrow(DAOException.class).when(lecturerDAO).update(lecturer.getId(), lecturer);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a person: " + lecturer + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a person: " + lecturer + ".",
                 "There is some error in dao layer when update an object " + lecturer + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -896,7 +843,7 @@ class LecturerServiceTest {
         try {
             lecturerService.update(lecturer);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -907,7 +854,7 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenUpdate() {
         Lecturer lecturer = new Lecturer();
@@ -918,13 +865,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380695478321");
         lecturer.setEmail("vovk@test.com");
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a person: " + lecturer + ".",
-                "The object " + lecturer + " was updated."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to update a person: " + lecturer + ".", "The object " + lecturer + " was updated."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -941,17 +885,14 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenGroupIdIsNegativeWhileDeleteById() {
         int testId = -1;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
                 "A given id " + testId + " is less than 1 when deleteById."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -962,7 +903,7 @@ class LecturerServiceTest {
         try {
             lecturerService.deleteById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -973,19 +914,16 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
         int testId = 10;
 
         doThrow(DAOException.class).when(lecturerDAO).deleteById(testId);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
                 "There is some error in dao layer when delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -996,7 +934,7 @@ class LecturerServiceTest {
         try {
             lecturerService.deleteById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -1007,17 +945,14 @@ class LecturerServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDeleteById() {
         int testId = 64;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
                 "An object was deleted by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {

@@ -18,10 +18,10 @@ public class GroupDAO implements GenericDAO<Group> {
     private Environment environment;
 
     @Autowired
-    public GroupDAO (JdbcTemplate jdbcTemplate, Environment environment) {
+    public GroupDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
-    }    
+    }
 
     @Override
     public void create(Group group) {
@@ -30,14 +30,12 @@ public class GroupDAO implements GenericDAO<Group> {
 
     @Override
     public List<Group> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.groups"),
-                new GroupMapper());
+        return jdbcTemplate.query(environment.getProperty("find.all.groups"), new GroupMapper());
     }
 
     @Override
     public Group findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.group.by.id"),
-                new GroupMapper(), id);
+        return jdbcTemplate.queryForObject(environment.getProperty("find.group.by.id"), new GroupMapper(), id);
     }
 
     @Override
@@ -50,12 +48,11 @@ public class GroupDAO implements GenericDAO<Group> {
         jdbcTemplate.update(environment.getProperty("delete.group"), id);
     }
 
-    public void setGroupFaculty (int facultyId, int groupId) {
+    public void setGroupFaculty(int facultyId, int groupId) {
         jdbcTemplate.update(environment.getProperty("set.group.faculty"), facultyId, groupId);
     }
 
-    public Faculty getGroupFaculty (int groupId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.group.faculty"),
-                new FacultyMapper(), groupId);
+    public Faculty getGroupFaculty(int groupId) {
+        return jdbcTemplate.queryForObject(environment.getProperty("get.group.faculty"), new FacultyMapper(), groupId);
     }
 }

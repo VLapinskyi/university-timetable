@@ -5,11 +5,10 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public class Faculty {
-    @PositiveOrZero (message = "Faculty id can't be negative")
+    @PositiveOrZero(message = "Faculty id can't be negative")
     private int id;
-    @NotNull (message = "Faculty name can't be null")
-    @Pattern (regexp = "\\S{2,}.*",
-        message = "Faculty name must have at least two symbols and start with non-white space")
+    @NotNull(message = "Faculty name can't be null")
+    @Pattern(regexp = "\\S{2,}.*", message = "Faculty name must have at least two symbols and start with non-white space")
     private String name;
 
     public int getId() {
@@ -58,6 +57,6 @@ public class Faculty {
 
     @Override
     public String toString() {
-            return "Faculty [id=" + id + ", name=" + name + "]";
+        return "Faculty [id=" + id + ", name=" + name + "]";
     }
 }

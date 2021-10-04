@@ -5,7 +5,7 @@ import org.springframework.dao.DataAccessException;
 public class DAOException extends RuntimeException {
     private DataAccessException dataAccessException;
     private String daoExceptionMessage;
-    
+
     public DAOException(String daoExceptionMessage, DataAccessException dataAccessException) {
         this.daoExceptionMessage = daoExceptionMessage;
         this.dataAccessException = dataAccessException;
@@ -25,5 +25,5 @@ public class DAOException extends RuntimeException {
 
     public void setDaoExceptionMessage(String daoExceptionMessage) {
         this.daoExceptionMessage = daoExceptionMessage;
-    }    
+    }
 }

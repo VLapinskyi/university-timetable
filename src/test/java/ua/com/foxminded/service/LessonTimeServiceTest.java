@@ -34,7 +34,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = {SpringConfiguration.class})
+@ContextConfiguration(classes = { SpringConfiguration.class })
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LessonTimeServiceTest {
@@ -50,7 +50,7 @@ class LessonTimeServiceTest {
         MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(lessonTimeService, "lessonTimeDAO", lessonTimeDAO);
     }
-    
+
     @AfterEach
     void tearDown() {
         testAppender.cleanEventList();
@@ -100,13 +100,13 @@ class LessonTimeServiceTest {
         lessonTimeService.deleteById(lessonTimeId);
         verify(lessonTimeDAO).deleteById(lessonTimeId);
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIsNullWhileCreate() {
         LessonTime lessonTime = null;
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIdIsNotZeroWhileCreate() {
         LessonTime lessonTime = new LessonTime();
@@ -115,21 +115,21 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(LocalTime.of(1, 0));
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonStartTimeIsNullWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setEndTime(LocalTime.of(11, 0));
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonEndTimeIsNullWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonEndTimeIsBeforeStartTimeWhileCreate() {
         LessonTime lessonTime = new LessonTime();
@@ -137,7 +137,7 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(LocalTime.of(9, 0));
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
@@ -146,32 +146,32 @@ class LessonTimeServiceTest {
         doThrow(DAOException.class).when(lessonTimeDAO).create(lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileGetAll() {
         when(lessonTimeDAO.findAll()).thenThrow(DAOException.class);
         assertThrows(ServiceException.class, () -> lessonTimeService.getAll());
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIdIsZeroWhileGetById() {
         int testId = 0;
         assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileGetById() {
         int testId = 2;
         when(lessonTimeDAO.findById(testId)).thenThrow(DAOException.class);
         assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIsNullWhileUpdate() {
         LessonTime lessonTime = null;
         assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIsInvalidWhileUpdate() {
         LessonTime lessonTime = new LessonTime();
@@ -180,7 +180,7 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(LocalTime.of(11, 0));
         assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
         LessonTime lessonTime = new LessonTime();
@@ -190,29 +190,26 @@ class LessonTimeServiceTest {
         doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime.getId(), lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIdIsZeroWhileDeleteById() {
         int testId = 0;
         assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
     }
-    
+
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileDeleteById() {
         int testId = 2;
         doThrow(DAOException.class).when(lessonTimeDAO).deleteById(testId);
         assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonTimeIsNullWhileCreate() {
         LessonTime lessonTime = null;
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a lessonTime: " + lessonTime + ".",
                 "A lessonTime " + lessonTime + " can't be null when create."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -223,7 +220,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.create(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -234,20 +231,18 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonTimeIdIsNotZeroWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(8);
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(9, 0));
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
-                "The lessonTime " + lessonTime + " has wrong id " + lessonTime.getId() + " which is not zero when create."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to create a lessonTime: " + lessonTime + ".", "The lessonTime " + lessonTime
+                        + " has wrong id " + lessonTime.getId() + " which is not zero when create."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -257,7 +252,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.create(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -268,19 +263,17 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonStartTimeIsNullWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setEndTime(LocalTime.of(11, 0));
         String violationMessage = "LessonTime's startTime can't be null";
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
-                "The lessonTime " + lessonTime + " is not valid when create. There are errors: " + violationMessage + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to create a lessonTime: " + lessonTime + ".", "The lessonTime " + lessonTime
+                        + " is not valid when create. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -290,7 +283,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.create(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -301,19 +294,17 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonEndTimeIsNullWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
         String violationMessage = "LessonTime's endTime can't be null";
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
-                "The lessonTime " + lessonTime + " is not valid when create. There are errors: " + violationMessage + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to create a lessonTime: " + lessonTime + ".", "The lessonTime " + lessonTime
+                        + " is not valid when create. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -323,7 +314,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.create(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -334,20 +325,18 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonEndTimeIsBeforeStartTimeWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(11, 0));
         lessonTime.setEndTime(LocalTime.of(9, 0));
         String violationMessage = "LessonTime's startTime must be before endTime";
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
-                "The lessonTime " + lessonTime + " is not valid when create. There are errors: " + violationMessage + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to create a lessonTime: " + lessonTime + ".", "The lessonTime " + lessonTime
+                        + " is not valid when create. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -357,7 +346,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.create(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -368,18 +357,15 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(12, 0));
         lessonTime.setEndTime(LocalTime.of(14, 0));
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a lessonTime: " + lessonTime + ".",
                 "There is some error in dao layer when create an object " + lessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -392,7 +378,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.create(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -403,18 +389,15 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(15, 0));
         lessonTime.setEndTime(LocalTime.of(17, 0));
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to create a lessonTime: " + lessonTime + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a lessonTime: " + lessonTime + ".",
                 "The object " + lessonTime + " was created."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -432,16 +415,13 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenResultIsEmptyWhileGetAll() {
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.WARN));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all objects.",
-                "There are not any objects in the result when getAll."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get all objects.", "There are not any objects in the result when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -458,16 +438,13 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all objects.",
-                "There is some error in dao layer when getAll."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get all objects.", "There is some error in dao layer when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -479,7 +456,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.getAll();
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -490,11 +467,11 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenGetAll() {
-        List<LessonTime> expectedLessonTimes = new ArrayList<>(Arrays.asList(
-                new LessonTime(), new LessonTime(), new LessonTime()));
+        List<LessonTime> expectedLessonTimes = new ArrayList<>(
+                Arrays.asList(new LessonTime(), new LessonTime(), new LessonTime()));
 
         for (int i = 0; i < expectedLessonTimes.size(); i++) {
             int index = i + 1;
@@ -507,13 +484,10 @@ class LessonTimeServiceTest {
 
         when(lessonTimeDAO.findAll()).thenReturn(expectedLessonTimes);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all objects.",
-                "The result is: " + expectedLessonTimes + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get all objects.", "The result is: " + expectedLessonTimes + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -530,17 +504,14 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonTimeIdIsNegativeWhileGetById() {
         int negativeId = -5;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + negativeId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + negativeId + ".",
                 "A given id " + negativeId + " is less than 1 when getById."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -551,7 +522,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.getById(negativeId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -562,31 +533,28 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenEntityIsNotFoundInDatabaseWhileGetById() {
         int testId = 8;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + testId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
                 "The entity is not found when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
         when(lessonTimeDAO.findById(testId)).thenThrow(daoException);
 
         try {
             lessonTimeService.getById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -597,17 +565,14 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
         int testId = 5;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + testId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
                 "There is some error in dao layer when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -620,7 +585,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.getById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -631,7 +596,7 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenGetById() {
         int testId = 2;
@@ -643,12 +608,9 @@ class LessonTimeServiceTest {
 
         when(lessonTimeDAO.findById(testId)).thenReturn(expectedLessonTime);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get an object by id: " + testId  + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
                 "The result object with id " + testId + " is " + expectedLessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -666,17 +628,14 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonTimeIsNullWhileUpdate() {
         LessonTime lessonTime = null;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a lessonTime: " + lessonTime + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a lessonTime: " + lessonTime + ".",
                 "An updated lessonTime " + lessonTime + " is null."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -687,7 +646,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.update(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -698,23 +657,21 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenLessonTimeIsInvalidWhileUpdate() {
-        LessonTime lessonTime =  new LessonTime();
+        LessonTime lessonTime = new LessonTime();
         lessonTime.setId(3);
         lessonTime.setStartTime(LocalTime.of(11, 0));
         lessonTime.setEndTime(LocalTime.of(10, 0));
-        
+
         String violationMessage = "LessonTime's startTime must be before endTime";
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a lessonTime: " + lessonTime + ".",
-                "The lessonTime " + lessonTime + " is not valid when update. There are errors: " + violationMessage + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to update a lessonTime: " + lessonTime + ".", "The lessonTime " + lessonTime
+                        + " is not valid when update. There are errors: " + violationMessage + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -724,7 +681,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.update(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -735,7 +692,7 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
         LessonTime lessonTime = new LessonTime();
@@ -745,12 +702,9 @@ class LessonTimeServiceTest {
 
         doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime.getId(), lessonTime);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a lessonTime: " + lessonTime + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a lessonTime: " + lessonTime + ".",
                 "There is some error in dao layer when update an object " + lessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -761,7 +715,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.update(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -772,7 +726,7 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenUpdate() {
         LessonTime lessonTime = new LessonTime();
@@ -780,12 +734,9 @@ class LessonTimeServiceTest {
         lessonTime.setStartTime(LocalTime.of(12, 0));
         lessonTime.setEndTime(LocalTime.of(14, 0));
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update a lessonTime: " + lessonTime + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a lessonTime: " + lessonTime + ".",
                 "The object " + lessonTime + " was updated."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -796,7 +747,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.update(lessonTime);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -807,17 +758,14 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenFacultyIdIsNegativeWhileDeleteById() {
         int testId = -7;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
                 "A given id " + testId + " is less than 1 when deleteById."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -828,7 +776,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.deleteById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -839,19 +787,16 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
         int testId = 4;
 
         doThrow(DAOException.class).when(lessonTimeDAO).deleteById(testId);
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
                 "There is some error in dao layer when delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -862,7 +807,7 @@ class LessonTimeServiceTest {
         try {
             lessonTimeService.deleteById(testId);
         } catch (ServiceException serviceException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -873,17 +818,14 @@ class LessonTimeServiceTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDeleteById() {
         int testId = 2;
 
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
                 "An object was deleted by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {

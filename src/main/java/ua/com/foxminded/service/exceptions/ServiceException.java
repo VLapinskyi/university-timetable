@@ -3,7 +3,7 @@ package ua.com.foxminded.service.exceptions;
 public class ServiceException extends RuntimeException {
     private RuntimeException exception;
     private String serviceExceptionMessage;
-    
+
     public ServiceException(String serviceExceptionMessage, RuntimeException exception) {
         this.serviceExceptionMessage = serviceExceptionMessage;
         this.exception = exception;
@@ -23,6 +23,6 @@ public class ServiceException extends RuntimeException {
 
     public void setServiceExceptionMessage(String serviceExceptionMessage) {
         this.serviceExceptionMessage = serviceExceptionMessage;
-    }   
-    
+    }
+
 }

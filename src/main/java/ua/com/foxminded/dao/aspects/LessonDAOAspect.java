@@ -50,6 +50,7 @@ public class LessonDAOAspect {
     @Pointcut("execution (java.util.List ua.com.foxminded.dao.LessonDAO.getGroupDayLessons(int, java.time.DayOfWeek))")
     private void getGroupDayLessonsMethod() {
     }
+
     @Pointcut("execution (java.util.List ua.com.foxminded.dao.LessonDAO.getLecturerDayLessons(int, java.time.DayOfWeek))")
     private void getLecturerDayLessonsMethod() {
     }
@@ -70,7 +71,8 @@ public class LessonDAOAspect {
                 LOGGER.debug("The lecturer with id {} was setted for the lesson with id {}.", lecturerId, lessonId);
             }
         } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't set a lecturer with id {} to a lesson with id {}.", lecturerId, lessonId, dataAccessException);
+            LOGGER.error("Can't set a lecturer with id {} to a lesson with id {}.", lecturerId, lessonId,
+                    dataAccessException);
             throw new DAOException("Can't set a lecturer to a lesson", dataAccessException);
         }
     }
@@ -111,11 +113,12 @@ public class LessonDAOAspect {
         try {
             proceedingJoinPoint.proceed();
 
-            if(LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The lesson with id {} was assigned to the group with id {}.", lessonId, groupId);
             }
         } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't set a lesson with id {} to a group with id {}.", lessonId, groupId, dataAccessException);
+            LOGGER.error("Can't set a lesson with id {} to a group with id {}.", lessonId, groupId,
+                    dataAccessException);
             throw new DAOException("Can't set a lesson to a group.", dataAccessException);
         }
     }
@@ -124,7 +127,7 @@ public class LessonDAOAspect {
     Group aroundGetLessonGroupAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int lessonId = (int) proceedingJoinPoint.getArgs()[0];
 
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Try to get a group which was assigned for a lesson with id {}.", lessonId);
         }
 
@@ -150,13 +153,13 @@ public class LessonDAOAspect {
         int lessonId = (int) proceedingJoinPoint.getArgs()[1];
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to set lessonTime with id {} for a lesson with id {}.", lessonTimeId, lessonId); 
+            LOGGER.debug("Try to set lessonTime with id {} for a lesson with id {}.", lessonTimeId, lessonId);
         }
 
         try {
             proceedingJoinPoint.proceed();
 
-            if(LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The lessonTime with id {} was setted for the lesson with id {}.", lessonTimeId, lessonId);
             }
         } catch (DataAccessException dataAccessException) {
@@ -190,7 +193,6 @@ public class LessonDAOAspect {
         }
     }
 
-
     @Around("getGroupDayLessonsMethod()")
     Object aroundGetGroupDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
@@ -204,19 +206,21 @@ public class LessonDAOAspect {
             Object targetMethod = proceedingJoinPoint.proceed();
 
             if (targetMethod instanceof List<?>) {
-                if(((List<?>)targetMethod).isEmpty()) {
+                if (((List<?>) targetMethod).isEmpty()) {
                     LOGGER.warn("There are not any lesson for the group with id {} on a day {}.", groupId, weekDay);
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("For the group with id {} on a day {} there are lessons: {}.", groupId, weekDay, targetMethod);
+                        LOGGER.debug("For the group with id {} on a day {} there are lessons: {}.", groupId, weekDay,
+                                targetMethod);
                     }
                 }
             }
-            
+
             return targetMethod;
 
         } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't get lessons for a group with id {} on a day {}.", groupId, weekDay, dataAccessException);
+            LOGGER.error("Can't get lessons for a group with id {} on a day {}.", groupId, weekDay,
+                    dataAccessException);
             throw new DAOException("Can't get day lessons for a group.", dataAccessException);
         }
     }
@@ -236,17 +240,20 @@ public class LessonDAOAspect {
             if (targetMethod instanceof List<?>) {
 
                 if (((List<?>) targetMethod).isEmpty()) {
-                    LOGGER.warn("There are not any lesson for the lecturer with id {} on a day {}.", lecturerId, weekDay);
+                    LOGGER.warn("There are not any lesson for the lecturer with id {} on a day {}.", lecturerId,
+                            weekDay);
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("For the lecturer with id {} on a day {} there are lessons: {}.", lecturerId, weekDay, targetMethod);
+                        LOGGER.debug("For the lecturer with id {} on a day {} there are lessons: {}.", lecturerId,
+                                weekDay, targetMethod);
                     }
                 }
             }
 
             return targetMethod;
         } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't get lessons for a lecturer with id {} on a day {}.", lecturerId, weekDay, dataAccessException);
+            LOGGER.error("Can't get lessons for a lecturer with id {} on a day {}.", lecturerId, weekDay,
+                    dataAccessException);
             throw new DAOException("Can't get day lessons for a lecturer.", dataAccessException);
         }
     }

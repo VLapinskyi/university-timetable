@@ -32,7 +32,7 @@ public class StudentAspect {
     private Validator validator;
 
     @Autowired
-    public StudentAspect (Validator validator) {
+    public StudentAspect(Validator validator) {
         this.validator = validator;
     }
 
@@ -63,8 +63,10 @@ public class StudentAspect {
                     errorMessages.add(violation.getMessage());
                 }
 
-                ConstraintViolationException exception = new ConstraintViolationException("When create the student is not valid: " + errorMessages, violations);
-                LOGGER.error("The student {} is not valid when create. There are errors: {}.", student, errorMessages, exception);
+                ConstraintViolationException exception = new ConstraintViolationException(
+                        "When create the student is not valid: " + errorMessages, violations);
+                LOGGER.error("The student {} is not valid when create. There are errors: {}.", student, errorMessages,
+                        exception);
                 throw exception;
             }
         } catch (ConstraintViolationException constraintViolationException) {
@@ -76,7 +78,7 @@ public class StudentAspect {
     void beforeUpdateAdvice(JoinPoint joinPoint) {
         Student student = (Student) joinPoint.getArgs()[0];
 
-        try {            
+        try {
             Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
             if (!violations.isEmpty()) {
@@ -86,8 +88,10 @@ public class StudentAspect {
                     errorMessages.add(violation.getMessage());
                 }
 
-                ConstraintViolationException exception = new ConstraintViolationException("When update the student is not valid:" + errorMessages, violations);
-                LOGGER.error("The student {} is not valid when update. There are errors: {}.", student, errorMessages, exception);
+                ConstraintViolationException exception = new ConstraintViolationException(
+                        "When update the student is not valid:" + errorMessages, violations);
+                LOGGER.error("The student {} is not valid when update. There are errors: {}.", student, errorMessages,
+                        exception);
                 throw exception;
             }
         } catch (ConstraintViolationException constraintViolationException) {
@@ -104,11 +108,12 @@ public class StudentAspect {
 
         try {
             if (groupId < 1) {
-                IllegalArgumentException exception = new IllegalArgumentException("A given groupId is less than 1 when getStudentsFromGroup");
+                IllegalArgumentException exception = new IllegalArgumentException(
+                        "A given groupId is less than 1 when getStudentsFromGroup");
                 LOGGER.error("A given groupId {} is less than 1 when getStudentsFromGroup.", groupId, exception);
                 throw new ServiceException("A given groupId is less than 1 when getStudentsFromGroup.", exception);
             }
-            
+
             Object targetMethod = proceedingJoinPoint.proceed();
             if (targetMethod instanceof List<?>) {
 
@@ -116,7 +121,7 @@ public class StudentAspect {
                     LOGGER.warn("There are not any students in a group with id {}.", groupId);
                 } else {
 
-                    if(LOGGER.isDebugEnabled()) {
+                    if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Students from group with id {} are: {}.", groupId, targetMethod);
                     }
                 }
@@ -124,8 +129,10 @@ public class StudentAspect {
 
             return targetMethod;
         } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get students from a group by groupId {}.", groupId, daoException);
-            throw new ServiceException("There is some error in dao layer when get students from a group.", daoException);
+            LOGGER.error("There is some error in dao layer when get students from a group by groupId {}.", groupId,
+                    daoException);
+            throw new ServiceException("There is some error in dao layer when get students from a group.",
+                    daoException);
         }
     }
 }

@@ -46,6 +46,5 @@ public class Student extends Person {
         return "Student [" + (group != null ? "group=" + group + ", " : "")
                 + (super.toString() != null ? "toString()=" + super.toString() : "") + "]";
     }
-    
-    
+
 }

@@ -42,13 +42,13 @@ import ua.com.foxminded.mapper.GroupMapper;
 import ua.com.foxminded.settings.SpringDAOTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringDAOTestConfiguration.class})
+@ContextConfiguration(classes = { SpringDAOTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class GroupDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
-    
+
     private TestAppender testAppender = new TestAppender();
     @Autowired
     private GroupDAO groupDAO;
@@ -59,18 +59,14 @@ class GroupDAOTest {
     @Mock
     private JdbcTemplate mockedJdbcTemplate;
 
-
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         connection = jdbcTemplate.getDataSource().getConnection();
-        ScriptUtils.executeSqlScript(connection, testTablesCreator);      
-        expectedGroups = new ArrayList<>(Arrays.asList(
-                new Group(), new Group(), new Group()));
-        List<String> groupNames = new ArrayList<>(Arrays.asList(
-                "TestGroup1", "TestGroup2", "TestGroup3"));
-        List<Integer> groupIndexes = new ArrayList<>(Arrays.asList(
-                1, 2, 3));
+        ScriptUtils.executeSqlScript(connection, testTablesCreator);
+        expectedGroups = new ArrayList<>(Arrays.asList(new Group(), new Group(), new Group()));
+        List<String> groupNames = new ArrayList<>(Arrays.asList("TestGroup1", "TestGroup2", "TestGroup3"));
+        List<Integer> groupIndexes = new ArrayList<>(Arrays.asList(1, 2, 3));
         for (int i = 0; i < expectedGroups.size(); i++) {
             expectedGroups.get(i).setId(groupIndexes.get(i));
             expectedGroups.get(i).setName(groupNames.get(i));
@@ -117,7 +113,7 @@ class GroupDAOTest {
     @Test
     void shouldUpdateGroup() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testData);
-        int testGroupId = 2;        
+        int testGroupId = 2;
         Group testGroup = new Group();
         testGroup.setName("TestGroupUpdated");
         groupDAO.update(testGroupId, testGroup);
@@ -178,28 +174,29 @@ class GroupDAOTest {
         Group group = new Group();
         assertThrows(DAOException.class, () -> groupDAO.create(group));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindAll() {
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.query(anyString(), any(GroupMapper.class))).thenThrow(QueryTimeoutException.class);
         assertThrows(DAOException.class, () -> groupDAO.findAll());
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenEmptyResultDataAccessExceptionWhileFindById() {
         int testId = 1;
         assertThrows(DAOException.class, () -> groupDAO.findById(testId));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindById() {
         int testId = 1;
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), anyInt()))
+                .thenThrow(QueryTimeoutException.class);
         assertThrows(DAOException.class, () -> groupDAO.findById(testId));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileUpdate() {
         int testId = 1;
@@ -208,7 +205,7 @@ class GroupDAOTest {
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
         assertThrows(DAOException.class, () -> groupDAO.update(testId, testGroup));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileDeleteById() {
         int testId = 1;
@@ -216,7 +213,7 @@ class GroupDAOTest {
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
         assertThrows(DAOException.class, () -> groupDAO.deleteById(testId));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExeceptionWhileSetGroupFaculty() {
         int facultyId = 1;
@@ -225,57 +222,52 @@ class GroupDAOTest {
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
         assertThrows(DAOException.class, () -> groupDAO.setGroupFaculty(facultyId, groupId));
     }
-    
+
     @Test
     void shouldDAOExceptionWhenEmptyResultDataAccessExceptionWhileGetGroupFaculty() {
         int groupId = 1;
         assertThrows(DAOException.class, () -> groupDAO.getGroupFaculty(groupId));
     }
-    
+
     @Test
     void shouldThrowDAOExceptionWhenDataAccessExceptionWhileGetGroupFaculty() {
         int groupId = 1;
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(FacultyMapper.class), anyInt())).thenThrow(QueryTimeoutException.class);
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(FacultyMapper.class), anyInt()))
+                .thenThrow(QueryTimeoutException.class);
         assertThrows(DAOException.class, () -> groupDAO.getGroupFaculty(groupId));
     }
-    
+
     @Test
     void shouldGenerateLogsWhenCreateGroup() {
         Group testGroup = new Group();
         testGroup.setName("Test Group");
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testGroup + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to insert a new object: " + testGroup + ".",
                 "The object " + testGroup + " was inserted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.create(testGroup);
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileCreate() {
         Group testGroup = new Group();
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testGroup + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to insert a new object: " + testGroup + ".",
                 "Can't insert the object: " + testGroup + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -285,7 +277,7 @@ class GroupDAOTest {
         try {
             groupDAO.create(testGroup);
         } catch (DAOException exception) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -296,68 +288,59 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenFindAllIsEmpty() {
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.WARN));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all objects.",
-                "There are not any objects in the result when findAll."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to find all objects.", "There are not any objects in the result when findAll."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.findAll();
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i ++) {
+        for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenFindAllHasResult() {
         ScriptUtils.executeSqlScript(connection, testData);
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all objects.",
-                "The result is: " + expectedGroups + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to find all objects.", "The result is: " + expectedGroups + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.findAll();
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindAll() {
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         when(mockedJdbcTemplate.query(anyString(), any(GroupMapper.class))).thenThrow(QueryTimeoutException.class);
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find all objects.",
-                "Can't find all objects."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to find all objects.", "Can't find all objects."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -368,7 +351,7 @@ class GroupDAOTest {
             groupDAO.findAll();
             verify(mockedJdbcTemplate).query(anyString(), any(GroupMapper.class));
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -378,57 +361,51 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenFindById() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 2;
         Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == testId).findFirst().get();
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
                 "The result object with id " + testId + " is " + expectedGroup + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.findById(testId);
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
-        for(int i = 0; i < actualLogs.size(); i++) {
+        for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowEmptyResultDataAccessExceptionWhileFindById() {
         int testId = 1;
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find an object by id: " + testId + ".",
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
                 "There is no result when find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.findById(testId);
         } catch (DAOException daoEcxeption) {
-            //do nothing
+            // do nothing
         }
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
         assertEquals(expectedLogs.size(), actualLogs.size());
@@ -437,33 +414,31 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindById() {
         int testId = 1;
-        
+
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), any())).thenThrow(QueryTimeoutException.class);
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to find an object by id: " + testId + ".",
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), any()))
+                .thenThrow(QueryTimeoutException.class);
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
                 "Can't find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.findById(testId);
             verify(mockedJdbcTemplate).queryForObject(anyString(), any(GroupMapper.class), any());
         } catch (DAOException daoEcxeption) {
-            //do nothing
+            // do nothing
         }
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
         assertEquals(expectedLogs.size(), actualLogs.size());
@@ -472,130 +447,120 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenUpdate() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 1;
         Group testGroup = new Group();
         testGroup.setName("Test Group");
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object " + testGroup + " with id " + testId + ".",
-                "The object " + testGroup + " with id " + testId + " was updated."));
-        
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to update an object " + testGroup + " with id " + testId + ".",
+                        "The object " + testGroup + " with id " + testId + " was updated."));
+
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.update(testId, testGroup);
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileUpdate() {
         int testId = 1;
         Group testGroup = new Group();
         testGroup.setName("TestGroup");
-        
+
         JdbcTemplate mockedJdbcTemplate = Mockito.mock(JdbcTemplate.class);
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyString(), anyInt());
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to update an object " + testGroup + " with id " + testId + ".",
-                "Can't update an object " + testGroup + " with id " + testId +  "."));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to update an object " + testGroup + " with id " + testId + ".",
+                        "Can't update an object " + testGroup + " with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.update(testId, testGroup);
             verify(mockedJdbcTemplate).update(anyString(), anyString(), anyInt());
         } catch (DAOException daoEcxeption) {
-            //do nothing
+            // do nothing
         }
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }  
+        }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenDeleteById() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 3;
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id " + testId + ".",
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
                 "The object was deleted by id " + testId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.deleteById(testId);
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
         int testId = 3;
 
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt());
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to delete an object by id " + testId + ".",
-                "Can't delete an object by id " + testId +  "."));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
+                "Can't delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.deleteById(testId);
             verify(mockedJdbcTemplate).update(anyString(), anyInt());
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -606,37 +571,35 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenSetGroupFaculty() {
         ScriptUtils.executeSqlScript(connection, testData);
         int facultyId = 1;
         int groupId = 2;
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to set a faculty with id " + facultyId + " for a group with id " + groupId + ".",
-                "The faculty with id " + facultyId + " was setted for the group with id " + groupId + "."));
-        
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to set a faculty with id " + facultyId + " for a group with id " + groupId + ".",
+                        "The faculty with id " + facultyId + " was setted for the group with id " + groupId + "."));
+
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.setGroupFaculty(facultyId, groupId);
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
-        for(int i = 0; i < actualLogs.size(); i++) {
+        for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccessExceptionWhileSetGroupFaculty() {
         int facultyId = 1;
@@ -644,25 +607,23 @@ class GroupDAOTest {
 
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
         doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to set a faculty with id " + facultyId + " for a group with id " + groupId + ".",
-                "Can't set a faculty with id " + facultyId + " for a group with id " + groupId + "."));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to set a faculty with id " + facultyId + " for a group with id " + groupId + ".",
+                        "Can't set a faculty with id " + facultyId + " for a group with id " + groupId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.setGroupFaculty(facultyId, groupId);
             verify(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -673,7 +634,7 @@ class GroupDAOTest {
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenGetGroupFaculty() {
         ScriptUtils.executeSqlScript(connection, testData);
@@ -681,22 +642,20 @@ class GroupDAOTest {
         Faculty expectedFaculty = new Faculty();
         expectedFaculty.setId(2);
         expectedFaculty.setName("TestFaculty2");
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get a faculty for a group with id " + groupId + ".",
-                "The result faculty for the group with id " + groupId + " is " + expectedFaculty + "."));
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get a faculty for a group with id " + groupId + ".",
+                        "The result faculty for the group with id " + groupId + " is " + expectedFaculty + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         groupDAO.getGroupFaculty(groupId);
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
@@ -707,62 +666,59 @@ class GroupDAOTest {
     @Test
     void shouldGenerateLogsWhenThrowEmptyResultDataAccesEcxeptionWhileGetGroupFaculty() {
         int groupId = 2;
-         
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get a faculty for a group with id " + groupId + ".",
-                "There is no a faculty for a group with id " + groupId + "."));
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get a faculty for a group with id " + groupId + ".",
+                        "There is no a faculty for a group with id " + groupId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.getGroupFaculty(groupId);
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
             assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
         }
     }
-    
+
     @Test
     void shouldGenerateLogsWhenThrowDataAccesEcxeptionWhileGetGroupFaculty() {
         int groupId = 2;
-        
+
         ReflectionTestUtils.setField(groupDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(FacultyMapper.class), any())).thenThrow(QueryTimeoutException.class);
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(
-                new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(
-                Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get a faculty for a group with id " + groupId + ".",
-                "Can't get a faculty for a group with id " + groupId + "."));
+        when(mockedJdbcTemplate.queryForObject(anyString(), any(FacultyMapper.class), any()))
+                .thenThrow(QueryTimeoutException.class);
+
+        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
+        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
+        List<String> expectedMessages = new ArrayList<>(
+                Arrays.asList("Try to get a faculty for a group with id " + groupId + ".",
+                        "Can't get a faculty for a group with id " + groupId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        
+
         try {
             groupDAO.getGroupFaculty(groupId);
             verify(mockedJdbcTemplate).queryForObject(anyString(), any(FacultyMapper.class), any());
         } catch (DAOException daoException) {
-            //do nothing
+            // do nothing
         }
-        
+
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
-        
+
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());

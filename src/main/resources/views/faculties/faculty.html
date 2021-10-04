@@ -1,22 +1,37 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
-<head>
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
+    <header th:replace="fragments :: header-navigation"> </header>
     <div class="container">
-    <table class="table">
-        <tr>
-            <td>Faculty's id:</td>
-            <td th:text="${faculty.id}"></td>
-        </tr>
-        <tr>
-            <td>Faculty's name:</td>
-            <td th:text="${faculty.name}"></td>
-        </tr>
-    </table>
-    </div>
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+        <table class="table">
+            <tr>
+                <td>Faculty's id:</td>
+                <td th:text="${faculty.id}"></td>
+            </tr>
+            <tr>
+                <td>Faculty's name:</td>
+                <td th:text="${faculty.name}"></td>
+            </tr>
+            <tr>
+                <td
+                    colspan="2"
+                    align="center">
+                    <form th:action="@{/faculties/{id}(id=${faculty.id})}" th:method="DELETE">
+                        <a th:href="@{/faculties/{id}/edit(id=${faculty.id})}">
+                        <input
+                            type="button"
+                            class="btn btn-outline-primary"
+                            value="Edit"/></a>
+                        <span> | </span>
+                        <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                    </form>
+                </td>
+            </tr>
+        </table>
+        <div th:replace="fragments :: bootstrap-script">Get a
+            bootstrap script</div>
 </body>
 </html>

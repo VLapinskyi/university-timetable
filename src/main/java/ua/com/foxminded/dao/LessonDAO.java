@@ -23,7 +23,7 @@ public class LessonDAO implements GenericDAO<Lesson> {
     private Environment environment;
 
     @Autowired
-    public LessonDAO (JdbcTemplate jdbcTemplate, Environment environment) {
+    public LessonDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
     }
@@ -46,8 +46,8 @@ public class LessonDAO implements GenericDAO<Lesson> {
 
     @Override
     public void update(int id, Lesson lesson) {
-        jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(),
-                lesson.getAudience(), Integer.toString(lesson.getDay().getValue()), id);
+        jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(), lesson.getAudience(),
+                Integer.toString(lesson.getDay().getValue()), id);
     }
 
     @Override
@@ -55,33 +55,35 @@ public class LessonDAO implements GenericDAO<Lesson> {
         jdbcTemplate.update(environment.getProperty("delete.lesson"), id);
     }
 
-    public void setLessonLecturer (int lecturerId, int lessonId) {
+    public void setLessonLecturer(int lecturerId, int lessonId) {
         jdbcTemplate.update(environment.getProperty("set.lesson.lecturer"), lecturerId, lessonId);
     }
 
-    public Lecturer getLessonLecturer (int lessonId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(), lessonId);
+    public Lecturer getLessonLecturer(int lessonId) {
+        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(),
+                lessonId);
     }
 
-    public void setLessonGroup (int groupId, int lessonId) {
+    public void setLessonGroup(int groupId, int lessonId) {
         jdbcTemplate.update(environment.getProperty("set.lesson.group"), groupId, lessonId);
     }
 
-    public Group getLessonGroup (int lessonId) {
+    public Group getLessonGroup(int lessonId) {
         return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.group"), new GroupMapper(), lessonId);
     }
 
-    public void setLessonTime (int lessonTimeId, int lessonId) {
+    public void setLessonTime(int lessonTimeId, int lessonId) {
         jdbcTemplate.update(environment.getProperty("set.lesson.time"), lessonTimeId, lessonId);
     }
 
-    public LessonTime getLessonTime (int lessonId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.time"), new LessonTimeMapper(), lessonId);
+    public LessonTime getLessonTime(int lessonId) {
+        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.time"), new LessonTimeMapper(),
+                lessonId);
     }
 
     public List<Lesson> getGroupDayLessons(int groupId, DayOfWeek weekDay) {
-        return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(),
-                groupId, Integer.toString(weekDay.getValue()));
+        return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(), groupId,
+                Integer.toString(weekDay.getValue()));
     }
 
     public List<Lesson> getLecturerDayLessons(int lecturerId, DayOfWeek weekDay) {

@@ -1,6 +1,6 @@
 package ua.com.foxminded.domain;
 
-public class Lecturer extends Person{
+public class Lecturer extends Person {
 
     @Override
     public int hashCode() {
@@ -22,6 +22,5 @@ public class Lecturer extends Person{
     public String toString() {
         return "Lecturer [" + (super.toString() != null ? "toString()=" + super.toString() : "") + "]";
     }
-    
-    
+
 }

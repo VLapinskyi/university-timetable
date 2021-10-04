@@ -16,20 +16,20 @@ public class GroupService {
     private GroupDAO groupDAO;
 
     @Autowired
-    public GroupService (GroupDAO groupDAO) {
+    public GroupService(GroupDAO groupDAO) {
         this.groupDAO = groupDAO;
     }
 
-    public void create(Group group) {          
-            groupDAO.create(group);
-            Optional<Group> createdGroup = groupDAO.findAll().stream().max(Comparator.comparing(Group :: getId));
-            int groupId = 0;
-            
-            if(createdGroup.isPresent()) {
-                groupId = createdGroup.get().getId();
-            }
-            
-            groupDAO.setGroupFaculty(group.getFaculty().getId(), groupId);
+    public void create(Group group) {
+        groupDAO.create(group);
+        Optional<Group> createdGroup = groupDAO.findAll().stream().max(Comparator.comparing(Group::getId));
+        int groupId = 0;
+
+        if (createdGroup.isPresent()) {
+            groupId = createdGroup.get().getId();
+        }
+
+        groupDAO.setGroupFaculty(group.getFaculty().getId(), groupId);
     }
 
     public List<Group> getAll() {
@@ -44,19 +44,18 @@ public class GroupService {
         return group;
     }
 
-    public void update (Group updatedGroup) {
+    public void update(Group updatedGroup) {
         groupDAO.update(updatedGroup.getId(), updatedGroup);
         groupDAO.setGroupFaculty(updatedGroup.getFaculty().getId(), updatedGroup.getId());
     }
 
-    public void deleteById (int groupId) {
+    public void deleteById(int groupId) {
         groupDAO.deleteById(groupId);
     }
 
     public List<Group> getGroupsFromFaculty(int facultyId) {
         List<Group> allGroups = groupDAO.findAll();
         allGroups.stream().forEach(group -> group.setFaculty(groupDAO.getGroupFaculty(group.getId())));
-        return allGroups.stream().filter(group -> group.getFaculty().getId() == facultyId)
-                .collect(Collectors.toList());
+        return allGroups.stream().filter(group -> group.getFaculty().getId() == facultyId).collect(Collectors.toList());
     }
 }

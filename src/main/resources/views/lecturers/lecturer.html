@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
 <head>
 <head th:replace="fragments :: head" />
 <body>
-	<header th:replace="fragments :: header-navigation"> </header>
-    
+    <header th:replace="fragments :: header-navigation"> </header>
+
     <div class="container">
         <table class="table">
             <tr>
@@ -13,7 +15,8 @@
             </tr>
             <tr>
                 <td>Lecturer's name:</td>
-                <td th:text="${lecturer.firstName + ' ' + lecturer.lastName}"></td>
+                <td
+                    th:text="${lecturer.firstName + ' ' + lecturer.lastName}"></td>
             </tr>
             <tr>
                 <td>Lecturer's gender:</td>
@@ -27,9 +30,26 @@
                 <td>Lecturer's email:</td>
                 <td th:text="${lecturer.email}"></td>
             </tr>
+            <tr>
+                <td
+                    colspan="2"
+                    align="center">
+                    <form th:href="@{/lecturers/{id}(id=${lecturer.id})}" th:method="DELETE">
+                        <a th:href="@{/lecturers/{id}/edit(id=${lecturer.id})}">
+                            <input
+                                type="button"
+                                class="btn btn-outline-primary"
+                                value="Edit"/></a>
+                            
+                        <span> | </span>
+                        <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                        
+                   </form>
+                </td>
+            </tr>
         </table>
     </div>
-	<div th:replace="fragments :: bootstrap-script">Get a bootstrap
-		script</div>
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
 </body>
 </html>

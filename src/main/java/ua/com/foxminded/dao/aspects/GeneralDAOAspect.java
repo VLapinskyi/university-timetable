@@ -40,7 +40,7 @@ public class GeneralDAOAspect {
     }
 
     @Around("createMethods()")
-    void aroundCreateAdvice (ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    void aroundCreateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object object = proceedingJoinPoint.getArgs()[0];
 
         if (LOGGER.isDebugEnabled()) {
@@ -87,7 +87,7 @@ public class GeneralDAOAspect {
         }
     }
 
-    @Around ("findByIdMethods()")
+    @Around("findByIdMethods()")
     Object aroundFindByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
@@ -113,7 +113,7 @@ public class GeneralDAOAspect {
         }
     }
 
-    @Around ("updateMethods()")
+    @Around("updateMethods()")
     void aroundUpdateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
         Object updatedObject = proceedingJoinPoint.getArgs()[1];
@@ -133,7 +133,7 @@ public class GeneralDAOAspect {
         }
     }
 
-    @Around ("deleteByIdMethods()")
+    @Around("deleteByIdMethods()")
     void aroundDeleteByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
@@ -144,7 +144,7 @@ public class GeneralDAOAspect {
         try {
             proceedingJoinPoint.proceed();
 
-            if(LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The object was deleted by id {}.", id);
             }
         } catch (DataAccessException dataAccessException) {

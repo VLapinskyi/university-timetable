@@ -19,7 +19,7 @@ public class LessonTimeDAO implements GenericDAO<LessonTime> {
     @Autowired
     public LessonTimeDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
-        this.environment  = environment;
+        this.environment = environment;
     }
 
     @Override
@@ -44,13 +44,15 @@ public class LessonTimeDAO implements GenericDAO<LessonTime> {
 
     @Override
     public LessonTime findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.lesson.time.by.id"), new LessonTimeMapper(), id);
+        return jdbcTemplate.queryForObject(environment.getProperty("find.lesson.time.by.id"), new LessonTimeMapper(),
+                id);
 
     }
 
     @Override
     public void update(int id, LessonTime lessonTime) {
-        jdbcTemplate.update(environment.getProperty("update.lesson.time"), lessonTime.getStartTime(), lessonTime.getEndTime(), id);
+        jdbcTemplate.update(environment.getProperty("update.lesson.time"), lessonTime.getStartTime(),
+                lessonTime.getEndTime(), id);
     }
 
     @Override

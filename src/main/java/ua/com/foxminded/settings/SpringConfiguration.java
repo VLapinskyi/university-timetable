@@ -32,9 +32,9 @@ import jakarta.validation.ValidatorFactory;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @PropertySource("classpath:database.properties")
 @PropertySource("classpath:sql-queries.properties")
-public class SpringConfiguration implements WebMvcConfigurer{    
+public class SpringConfiguration implements WebMvcConfigurer {
     private final ApplicationContext context;
-    
+
     private Environment environment;
 
     @Autowired
@@ -42,7 +42,7 @@ public class SpringConfiguration implements WebMvcConfigurer{
         this.context = context;
         this.environment = environment;
     }
-    
+
     @Bean
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -54,16 +54,16 @@ public class SpringConfiguration implements WebMvcConfigurer{
     }
 
     @Bean
-    public JdbcTemplate getJdbcTemplate () {
+    public JdbcTemplate getJdbcTemplate() {
         return new JdbcTemplate(getDataSource());
     }
-    
+
     @Bean
     public Validator validator() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         return factory.getValidator();
     }
-    
+
     @Bean
     public SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
@@ -73,7 +73,7 @@ public class SpringConfiguration implements WebMvcConfigurer{
         templateResolver.setOrder(0);
         return templateResolver;
     }
-    
+
     @Bean
     public ClassLoaderTemplateResolver scriptTemplateResolver() {
         ClassLoaderTemplateResolver scriptTemplateResolver = new ClassLoaderTemplateResolver();
@@ -98,11 +98,10 @@ public class SpringConfiguration implements WebMvcConfigurer{
         resolver.setTemplateEngine(templateEngine());
         registry.viewResolver(resolver);
     }
-    
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/js/**")
-            .addResourceLocations("classpath:/static/js/");
-        
+        registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
+
     }
 }

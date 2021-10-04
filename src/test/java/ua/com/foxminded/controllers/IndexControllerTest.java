@@ -19,26 +19,24 @@ import org.springframework.web.context.WebApplicationContext;
 
 import ua.com.foxminded.settings.SpringConfiguration;
 
-@ContextConfiguration(classes = {SpringConfiguration.class})
+@ContextConfiguration(classes = { SpringConfiguration.class })
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class IndexControllerTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
-    
+
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
-    
+
     @Test
-    void shoulёёdReturnIndexViewWithCorrectModel() throws Exception{
-        mockMvc.perform(get("/"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("index"))
-            .andExpect(model().attribute("pageTitle", equalTo("University")));
+    void shoulёёdReturnIndexViewWithCorrectModel() throws Exception {
+        mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("index"))
+                .andExpect(model().attribute("pageTitle", equalTo("University")));
     }
 
 }

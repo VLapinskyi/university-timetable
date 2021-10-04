@@ -13,7 +13,7 @@ public class FacultyService {
     private FacultyDAO facultyDAO;
 
     @Autowired
-    public FacultyService (FacultyDAO facultyDAO) {
+    public FacultyService(FacultyDAO facultyDAO) {
         this.facultyDAO = facultyDAO;
     }
 
@@ -29,11 +29,11 @@ public class FacultyService {
         return facultyDAO.findById(facultyId);
     }
 
-    public void update (Faculty updatedFaculty) {
+    public void update(Faculty updatedFaculty) {
         facultyDAO.update(updatedFaculty.getId(), updatedFaculty);
     }
 
-    public void deleteById (int facultyId) {
+    public void deleteById(int facultyId) {
         facultyDAO.deleteById(facultyId);
     }
 }

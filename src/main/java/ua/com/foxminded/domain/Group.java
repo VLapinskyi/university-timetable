@@ -6,14 +6,13 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public class Group {
-    @PositiveOrZero (message = "Group id can't be negative")
+    @PositiveOrZero(message = "Group id can't be negative")
     private int id;
-    
-    @NotNull (message = "Group name can't be null")
-    @Pattern(regexp = "\\S{2,}.*",
-            message = "Group name must have at least two symbols and start with non-white space")
+
+    @NotNull(message = "Group name can't be null")
+    @Pattern(regexp = "\\S{2,}.*", message = "Group name must have at least two symbols and start with non-white space")
     private String name;
-    
+
     @NotNull(message = "Group faculty can't be null")
     @Valid
     private Faculty faculty;
@@ -34,11 +33,11 @@ public class Group {
         this.name = name;
     }
 
-    public Faculty getFaculty () {
+    public Faculty getFaculty() {
         return faculty;
     }
 
-    public void setFaculty (Faculty faculty) {
+    public void setFaculty(Faculty faculty) {
         this.faculty = faculty;
     }
 

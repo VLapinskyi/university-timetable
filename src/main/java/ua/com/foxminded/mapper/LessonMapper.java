@@ -14,9 +14,9 @@ public class LessonMapper implements RowMapper<Lesson> {
     public Lesson mapRow(ResultSet rs, int rowNum) throws SQLException {
         Lesson lesson = new Lesson();
         lesson.setId(rs.getInt("id"));
-        lesson.setName(rs.getString("name"));        
-        lesson.setAudience(rs.getString("audience"));              
-        lesson.setDay(DayOfWeek.of(Integer.parseInt(rs.getString("week_day"))));        
+        lesson.setName(rs.getString("name"));
+        lesson.setAudience(rs.getString("audience"));
+        lesson.setDay(DayOfWeek.of(Integer.parseInt(rs.getString("week_day"))));
         return lesson;
     }
 }

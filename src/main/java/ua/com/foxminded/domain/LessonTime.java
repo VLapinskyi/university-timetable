@@ -8,12 +8,12 @@ import ua.com.foxminded.domain.validation.CheckLessonTime;
 
 @CheckLessonTime
 public class LessonTime {
-    @PositiveOrZero (message = "LessonTime id can't be null")
+    @PositiveOrZero(message = "LessonTime id can't be null")
     private int id;
-    
+
     @NotNull(message = "LessonTime's startTime can't be null")
     private LocalTime startTime;
-    
+
     @NotNull(message = "LessonTime's endTime can't be null")
     private LocalTime endTime;
 
@@ -80,6 +80,5 @@ public class LessonTime {
         return "LessonTime [id=" + id + ", " + (startTime != null ? "startTime=" + startTime + ", " : "")
                 + (endTime != null ? "endTime=" + endTime : "") + "]";
     }
-    
-    
+
 }

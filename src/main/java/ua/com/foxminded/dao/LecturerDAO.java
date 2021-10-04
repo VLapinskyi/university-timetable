@@ -17,27 +17,27 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
     private Environment environment;
 
     @Autowired
-    public LecturerDAO (JdbcTemplate jdbcTemplate, Environment environment) {
+    public LecturerDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
     }
 
     @Override
     public void create(Lecturer lecturer) {
-        jdbcTemplate.update(environment.getProperty("create.person"), ROLE,
-                lecturer.getFirstName(), lecturer.getLastName(), lecturer.getGender().toString(),
-                lecturer.getPhoneNumber(), lecturer.getEmail());
+        jdbcTemplate.update(environment.getProperty("create.person"), ROLE, lecturer.getFirstName(),
+                lecturer.getLastName(), lecturer.getGender().toString(), lecturer.getPhoneNumber(),
+                lecturer.getEmail());
     }
 
     @Override
-    public List <Lecturer> findAll() {
+    public List<Lecturer> findAll() {
         return jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new LecturerMapper(), ROLE);
     }
 
-
     @Override
     public Lecturer findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"), new LecturerMapper(), id, ROLE);
+        return jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"), new LecturerMapper(), id,
+                ROLE);
     }
 
     @Override

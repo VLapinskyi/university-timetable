@@ -8,31 +8,29 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public class Lesson {
-    @PositiveOrZero (message = "Lesson id can't be negative")
+    @PositiveOrZero(message = "Lesson id can't be negative")
     private int id;
-    
-    @NotNull (message = "Lesson name can't be null")
-    @Pattern (regexp = "\\S{2,}.*",
-            message = "Lesson name must have at least two symbols and start with non-white space")
+
+    @NotNull(message = "Lesson name can't be null")
+    @Pattern(regexp = "\\S{2,}.*", message = "Lesson name must have at least two symbols and start with non-white space")
     private String name;
-    
-    @NotNull (message = "Lesson lecturer can't be null")
+
+    @NotNull(message = "Lesson lecturer can't be null")
     @Valid
     private Lecturer lecturer;
-    
-    @NotNull (message = "Lesson group can't be null")
+
+    @NotNull(message = "Lesson group can't be null")
     @Valid
     private Group group;
-    
-    @NotNull (message = "Lesson audience can't be null")
-    @Pattern (regexp = "\\S{2,}.*",
-            message = "Lesson audience must have at least two symbols and start with non-white space")
+
+    @NotNull(message = "Lesson audience can't be null")
+    @Pattern(regexp = "\\S{2,}.*", message = "Lesson audience must have at least two symbols and start with non-white space")
     private String audience;
-    
-    @NotNull (message = "Lesson day can't be null")
+
+    @NotNull(message = "Lesson day can't be null")
     private DayOfWeek day;
-    
-    @NotNull (message = "Lesson time can't be null")
+
+    @NotNull(message = "Lesson time can't be null")
     @Valid
     private LessonTime lessonTime;
 
@@ -155,6 +153,5 @@ public class Lesson {
                 + (audience != null ? "audience=" + audience + ", " : "") + (day != null ? "day=" + day + ", " : "")
                 + (lessonTime != null ? "lessonTime=" + lessonTime : "") + "]";
     }
-    
-    
+
 }

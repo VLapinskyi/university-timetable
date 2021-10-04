@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    xmlns:th="http://thymeleaf.org">
+<head th:replace="fragments :: head" />
+<body>
+    <header th:replace="fragments :: header-navigation"> </header>
+
+    <div class="container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Lesson start time</th>
+                    <th scope="col">Lesson end time</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    th:if="${!lessonTimes.isEmpty()}"
+                    th:each="lessonTime, iStat:${lessonTimes}">
+                    <th
+                        scope="row"
+                        th:text="${iStat.count}">#</th>
+                    <td
+                        th:utext="${#temporals.format(lessonTime.startTime, 'HH:mm')}"></td>
+                    <td
+                        th:utext="${#temporals.format(lessonTime.endTime, 'HH:mm')}"></td>
+                    <td>
+                        <form th:action="@{/lesson-time-parameters/{id}(id=${lessonTime.id})}" th:method="DELETE">
+                            <a
+                                th:href="@{/lesson-time-parameters/{id}/edit(id=${lessonTime.id})}">
+                                <input
+                                    type="button"
+                                    class="btn btn-outline-primary"
+                                    value="Edit"/></a>
+                            <span> | </span>
+                            <input type="submit" value="Delete" class="btn btn-outline-danger"/>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <br />
+
+    <form th:action="@{/lesson-time-parameters/new}">
+        <div class="position-relative">
+            <div
+                class="position-absolute top-100 start-50 translate-middle">
+                <button
+                    type="submit"
+                    class="btn btn-primary">Create new lesson
+                    time parameter</button>
+            </div>
+        </div>
+    </form>
+
+    <div th:replace="fragments :: bootstrap-script">Get a
+        bootstrap script</div>
+</body>
+</html>

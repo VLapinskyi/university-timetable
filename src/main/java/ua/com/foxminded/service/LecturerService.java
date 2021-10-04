@@ -25,7 +25,7 @@ public class LecturerService {
         return lecturerDAO.findAll();
     }
 
-    public Lecturer getById (int lecturerId) {
+    public Lecturer getById(int lecturerId) {
         return lecturerDAO.findById(lecturerId);
     }
 

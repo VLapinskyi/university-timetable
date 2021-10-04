@@ -21,16 +21,15 @@ public class StudentDAO implements GenericDAO<Student> {
     private Environment environment;
 
     @Autowired
-    public StudentDAO (JdbcTemplate jdbcTemplate, Environment environment) {
+    public StudentDAO(JdbcTemplate jdbcTemplate, Environment environment) {
         this.jdbcTemplate = jdbcTemplate;
         this.environment = environment;
     }
 
     @Override
     public void create(Student student) {
-        jdbcTemplate.update(environment.getProperty("create.person"), ROLE, 
-                student.getFirstName(), student.getLastName(), student.getGender().name(),
-                student.getPhoneNumber(), student.getEmail());
+        jdbcTemplate.update(environment.getProperty("create.person"), ROLE, student.getFirstName(),
+                student.getLastName(), student.getGender().name(), student.getPhoneNumber(), student.getEmail());
     }
 
     @Override
@@ -41,15 +40,13 @@ public class StudentDAO implements GenericDAO<Student> {
 
     @Override
     public Student findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"),
-                new StudentMapper(), id, ROLE);
+        return jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"), new StudentMapper(), id, ROLE);
     }
 
     @Override
     public void update(int id, Student student) {
-        jdbcTemplate.update(environment.getProperty("update.person"),
-                student.getFirstName(), student.getLastName(), student.getGender().toString(),
-                student.getPhoneNumber(), student.getEmail(),  id, ROLE);
+        jdbcTemplate.update(environment.getProperty("update.person"), student.getFirstName(), student.getLastName(),
+                student.getGender().toString(), student.getPhoneNumber(), student.getEmail(), id, ROLE);
     }
 
     @Override
@@ -62,6 +59,6 @@ public class StudentDAO implements GenericDAO<Student> {
     }
 
     public Group getStudentGroup(int studentId) {
-        return  jdbcTemplate.queryForObject(environment.getProperty("get.student.group"), new GroupMapper(), studentId);
+        return jdbcTemplate.queryForObject(environment.getProperty("get.student.group"), new GroupMapper(), studentId);
     }
 }
