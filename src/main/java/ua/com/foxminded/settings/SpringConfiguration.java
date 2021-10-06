@@ -1,5 +1,6 @@
 package ua.com.foxminded.settings;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jndi.JndiTemplate;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
@@ -34,7 +35,7 @@ import jakarta.validation.ValidatorFactory;
 @PropertySource("classpath:sql-queries.properties")
 public class SpringConfiguration implements WebMvcConfigurer {
     private final ApplicationContext context;
-
+    
     private Environment environment;
 
     @Autowired
@@ -44,17 +45,12 @@ public class SpringConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public DataSource getDataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(environment.getProperty("driver.class.name"));
-        dataSource.setUrl(environment.getProperty("url"));
-        dataSource.setUsername(environment.getProperty("user"));
-        dataSource.setPassword(environment.getProperty("password"));
-        return dataSource;
+    public DataSource getDataSource() throws NamingException {
+        return (DataSource) new JndiTemplate().lookup(environment.getProperty("jndi.datasource.name"));
     }
 
     @Bean
-    public JdbcTemplate getJdbcTemplate() {
+    public JdbcTemplate getJdbcTemplate() throws NamingException {
         return new JdbcTemplate(getDataSource());
     }
 
