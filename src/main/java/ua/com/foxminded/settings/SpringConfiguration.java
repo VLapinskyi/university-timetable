@@ -1,8 +1,11 @@
 package ua.com.foxminded.settings;
 
+import java.util.Properties;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +16,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jndi.JndiTemplate;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
@@ -28,6 +33,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 @Configuration
+@EnableTransactionManagement
 @ComponentScan("ua.com.foxminded")
 @EnableWebMvc
 @EnableAspectJAutoProxy(proxyTargetClass = true)
@@ -86,6 +92,27 @@ public class SpringConfiguration implements WebMvcConfigurer {
         templateEngine.setEnableSpringELCompiler(true);
         templateEngine.addDialect(new Java8TimeDialect());
         return templateEngine;
+    }
+    
+    @Bean
+    public LocalSessionFactoryBean sessionFactory() throws NamingException {
+        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+        sessionFactory.setDataSource(getDataSource());
+        sessionFactory.setPackagesToScan("ua.com.foxminded.domain");
+        sessionFactory.setHibernateProperties(hibernateProperties());
+        return sessionFactory;
+    }
+    
+    private final Properties hibernateProperties() {
+        Properties hibernateProperties = new Properties();
+        hibernateProperties.setProperty(
+          "hibernate.hbm2ddl.auto", "create-drop");
+        /*
+         * hibernateProperties.setProperty( "hibernate.dialect",
+         * "org.hibernate.dialect.H2Dialect");
+         */
+
+        return hibernateProperties;
     }
 
     @Override
