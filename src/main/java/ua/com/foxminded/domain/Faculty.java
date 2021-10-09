@@ -1,15 +1,43 @@
 package ua.com.foxminded.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
+@Entity
+@Table(name = "faculties")
 public class Faculty {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @PositiveOrZero(message = "Faculty id can't be negative")
     private int id;
+    
+    @Column(name = "name")
     @NotNull(message = "Faculty name can't be null")
     @Pattern(regexp = "\\S{2,}.*", message = "Faculty name must have at least two symbols and start with non-white space")
     private String name;
+    
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+            mappedBy = "faculty")
+    private List<Group> groups;
+
+    public Faculty() {
+
+    }
 
     public int getId() {
         return id;
@@ -25,6 +53,15 @@ public class Faculty {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public void addGroup (Group group) {
+        if(groups == null) {
+            groups = new ArrayList<>();
+        }
+        
+        groups.add(group);
+        group.setFaculty(this);
     }
 
     @Override

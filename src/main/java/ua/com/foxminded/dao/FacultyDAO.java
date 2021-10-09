@@ -2,47 +2,45 @@ package ua.com.foxminded.dao;
 
 import java.util.List;
 
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import ua.com.foxminded.domain.Faculty;
-import ua.com.foxminded.mapper.FacultyMapper;
 
 @Repository
+@Transactional
 public class FacultyDAO implements GenericDAO<Faculty> {
-    private JdbcTemplate jdbcTemplate;
-    private Environment environment;
+    private SessionFactory sessionFactory;
 
     @Autowired
-    public FacultyDAO(JdbcTemplate jdbcTemplate, Environment environment) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.environment = environment;
+    public FacultyDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public void create(Faculty faculty) {
-        jdbcTemplate.update(environment.getProperty("create.faculty"), faculty.getName());
+        sessionFactory.getCurrentSession().persist(faculty);
     }
 
     @Override
     public List<Faculty> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.faculties"), new FacultyMapper());
+        return sessionFactory.getCurrentSession().createQuery("from Faculty", Faculty.class).getResultList();
     }
 
     @Override
     public Faculty findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.faculty.by.id"), new FacultyMapper(), id);
+        return sessionFactory.getCurrentSession().get(Faculty.class, id);
     }
 
     @Override
     public void update(int id, Faculty faculty) {
-        jdbcTemplate.update(environment.getProperty("update.faculty"), faculty.getName(), id);
+        sessionFactory.getCurrentSession().update(faculty);
     }
 
     @Override
-    public void deleteById(int id) {
-        jdbcTemplate.update(environment.getProperty("delete.faculty"), id);
+    public void delete(Faculty faculty) {
+        sessionFactory.getCurrentSession().delete(faculty);
     }
 }

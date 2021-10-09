@@ -1,21 +1,44 @@
 package ua.com.foxminded.domain;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
+@Entity
+@Table(name = "groups")
 public class Group {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @PositiveOrZero(message = "Group id can't be negative")
     private int id;
 
+    @Column(name = "name")
     @NotNull(message = "Group name can't be null")
     @Pattern(regexp = "\\S{2,}.*", message = "Group name must have at least two symbols and start with non-white space")
     private String name;
 
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "faculty_id")
     @NotNull(message = "Group faculty can't be null")
     @Valid
     private Faculty faculty;
+    
+    public Group() {
+
+    }
 
     public int getId() {
         return id;

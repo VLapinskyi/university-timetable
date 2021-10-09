@@ -5,7 +5,7 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.hibernate.SessionFactory;
+import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jndi.JndiTemplate;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -41,7 +43,7 @@ import jakarta.validation.ValidatorFactory;
 @PropertySource("classpath:sql-queries.properties")
 public class SpringConfiguration implements WebMvcConfigurer {
     private final ApplicationContext context;
-    
+
     private Environment environment;
 
     @Autowired
@@ -52,7 +54,7 @@ public class SpringConfiguration implements WebMvcConfigurer {
 
     @Bean
     public DataSource getDataSource() throws NamingException {
-        return (DataSource) new JndiTemplate().lookup(environment.getProperty("jndi.datasource.name"));
+        return (BasicDataSource) new JndiTemplate().lookup(environment.getProperty("jndi.datasource.name"));
     }
 
     @Bean
@@ -93,7 +95,7 @@ public class SpringConfiguration implements WebMvcConfigurer {
         templateEngine.addDialect(new Java8TimeDialect());
         return templateEngine;
     }
-    
+
     @Bean
     public LocalSessionFactoryBean sessionFactory() throws NamingException {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
@@ -103,14 +105,20 @@ public class SpringConfiguration implements WebMvcConfigurer {
         return sessionFactory;
     }
     
+    @Bean
+    public PlatformTransactionManager hibernateTransactionManager() throws NamingException {
+        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+        transactionManager.setSessionFactory(sessionFactory().getObject());
+        return transactionManager;
+    }
+
     private final Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty(
-          "hibernate.hbm2ddl.auto", "create-drop");
-        /*
-         * hibernateProperties.setProperty( "hibernate.dialect",
-         * "org.hibernate.dialect.H2Dialect");
-         */
+                "hibernate.hbm2ddl.auto", "create-drop");
+
+        hibernateProperties.setProperty( "hibernate.dialect",
+                "org.hibernate.dialect.PostgreSQLDialect");
 
         return hibernateProperties;
     }
