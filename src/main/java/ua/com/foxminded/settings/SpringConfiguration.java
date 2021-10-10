@@ -6,6 +6,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import org.hibernate.validator.HibernateValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jndi.JndiTemplate;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
@@ -58,14 +58,13 @@ public class SpringConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public JdbcTemplate getJdbcTemplate() throws NamingException {
-        return new JdbcTemplate(getDataSource());
-    }
-
-    @Bean
     public Validator validator() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        return factory.getValidator();
+        return validatorFactory().getValidator();
+    }
+    
+    @Bean
+    public ValidatorFactory validatorFactory() {
+        return Validation.byProvider(HibernateValidator.class).configure().buildValidatorFactory();
     }
 
     @Bean
@@ -114,11 +113,15 @@ public class SpringConfiguration implements WebMvcConfigurer {
 
     private final Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty(
-                "hibernate.hbm2ddl.auto", "create-drop");
-
-        hibernateProperties.setProperty( "hibernate.dialect",
-                "org.hibernate.dialect.PostgreSQLDialect");
+        
+        hibernateProperties.put( "hibernate.dialect",
+                "org.hibernate.dialect.PostgreSQL10Dialect");
+        
+        hibernateProperties.put("javax.persistence.validation.mode", "none");
+        
+        hibernateProperties.put("show_sql", "true");
+        
+        hibernateProperties.put("hibernate.hbm2ddl.auto", "validate");
 
         return hibernateProperties;
     }

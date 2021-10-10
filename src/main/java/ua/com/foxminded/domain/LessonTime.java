@@ -2,18 +2,33 @@ package ua.com.foxminded.domain;
 
 import java.time.LocalTime;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import ua.com.foxminded.domain.validation.CheckLessonTime;
 
 @CheckLessonTime
+@Entity
+@Table(name = "lesson_times")
 public class LessonTime {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @PositiveOrZero(message = "LessonTime id can't be null")
     private int id;
 
+    @Column(name = "start_time")
     @NotNull(message = "LessonTime's startTime can't be null")
     private LocalTime startTime;
 
+    @Column(name = "end_time")
     @NotNull(message = "LessonTime's endTime can't be null")
     private LocalTime endTime;
 

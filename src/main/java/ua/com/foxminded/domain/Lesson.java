@@ -2,37 +2,74 @@ package ua.com.foxminded.domain;
 
 import java.time.DayOfWeek;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
+@Entity
+@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
+@Table(name = "lessons")
 public class Lesson {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @PositiveOrZero(message = "Lesson id can't be negative")
     private int id;
-
+    
+    @Column(name = "name")
     @NotNull(message = "Lesson name can't be null")
     @Pattern(regexp = "\\S{2,}.*", message = "Lesson name must have at least two symbols and start with non-white space")
     private String name;
 
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "lecturer_id")
     @NotNull(message = "Lesson lecturer can't be null")
     @Valid
     private Lecturer lecturer;
 
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "group_id")
     @NotNull(message = "Lesson group can't be null")
     @Valid
     private Group group;
 
+    @Column(name = "audience")
     @NotNull(message = "Lesson audience can't be null")
     @Pattern(regexp = "\\S{2,}.*", message = "Lesson audience must have at least two symbols and start with non-white space")
     private String audience;
 
+    @Enumerated(EnumType.STRING)
+    @Type(type = "pgsql_enum")
+    @Column(name = "week_day")
     @NotNull(message = "Lesson day can't be null")
     private DayOfWeek day;
 
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "lesson_time_id")
     @NotNull(message = "Lesson time can't be null")
     @Valid
     private LessonTime lessonTime;
+    
+    public Lesson() {
+
+    }
 
     public int getId() {
         return id;

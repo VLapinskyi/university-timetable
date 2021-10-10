@@ -26,7 +26,7 @@ public class FacultyDAO implements GenericDAO<Faculty> {
 
     @Override
     public List<Faculty> findAll() {
-        return sessionFactory.getCurrentSession().createQuery("from Faculty", Faculty.class).getResultList();
+        return sessionFactory.getCurrentSession().createQuery("FROM Faculty", Faculty.class).getResultList();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class FacultyDAO implements GenericDAO<Faculty> {
     }
 
     @Override
-    public void update(int id, Faculty faculty) {
+    public void update(Faculty faculty) {
         sessionFactory.getCurrentSession().update(faculty);
     }
 

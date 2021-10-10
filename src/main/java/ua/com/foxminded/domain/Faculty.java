@@ -31,7 +31,7 @@ public class Faculty {
     @Pattern(regexp = "\\S{2,}.*", message = "Faculty name must have at least two symbols and start with non-white space")
     private String name;
     
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH},
             mappedBy = "faculty")
     private List<Group> groups;
 
@@ -55,6 +55,14 @@ public class Faculty {
         this.name = name;
     }
     
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
+    }
+
     public void addGroup (Group group) {
         if(groups == null) {
             groups = new ArrayList<>();

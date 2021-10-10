@@ -1,5 +1,8 @@
 package ua.com.foxminded.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import jakarta.validation.Valid;
@@ -30,11 +34,15 @@ public class Group {
     @Pattern(regexp = "\\S{2,}.*", message = "Group name must have at least two symbols and start with non-white space")
     private String name;
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "faculty_id")
     @NotNull(message = "Group faculty can't be null")
     @Valid
     private Faculty faculty;
+    
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH},
+            mappedBy = "group")
+    private List<Student> students;
     
     public Group() {
 
@@ -62,6 +70,23 @@ public class Group {
 
     public void setFaculty(Faculty faculty) {
         this.faculty = faculty;
+    }
+    
+    public List<Student> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    public void addStudent(Student student) {
+        if (students == null) {
+            students = new ArrayList<>();
+        }
+        
+        students.add(student);
+        student.setGroup(this);
     }
 
     @Override

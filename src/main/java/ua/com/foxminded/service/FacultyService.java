@@ -30,10 +30,11 @@ public class FacultyService {
     }
 
     public void update(Faculty updatedFaculty) {
-        facultyDAO.update(updatedFaculty.getId(), updatedFaculty);
+        facultyDAO.update(updatedFaculty);
     }
 
     public void deleteById(int facultyId) {
-        facultyDAO.deleteById(facultyId);
+        Faculty faculty = facultyDAO.findById(facultyId);
+        facultyDAO.delete(faculty);
     }
 }

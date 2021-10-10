@@ -30,10 +30,11 @@ public class LessonTimeService {
     }
 
     public void update(LessonTime updatedLessonTime) {
-        lessonTimeDAO.update(updatedLessonTime.getId(), updatedLessonTime);
+        lessonTimeDAO.update(updatedLessonTime);
     }
 
     public void deleteById(int lessonTimeId) {
-        lessonTimeDAO.deleteById(lessonTimeId);
+        LessonTime lessonTime = lessonTimeDAO.findById(lessonTimeId);
+        lessonTimeDAO.delete(lessonTime);
     }
 }

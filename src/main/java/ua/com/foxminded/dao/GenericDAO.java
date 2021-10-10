@@ -9,7 +9,7 @@ public interface GenericDAO<T> {
 
     T findById(int id);
 
-    void update(int id, T t);
+    void update(T t);
 
     void delete(T t);
 }

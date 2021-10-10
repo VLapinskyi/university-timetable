@@ -2,52 +2,48 @@ package ua.com.foxminded.dao;
 
 import java.util.List;
 
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import ua.com.foxminded.domain.Lecturer;
-import ua.com.foxminded.mapper.LecturerMapper;
+import ua.com.foxminded.domain.Role;
 
 @Repository
+@Transactional
 public class LecturerDAO implements GenericDAO<Lecturer> {
-    private static final String ROLE = "lecturer";
-    private JdbcTemplate jdbcTemplate;
-    private Environment environment;
+    private static final Role ROLE = Role.LECTURER;
+    
+    private SessionFactory sessionFactory;
 
     @Autowired
-    public LecturerDAO(JdbcTemplate jdbcTemplate, Environment environment) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.environment = environment;
+    public LecturerDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public void create(Lecturer lecturer) {
-        jdbcTemplate.update(environment.getProperty("create.person"), ROLE, lecturer.getFirstName(),
-                lecturer.getLastName(), lecturer.getGender().toString(), lecturer.getPhoneNumber(),
-                lecturer.getEmail());
+        sessionFactory.getCurrentSession().persist(lecturer);
     }
 
     @Override
     public List<Lecturer> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.people.by.role"), new LecturerMapper(), ROLE);
+        return sessionFactory.getCurrentSession().createQuery("from Lecturer where role = '" + ROLE + "'", Lecturer.class).getResultList();
     }
 
     @Override
     public Lecturer findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.person.by.id"), new LecturerMapper(), id,
-                ROLE);
+        return sessionFactory.getCurrentSession().get(Lecturer.class, id);
     }
 
     @Override
-    public void update(int id, Lecturer lecturer) {
-        jdbcTemplate.update(environment.getProperty("update.person"), lecturer.getFirstName(), lecturer.getLastName(),
-                lecturer.getGender().toString(), lecturer.getPhoneNumber(), lecturer.getEmail(), id, ROLE);
+    public void update(Lecturer lecturer) {
+        sessionFactory.getCurrentSession().update(lecturer);
     }
 
     @Override
-    public void deleteById(int id) {
-        jdbcTemplate.update(environment.getProperty("delete.person"), id, ROLE);
+    public void delete(Lecturer lecturer) {
+        sessionFactory.getCurrentSession().delete(lecturer);
     }
 }

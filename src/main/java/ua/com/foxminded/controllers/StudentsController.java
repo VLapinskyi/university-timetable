@@ -72,7 +72,7 @@ public class StudentsController {
         List<Gender> genders = new ArrayList<>(Arrays.asList(Gender.values()));
         genders.remove(student.getGender());
 
-        Group studentGroup = groupService.getById(student.getGroup().getId());
+        Group studentGroup = student.getGroup();
         List<Group> groups = groupService.getAll();
         groups.remove(studentGroup);
 

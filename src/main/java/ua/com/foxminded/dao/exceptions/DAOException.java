@@ -1,22 +1,20 @@
 package ua.com.foxminded.dao.exceptions;
 
-import org.springframework.dao.DataAccessException;
-
 public class DAOException extends RuntimeException {
-    private DataAccessException dataAccessException;
+    private Exception exception;
     private String daoExceptionMessage;
 
-    public DAOException(String daoExceptionMessage, DataAccessException dataAccessException) {
+    public DAOException(String daoExceptionMessage, Exception exception) {
         this.daoExceptionMessage = daoExceptionMessage;
-        this.dataAccessException = dataAccessException;
+        this.exception = exception;
     }
 
-    public DataAccessException getDataAccessException() {
-        return dataAccessException;
+    public Exception getException() {
+        return exception;
     }
 
-    public void setDataAccessException(DataAccessException dataAccessException) {
-        this.dataAccessException = dataAccessException;
+    public void setException(Exception exception) {
+        this.exception = exception;
     }
 
     public String getDaoExceptionMessage() {

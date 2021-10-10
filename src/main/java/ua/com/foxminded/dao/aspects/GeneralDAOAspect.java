@@ -2,6 +2,8 @@ package ua.com.foxminded.dao.aspects;
 
 import java.util.List;
 
+import javax.persistence.PersistenceException;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -9,8 +11,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import ua.com.foxminded.dao.exceptions.DAOException;
 
@@ -31,12 +31,12 @@ public class GeneralDAOAspect {
     private void findByIdMethods() {
     }
 
-    @Pointcut("execution (void ua.com.foxminded.dao.*.update(int, *))")
+    @Pointcut("execution (void ua.com.foxminded.dao.*.update(*))")
     private void updateMethods() {
     }
 
-    @Pointcut("execution (void ua.com.foxminded.dao.*.deleteById(int))")
-    private void deleteByIdMethods() {
+    @Pointcut("execution (void ua.com.foxminded.dao.*.delete(*))")
+    private void deleteMethods() {
     }
 
     @Around("createMethods()")
@@ -52,9 +52,9 @@ public class GeneralDAOAspect {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The object {} was inserted.", object);
             }
-        } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't insert the object: {}.", object, dataAccessException);
-            throw new DAOException("Can't insert the object", dataAccessException);
+        } catch (PersistenceException persistenceException) {
+            LOGGER.error("Can't insert the object: {}.", object, persistenceException);
+            throw new DAOException("Can't insert the object", persistenceException);
         }
     }
 
@@ -81,9 +81,9 @@ public class GeneralDAOAspect {
 
             return targetMethod;
 
-        } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't find all objects.", dataAccessException);
-            throw new DAOException("Can't find all objects.", dataAccessException);
+        } catch (PersistenceException persistenceException) {
+            LOGGER.error("Can't find all objects.", persistenceException);
+            throw new DAOException("Can't find all objects.", persistenceException);
         }
     }
 
@@ -97,59 +97,62 @@ public class GeneralDAOAspect {
 
         try {
             Object targetMethod = proceedingJoinPoint.proceed();
-
+            
+            if(targetMethod == null) {
+                throw new NullPointerException("There is no object in the database with pointed id.");
+            }
+            
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The result object with id {} is {}.", id, targetMethod);
             }
 
             return targetMethod;
 
-        } catch (EmptyResultDataAccessException emptyResultDataAccessException) {
-            LOGGER.error("There is no result when find an object by id {}.", id, emptyResultDataAccessException);
-            throw new DAOException("Can't find an object by id.", emptyResultDataAccessException);
-        } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't find an object by id {}.", id, dataAccessException);
-            throw new DAOException("Can't find an object by id.", dataAccessException);
+        } catch (NullPointerException nullPointerException) {
+            LOGGER.error("There is no result when find an object by id {}.", id, nullPointerException);
+            throw new DAOException("Can't find an object by id.", nullPointerException);
+        } catch (PersistenceException persistenceException) {
+            LOGGER.error("Can't find an object by id {}.", id, persistenceException);
+            throw new DAOException("Can't find an object by id.", persistenceException);
         }
     }
 
     @Around("updateMethods()")
     void aroundUpdateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        int id = (int) proceedingJoinPoint.getArgs()[0];
-        Object updatedObject = proceedingJoinPoint.getArgs()[1];
+        Object updatedObject = proceedingJoinPoint.getArgs()[0];
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update an object {} with id {}.", updatedObject, id);
+            LOGGER.debug("Try to update an object {}.", updatedObject);
         }
         try {
             proceedingJoinPoint.proceed();
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object {} with id {} was updated.", updatedObject, id);
+                LOGGER.debug("The object {} was updated.", updatedObject);
             }
-        } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't update an object {} with id {}.", updatedObject, id, dataAccessException);
-            throw new DAOException("Can't update an object.", dataAccessException);
+        } catch (PersistenceException persistenceException) {
+            LOGGER.error("Can't update an object {}.", updatedObject, persistenceException);
+            throw new DAOException("Can't update an object.", persistenceException);
         }
     }
 
-    @Around("deleteByIdMethods()")
+    @Around("deleteMethods()")
     void aroundDeleteByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        int id = (int) proceedingJoinPoint.getArgs()[0];
+        Object object = proceedingJoinPoint.getArgs()[0];
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to delete an object by id {}.", id);
+            LOGGER.debug("Try to delete an object {}.", object);
         }
 
         try {
             proceedingJoinPoint.proceed();
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object was deleted by id {}.", id);
+                LOGGER.debug("The object {} was deleted.", object);
             }
-        } catch (DataAccessException dataAccessException) {
-            LOGGER.error("Can't delete an object by id {}.", id, dataAccessException);
-            throw new DAOException("Can't delete an object by id.", dataAccessException);
+        } catch (PersistenceException persistenceException) {
+            LOGGER.error("Can't delete an object {}.", object, persistenceException);
+            throw new DAOException("Can't delete an object.", persistenceException);
         }
     }
 }

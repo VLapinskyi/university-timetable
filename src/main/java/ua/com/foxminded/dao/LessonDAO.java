@@ -3,91 +3,55 @@ package ua.com.foxminded.dao;
 import java.time.DayOfWeek;
 import java.util.List;
 
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import ua.com.foxminded.domain.Group;
-import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
-import ua.com.foxminded.domain.LessonTime;
-import ua.com.foxminded.mapper.GroupMapper;
-import ua.com.foxminded.mapper.LecturerMapper;
-import ua.com.foxminded.mapper.LessonMapper;
-import ua.com.foxminded.mapper.LessonTimeMapper;
 
 @Repository
+@Transactional
 public class LessonDAO implements GenericDAO<Lesson> {
-    private JdbcTemplate jdbcTemplate;
-    private Environment environment;
+    private SessionFactory sessionFactory;
 
     @Autowired
-    public LessonDAO(JdbcTemplate jdbcTemplate, Environment environment) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.environment = environment;
+    public LessonDAO(SessionFactory sessoinFactory) {
+        this.sessionFactory = sessoinFactory;
     }
 
     @Override
     public void create(Lesson lesson) {
-        jdbcTemplate.update(environment.getProperty("create.lesson"), lesson.getName(), lesson.getAudience(),
-                Integer.toString(lesson.getDay().getValue()));
+        sessionFactory.getCurrentSession().persist(lesson);
     }
 
     @Override
     public List<Lesson> findAll() {
-        return jdbcTemplate.query(environment.getProperty("find.all.lessons"), new LessonMapper());
+        return sessionFactory.getCurrentSession().createQuery("from Lesson", Lesson.class).getResultList();
     }
 
     @Override
     public Lesson findById(int id) {
-        return jdbcTemplate.queryForObject(environment.getProperty("find.lesson.by.id"), new LessonMapper(), id);
+        return sessionFactory.getCurrentSession().get(Lesson.class, id);
     }
 
     @Override
-    public void update(int id, Lesson lesson) {
-        jdbcTemplate.update(environment.getProperty("update.lesson"), lesson.getName(), lesson.getAudience(),
-                Integer.toString(lesson.getDay().getValue()), id);
+    public void update(Lesson lesson) {
+        sessionFactory.getCurrentSession().update(lesson);
     }
 
     @Override
-    public void deleteById(int id) {
-        jdbcTemplate.update(environment.getProperty("delete.lesson"), id);
-    }
-
-    public void setLessonLecturer(int lecturerId, int lessonId) {
-        jdbcTemplate.update(environment.getProperty("set.lesson.lecturer"), lecturerId, lessonId);
-    }
-
-    public Lecturer getLessonLecturer(int lessonId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.lecturer"), new LecturerMapper(),
-                lessonId);
-    }
-
-    public void setLessonGroup(int groupId, int lessonId) {
-        jdbcTemplate.update(environment.getProperty("set.lesson.group"), groupId, lessonId);
-    }
-
-    public Group getLessonGroup(int lessonId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.group"), new GroupMapper(), lessonId);
-    }
-
-    public void setLessonTime(int lessonTimeId, int lessonId) {
-        jdbcTemplate.update(environment.getProperty("set.lesson.time"), lessonTimeId, lessonId);
-    }
-
-    public LessonTime getLessonTime(int lessonId) {
-        return jdbcTemplate.queryForObject(environment.getProperty("get.lesson.time"), new LessonTimeMapper(),
-                lessonId);
+    public void delete(Lesson lesson) {
+        sessionFactory.getCurrentSession().delete(lesson);
     }
 
     public List<Lesson> getGroupDayLessons(int groupId, DayOfWeek weekDay) {
-        return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.group"), new LessonMapper(), groupId,
-                Integer.toString(weekDay.getValue()));
+        return sessionFactory.getCurrentSession().createQuery("from Lesson where group_id = '" + groupId + 
+                "' and week_day = '" + weekDay + "'", Lesson.class).getResultList();
     }
 
     public List<Lesson> getLecturerDayLessons(int lecturerId, DayOfWeek weekDay) {
-        return jdbcTemplate.query(environment.getProperty("get.day.lessons.for.lecturer"), new LessonMapper(),
-                lecturerId, Integer.toString(weekDay.getValue()));
+        return sessionFactory.getCurrentSession().createQuery("from Lesson where lecturer_id = '" + lecturerId + 
+                "' and week_day = '" + weekDay + "'", Lesson.class).getResultList();
     }
 }

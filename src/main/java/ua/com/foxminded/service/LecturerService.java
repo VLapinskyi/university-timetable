@@ -30,10 +30,11 @@ public class LecturerService {
     }
 
     public void update(Lecturer lecturer) {
-        lecturerDAO.update(lecturer.getId(), lecturer);
+        lecturerDAO.update(lecturer);
     }
 
     public void deleteById(int lecturerId) {
-        lecturerDAO.deleteById(lecturerId);
+        Lecturer lecturer = lecturerDAO.findById(lecturerId);
+        lecturerDAO.delete(lecturer);
     }
 }
