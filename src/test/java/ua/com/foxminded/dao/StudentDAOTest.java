@@ -2,17 +2,18 @@ package ua.com.foxminded.dao;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.PersistenceException;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.internal.SessionImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,22 +22,20 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.QueryTimeoutException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.dao.exceptions.DAOException;
+import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
-import ua.com.foxminded.mapper.GroupMapper;
-import ua.com.foxminded.mapper.StudentMapper;
 import ua.com.foxminded.settings.SpringDAOTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
@@ -48,19 +47,24 @@ class StudentDAOTest {
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
 
     private TestAppender testAppender = new TestAppender();
+    
     @Autowired
     private StudentDAO studentDAO;
+    
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    SessionFactory sessionFactory;
+    
     private ArrayList<Student> expectedStudents;
     private Connection connection;
+    
     @Mock
-    private JdbcTemplate mockedJdbcTemplate;
+    private SessionFactory mockedSessionFactory;
 
     @BeforeEach
+    @Transactional
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
-        connection = jdbcTemplate.getDataSource().getConnection();
+        connection = ((SessionImpl)sessionFactory.getCurrentSession()).connection();
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
 
         expectedStudents = new ArrayList<>(Arrays.asList(new Student(), new Student(), new Student()));
@@ -79,16 +83,39 @@ class StudentDAOTest {
             expectedStudents.get(i).setPhoneNumber(phoneNumbers.get(i));
             expectedStudents.get(i).setEmail(emails.get(i));
         }
+        Faculty faculty1 = new Faculty();
+        faculty1.setId(1);
+        faculty1.setName("TestFaculty1");
+        
+        Faculty faculty2 = new Faculty();
+        faculty2.setId(2);
+        faculty2.setName("TestFaculty2");
+        
+        Group group1 = new Group();
+        group1.setId(1);
+        group1.setName("TestGroup1");
+        group1.setFaculty(faculty1);
+        
+        Group group2 = new Group();
+        group2.setId(2);
+        group2.setName("TestGroup2");
+        group2.setFaculty(faculty2);
+        
+        expectedStudents.get(0).setGroup(group1);
+        expectedStudents.get(1).setGroup(group1);
+        expectedStudents.get(2).setGroup(group2);
     }
 
     @AfterEach
+    @Transactional
     void tearDown() throws Exception {
         testAppender.cleanEventList();
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", jdbcTemplate);
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", sessionFactory);
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
     @Test
+    @Transactional
     void shouldCreateStudent() {
         Student expectedStudent = new Student();
         expectedStudent.setId(1);
@@ -109,6 +136,7 @@ class StudentDAOTest {
     }
 
     @Test
+    @Transactional
     void shouldFindAllStudents() {
         ScriptUtils.executeSqlScript(connection, testData);
         ArrayList<Student> actualStudents = (ArrayList<Student>) studentDAO.findAll();
@@ -116,167 +144,138 @@ class StudentDAOTest {
     }
 
     @Test
+    @Transactional
     void shouldFindStudentById() {
         ScriptUtils.executeSqlScript(connection, testData);
-        int checkedId = 5;
-        Student expectedStudent = new Student();
-        expectedStudent.setId(checkedId);
-        expectedStudent.setFirstName("Illia");
-        expectedStudent.setLastName("Misiats");
-        expectedStudent.setGender(Gender.MALE);
-        expectedStudent.setEmail("illiamisiats@gmail.com");
-        assertEquals(expectedStudent, studentDAO.findById(checkedId));
-    }
-
-    @Test
-    void shouldUpdateStudent() {
-        ScriptUtils.executeSqlScript(connection, testData);
-        int testId = 6;
-        Student testStudent = new Student();
-        testStudent.setFirstName("Tetiana");
-        testStudent.setLastName("Lytvynenko");
-        testStudent.setGender(Gender.FEMALE);
-
-        Student expectedStudent = new Student();
-        expectedStudent.setId(testId);
-        expectedStudent.setFirstName("Tetiana");
-        expectedStudent.setLastName("Lytvynenko");
-        expectedStudent.setGender(Gender.FEMALE);
-        studentDAO.update(testId, testStudent);
+        int testId = 5;
+        Student expectedStudent = expectedStudents.stream().filter(student -> student.getId() == testId).findFirst().get();
         assertEquals(expectedStudent, studentDAO.findById(testId));
     }
 
     @Test
-    void shouldDeleteStudentById() {
+    @Transactional
+    void shouldUpdateStudent() {
         ScriptUtils.executeSqlScript(connection, testData);
-        int deletedId = 5;
+        int testId = 6;
+        Student testStudent = studentDAO.findById(testId);
+        testStudent.setFirstName("Vasyl");
+        
+        studentDAO.update(testStudent);
+        assertEquals(testStudent, studentDAO.findById(testId));
+    }
+
+    @Test
+    @Transactional
+    void shouldDeleteStudent() {
+        ScriptUtils.executeSqlScript(connection, testData);
+        int deletedStudentId = 5;
+        Student deletedStudent = studentDAO.findById(deletedStudentId);
         for (int i = 0; i < expectedStudents.size(); i++) {
-            if (expectedStudents.get(i).getId() == deletedId) {
+            if (expectedStudents.get(i).getId() == deletedStudentId) {
+                Student studentFromList = expectedStudents.get(i);
+                deletedStudent.setId(studentFromList.getId());
+                deletedStudent.setFirstName(studentFromList.getFirstName());
+                deletedStudent.setLastName(studentFromList.getLastName());
+                deletedStudent.setGender(studentFromList.getGender());
+                deletedStudent.setPhoneNumber(studentFromList.getPhoneNumber());
+                deletedStudent.setEmail(studentFromList.getEmail());
+                deletedStudent.setGroup(studentFromList.getGroup());
+                
                 expectedStudents.remove(i);
                 i--;
             }
         }
-        studentDAO.deleteById(deletedId);
+        studentDAO.delete(deletedStudent);
         ArrayList<Student> actualStudents = (ArrayList<Student>) studentDAO.findAll();
         assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
     }
 
     @Test
-    void shouldSetStudentGroup() {
-        ScriptUtils.executeSqlScript(connection, testData);
-        int groupId = 2;
-        Group group = new Group();
-        group.setId(groupId);
-        group.setName("TestGroup2");
-
-        int studentId = 5;
-        Student expectedStudent = expectedStudents.stream().filter(student -> student.getId() == studentId).findFirst()
-                .get();
-        expectedStudent.setGroup(group);
-
-        studentDAO.setStudentGroup(groupId, studentId);
-        Student actualStudent = studentDAO.findById(studentId);
-        actualStudent.setGroup(studentDAO.getStudentGroup(studentId));
-        assertEquals(expectedStudent, actualStudent);
-    }
-
-    @Test
-    void shouldGetStudentGroup() {
-        ScriptUtils.executeSqlScript(connection, testData);
-        int groupId = 3;
-        Group expectedGroup = new Group();
-        expectedGroup.setId(groupId);
-        expectedGroup.setName("TestGroup3");
-
-        int studentId = 6;
-        studentDAO.setStudentGroup(groupId, studentId);
-        Group actualGroup = studentDAO.getStudentGroup(studentId);
-        assertEquals(expectedGroup, actualGroup);
-    }
-
-    @Test
-    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileCreate() {
+    @Transactional
+    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileCreate() {
         Student student = new Student();
-        student.setGender(Gender.MALE);
+        student.setId(1);
+        student.setFirstName("Olha");
+        student.setLastName("Skladenko");
+        student.setPhoneNumber("+3803241569");
+        student.setEmail("oskladenko@test.com");
+        student.setGender(Gender.FEMALE);
+        student.setGroup(expectedStudents.get(0).getGroup());
         assertThrows(DAOException.class, () -> studentDAO.create(student));
     }
 
     @Test
-    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.query(anyString(), any(StudentMapper.class), anyString()))
-                .thenThrow(QueryTimeoutException.class);
+    @Transactional
+    void shouldThrowDAOExceptionWhenPersistanceExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
         assertThrows(DAOException.class, () -> studentDAO.findAll());
     }
 
     @Test
-    void shouldThrowDAOExceptionWhenEmptyResultDataAccessExceptionWhileFindById() {
+    @Transactional
+    void shouldThrowDAOExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
         assertThrows(DAOException.class, () -> studentDAO.findById(testId));
     }
 
     @Test
-    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileFindById() {
+    @Transactional
+    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(StudentMapper.class), anyInt(), anyString()))
-                .thenThrow(QueryTimeoutException.class);
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
         assertThrows(DAOException.class, () -> studentDAO.findById(testId));
     }
 
     @Test
-    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileUpdate() {
-        int testId = 1;
+    @Transactional
+    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileUpdate() {
         Student testStudent = new Student();
+        testStudent.setId(1);
+        testStudent.setFirstName("Ivan");
+        testStudent.setLastName("Ivanov");
         testStudent.setGender(Gender.FEMALE);
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
-        assertThrows(DAOException.class, () -> studentDAO.update(testId, testStudent));
+        testStudent.setPhoneNumber("+3801236547");
+        testStudent.setEmail("iivanov@test.com");
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        assertThrows(DAOException.class, () -> studentDAO.update(testStudent));
     }
 
     @Test
-    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileDeleteById() {
-        int testId = 1;
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyString());
-        assertThrows(DAOException.class, () -> studentDAO.deleteById(testId));
+    @Transactional
+    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileDelete() {
+        Student student = new Student();
+        student.setId(1);
+        student.setFirstName("Vasyl");
+        student.setLastName("Vasyliev");
+        student.setGender(Gender.MALE);
+        student.setPhoneNumber("+380547896321");
+        student.setEmail("vvasyliev@test.com");
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        assertThrows(DAOException.class, () -> studentDAO.delete(student));
     }
 
     @Test
-    void shouldThrowDAOExceptionWhenDataAccessExeceptionWhileSetStudentGroup() {
-        int groupId = 1;
-        int studentId = 2;
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
-        assertThrows(DAOException.class, () -> studentDAO.setStudentGroup(groupId, studentId));
-    }
-
-    @Test
-    void shouldThrowDAOExceptionWhenDataAccessExceptionWhileGetStudentGroup() {
-        int studentId = 1;
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), anyInt()))
-                .thenThrow(QueryTimeoutException.class);
-        assertThrows(DAOException.class, () -> studentDAO.getStudentGroup(studentId));
-    }
-
-    @Test
-    void shouldDAOExceptionWhenEmptyResultDataAccessExceptionWhileGetStudentGroup() {
-        int studentId = 1;
-        assertThrows(DAOException.class, () -> studentDAO.getStudentGroup(studentId));
-    }
-
-    @Test
+    @Transactional
     void shouldGenerateLogsWhenCreateStudent() {
         Student testStudent = new Student();
         testStudent.setFirstName("Vasyl");
         testStudent.setLastName("Iaremenko");
         testStudent.setGender(Gender.MALE);
+        
+        Student loggingResultStudent = new Student();
+        loggingResultStudent.setFirstName("Vasyl");
+        loggingResultStudent.setLastName("Iaremenko");
+        loggingResultStudent.setGender(Gender.MALE);
+        loggingResultStudent.setId(1);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testStudent + ".", "The object " + testStudent + " was inserted."));
+                "Try to insert a new object: " + loggingResultStudent + ".", "The object " + loggingResultStudent + " was inserted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -294,9 +293,11 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileCreateStudent() {
+    @Transactional
+    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileCreateStudent() {
         Student testStudent = new Student();
         testStudent.setGender(Gender.MALE);
+        testStudent.setId(1);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -323,6 +324,7 @@ class StudentDAOTest {
     }
 
     @Test
+    @Transactional
     void shouldGenerateLogsWhenFindAllIsEmpty() {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
@@ -344,6 +346,7 @@ class StudentDAOTest {
     }
 
     @Test
+    @Transactional
     void shouldGenerateLogsWhenFindAllHasResult() {
         ScriptUtils.executeSqlScript(connection, testData);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -367,10 +370,10 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.query(anyString(), any(StudentMapper.class), anyString()))
-                .thenThrow(QueryTimeoutException.class);
+    @Transactional
+    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -383,7 +386,7 @@ class StudentDAOTest {
 
         try {
             studentDAO.findAll();
-            verify(mockedJdbcTemplate).query(anyString(), any(StudentMapper.class), anyString());
+            verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Student.class);
         } catch (DAOException daoException) {
             // do nothing
         }
@@ -398,6 +401,7 @@ class StudentDAOTest {
     }
 
     @Test
+    @Transactional
     void shouldGenerateLogsWhenFindById() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 5;
@@ -425,7 +429,8 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowEmptyResultDataAccessExceptionWhileFindById() {
+    @Transactional
+    void shouldGenerateLogsWhenThrowResultIsNullPointerExceptionWhileFindById() {
         int testId = 5;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -453,12 +458,12 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindById() {
+    @Transactional
+    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
         int testId = 5;
 
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(StudentMapper.class), any()))
-                .thenThrow(QueryTimeoutException.class);
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -471,7 +476,7 @@ class StudentDAOTest {
 
         try {
             studentDAO.findById(testId);
-            verify(mockedJdbcTemplate).queryForObject(anyString(), any(StudentMapper.class), any());
+            verify(mockedSessionFactory.getCurrentSession()).get(Student.class, testId);
         } catch (DAOException daoException) {
             // do nothing
         }
@@ -486,27 +491,28 @@ class StudentDAOTest {
     }
 
     @Test
+    @Transactional
     void shouldGenerateLogsWhenUpdate() {
         ScriptUtils.executeSqlScript(connection, testData);
-        int testId = 4;
         Student testStudent = new Student();
-        testStudent.setFirstName("Nataliia");
-        testStudent.setLastName("Kohan");
+        testStudent.setId(5);
+        testStudent.setFirstName("Test");
+        testStudent.setLastName("Test");
         testStudent.setGender(Gender.FEMALE);
         testStudent.setEmail("test@test.com");
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + testStudent + " with id " + testId + ".",
-                        "The object " + testStudent + " with id " + testId + " was updated."));
+                Arrays.asList("Try to update an object " + testStudent + ".",
+                        "The object " + testStudent + " was updated."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.update(testId, testStudent);
+        studentDAO.update(testStudent);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -518,22 +524,23 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileUpdate() {
-        int testId = 4;
+    @Transactional
+    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileUpdate() {
         Student testStudent = new Student();
+        testStudent.setId(6);
         testStudent.setFirstName("Iryna");
-        testStudent.setLastName("Kasian");
+        testStudent.setLastName("Hevel");
         testStudent.setGender(Gender.FEMALE);
         testStudent.setEmail("test2@test.com");
 
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + testStudent + " with id " + testId + ".",
-                        "Can't update an object " + testStudent + " with id " + testId + "."));
+                Arrays.asList("Try to update an object " + testStudent + ".",
+                        "Can't update an object " + testStudent + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -541,8 +548,8 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.update(testId, testStudent);
-            verify(mockedJdbcTemplate).update(anyString(), (Object) any());
+            studentDAO.update(testStudent);
+            verify(mockedSessionFactory.getCurrentSession()).update(testStudent);
         } catch (DAOException daoException) {
             // do nothing
         }
@@ -557,20 +564,22 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDeleteById() {
+    @Transactional
+    void shouldGenerateLogsWhenDelete() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 6;
+        Student deletedStudent = expectedStudents.stream().filter(student -> student.getId() == testId).findFirst().get();
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
-                "The object was deleted by id " + testId + "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedStudent + ".",
+                "The object " + deletedStudent + " was deleted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.deleteById(testId);
+        studentDAO.delete(deletedStudent);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -582,179 +591,26 @@ class StudentDAOTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
+    @Transactional
+    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileDelete() {
         int testId = 6;
+        Student deletedStudent = expectedStudents.stream().filter(student -> student.getId() == testId).findFirst().get();
 
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), (Object) any());
+        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
-                "Can't delete an object by id " + testId + "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedStudent + ".",
+                "Can't delete an object " + deletedStudent + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
         try {
-            studentDAO.deleteById(testId);
-            verify(mockedJdbcTemplate).update(anyString(), (Object) any());
-        } catch (DAOException daoException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenSetStudentGroup() {
-        ScriptUtils.executeSqlScript(connection, testData);
-        int groupId = 2;
-        int studentId = 5;
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to set a group with id " + groupId + " for a student with id " + studentId + ".",
-                        "The group with id " + groupId + " was setted for the student with id " + studentId + "."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        studentDAO.setStudentGroup(groupId, studentId);
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileSetStudentGroup() {
-        int groupId = 2;
-        int studentId = 5;
-
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        doThrow(QueryTimeoutException.class).when(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to set a group with id " + groupId + " for a student with id " + studentId + ".",
-                        "Can't set a group with id " + groupId + " for a student with id " + studentId + "."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            studentDAO.setStudentGroup(groupId, studentId);
-            verify(mockedJdbcTemplate).update(anyString(), anyInt(), anyInt());
-        } catch (DAOException daoException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenGetStudentGroup() {
-        ScriptUtils.executeSqlScript(connection, testData);
-        int studentId = 6;
-        Group expectedGroup = new Group();
-        expectedGroup.setId(2);
-        expectedGroup.setName("TestGroup2");
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get a group for a student with id " + studentId + ".",
-                        "The result group for the student with id " + studentId + " is " + expectedGroup + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        studentDAO.getStudentGroup(studentId);
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowEmptyResultDataAccessExceptionGetStudentGroup() {
-        int studentId = 6;
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get a group for a student with id " + studentId + ".",
-                        "There is no result when find a group for a student by student id " + studentId + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            studentDAO.getStudentGroup(studentId);
-        } catch (DAOException daoException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowDataAccessExceptionGetStudentGroup() {
-        int studentId = 6;
-
-        ReflectionTestUtils.setField(studentDAO, "jdbcTemplate", mockedJdbcTemplate);
-        when(mockedJdbcTemplate.queryForObject(anyString(), any(GroupMapper.class), any()))
-                .thenThrow(QueryTimeoutException.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get a group for a student with id " + studentId + ".",
-                        "Can't get a group for a student with id " + studentId + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            studentDAO.getStudentGroup(studentId);
-            verify(mockedJdbcTemplate).queryForObject(anyString(), any(GroupMapper.class), any());
+            studentDAO.delete(deletedStudent);
+            verify(mockedSessionFactory.getCurrentSession()).update(deletedStudent);
         } catch (DAOException daoException) {
             // do nothing
         }

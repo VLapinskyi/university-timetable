@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.service.exceptions.NotFoundEntityException;
@@ -111,7 +110,7 @@ public class GeneralServiceAspect {
 
             return targetMethod;
         } catch (DAOException daoException) {
-            if (daoException.getDataAccessException() instanceof EmptyResultDataAccessException) {
+            if (daoException.getException() instanceof NullPointerException) {
                 NotFoundEntityException notFoundEntityException = new NotFoundEntityException(daoException,
                         "The entity was not found wheh get by id.");
                 LOGGER.error("The entity is not found when get object by id {}.", id, notFoundEntityException);
