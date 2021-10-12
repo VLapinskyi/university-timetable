@@ -22,7 +22,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @PropertySource("classpath:database.properties")
 @PropertySource("classpath:sql-queries.properties")
-public class SpringDAOTestConfiguration {
+public class SpringTestConfiguration {
     @Autowired
     private Environment environment;
 

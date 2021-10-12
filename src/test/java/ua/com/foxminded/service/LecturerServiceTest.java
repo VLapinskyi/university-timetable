@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -32,9 +31,10 @@ import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LecturerServiceTest {
@@ -93,14 +93,18 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380671234567");
         lecturer.setEmail("valentinlapiskiy@gmail.com");
         lecturerService.update(lecturer);
-        verify(lecturerDAO).update(lecturer.getId(), lecturer);
+        verify(lecturerDAO).update(lecturer);
     }
 
     @Test
     void shouldDeleteLecturerById() {
         int testLecturerId = 5;
+        Lecturer testLecturer = new Lecturer();
+        testLecturer.setId(testLecturerId);
+        when(lecturerDAO.findById(testLecturerId)).thenReturn(testLecturer);
         lecturerService.deleteById(testLecturerId);
-        verify(lecturerDAO).deleteById(testLecturerId);
+        verify(lecturerDAO).findById(testLecturerId);
+        verify(lecturerDAO).delete(testLecturer);
     }
 
     @Test
@@ -311,7 +315,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380981234567");
         lecturer.setEmail("izakharchuk@gmail.com");
 
-        doThrow(DAOException.class).when(lecturerDAO).update(lecturer.getId(), lecturer);
+        doThrow(DAOException.class).when(lecturerDAO).update(lecturer);
 
         assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
     }
@@ -325,7 +329,7 @@ class LecturerServiceTest {
     @Test
     void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(DAOException.class).when(lecturerDAO).deleteById(testId);
+        doThrow(DAOException.class).when(lecturerDAO).findById(testId);
         assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
     }
 
@@ -634,7 +638,7 @@ class LecturerServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
         when(lecturerDAO.findById(testId)).thenThrow(daoException);
 
         try {
@@ -828,7 +832,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380459621567");
         lecturer.setEmail("khodorkovska@test.com");
 
-        doThrow(DAOException.class).when(lecturerDAO).update(lecturer.getId(), lecturer);
+        doThrow(DAOException.class).when(lecturerDAO).update(lecturer);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -919,7 +923,7 @@ class LecturerServiceTest {
     void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(DAOException.class).when(lecturerDAO).deleteById(testId);
+        doThrow(DAOException.class).when(lecturerDAO).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));

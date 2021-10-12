@@ -2,10 +2,8 @@ package ua.com.foxminded.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 
 import java.util.ArrayList;
@@ -18,10 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -38,9 +33,10 @@ import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class StudentServiceTest {
@@ -80,15 +76,6 @@ class StudentServiceTest {
 
     @Test
     void shouldCreateStudent() {
-        int newId = 2;
-        Student savedStudent = new Student();
-        savedStudent.setId(1);
-        savedStudent.setFirstName("Roman");
-        savedStudent.setLastName("Dudchenko");
-        savedStudent.setGender(Gender.MALE);
-        savedStudent.setPhoneNumber("+380369875123");
-        savedStudent.setEmail("dudchenko@test.com");
-        savedStudent.setGroup(group1);
         Student creatingStudent = new Student();
         creatingStudent.setFirstName("Valentyn");
         creatingStudent.setLastName("Lapisnkyi");
@@ -97,68 +84,21 @@ class StudentServiceTest {
         creatingStudent.setEmail("lapinskyi@test.com");
         creatingStudent.setGroup(group2);
 
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                Student student = (Student) invocation.getArguments()[0];
-                student.setId(newId);
-                return null;
-            }
-        }).when(studentDAO).create(creatingStudent);
-
-        when(studentDAO.findAll()).thenReturn(new ArrayList<Student>(Arrays.asList(savedStudent, creatingStudent)));
         studentService.create(creatingStudent);
         verify(studentDAO).create(creatingStudent);
-        verify(studentDAO).setStudentGroup(creatingStudent.getGroup().getId(), newId);
     }
 
     @Test
     void shouldGetAllStudents() {
-        List<Student> students = new ArrayList<>(Arrays.asList(new Student(), new Student(), new Student()));
-        List<Integer> studentIndexes = new ArrayList<>(Arrays.asList(1, 2, 3));
-        List<String> firstName = new ArrayList<>(Arrays.asList("Iuliia", "Anna", "Tetiana"));
-        List<String> lastName = new ArrayList<>(Arrays.asList("Mostunenko", "Sydorenko", "Shcherbak"));
-        List<Gender> genders = new ArrayList<>(Arrays.asList(Gender.FEMALE, Gender.FEMALE, Gender.FEMALE));
-        List<String> phoneNumbers = new ArrayList<>(Arrays.asList("+380136498753", "+380567365478", "+380698541235"));
-        List<String> emails = new ArrayList<>(
-                Arrays.asList("mostunenko@test.com", "sydorenko@test.com", "shcherbak@test.com"));
-        List<Group> groups = new ArrayList<>(Arrays.asList(group1, group2, group2));
-
-        for (int i = 0; i < students.size(); i++) {
-            students.get(i).setId(studentIndexes.get(i));
-            students.get(i).setFirstName(firstName.get(i));
-            students.get(i).setLastName(lastName.get(i));
-            students.get(i).setGender(genders.get(i));
-            students.get(i).setPhoneNumber(phoneNumbers.get(i));
-            students.get(i).setEmail(emails.get(i));
-            students.get(i).setGroup(groups.get(i));
-        }
-
-        when(studentDAO.findAll()).thenReturn(students);
-
         studentService.getAll();
         verify(studentDAO).findAll();
-        for (int i = 0; i < students.size(); i++) {
-            verify(studentDAO).getStudentGroup(students.get(i).getId());
-        }
     }
 
     @Test
     void shouldGetStudentById() {
         int studentId = 1;
-        Student student = new Student();
-        student.setId(studentId);
-        student.setFirstName("Vasyl");
-        student.setLastName("Lapisnkyi");
-        student.setGender(Gender.MALE);
-        student.setPhoneNumber("+380459632145");
-        student.setEmail("lapinskyi@test.com");
-
-        when(studentDAO.findById(studentId)).thenReturn(student);
-
         studentService.getById(studentId);
         verify(studentDAO).findById(studentId);
-        verify(studentDAO).getStudentGroup(studentId);
     }
 
     @Test
@@ -172,55 +112,19 @@ class StudentServiceTest {
         student.setEmail("kozhumiaka@test.com");
         student.setGroup(group2);
         studentService.update(student);
-        verify(studentDAO).update(student.getId(), student);
-        verify(studentDAO).setStudentGroup(student.getGroup().getId(), student.getId());
+        verify(studentDAO).update(student);
     }
 
     @Test
     void shouldDeleteStudentById() {
         int testId = 1;
+        Student student = new Student();
+        student.setId(testId);
+        
+        when(studentDAO.findById(testId)).thenReturn(student);
         studentService.deleteById(testId);
-        verify(studentDAO).deleteById(testId);
-    }
-
-    @Test
-    void shouldGetStudentsFromGroup() {
-        int groupId = 2;
-        List<Group> groups = new ArrayList<>(Arrays.asList(group1, group1, group2));
-
-        List<Student> students = new ArrayList<>(Arrays.asList(new Student(), new Student(), new Student()));
-        List<Integer> studentIndexes = new ArrayList<>(Arrays.asList(1, 2, 3));
-        List<String> firstName = new ArrayList<>(Arrays.asList("Natalia", "Tetiana", "Alla"));
-        List<String> lastName = new ArrayList<>(Arrays.asList("Fedoriaka", "Basiuk", "Matviichuk"));
-        List<Gender> genders = new ArrayList<>(Arrays.asList(Gender.FEMALE, Gender.FEMALE, Gender.FEMALE));
-        List<String> phoneNumbers = new ArrayList<>(Arrays.asList("+380846498753", "+380585365478", "+380654541235"));
-        List<String> emails = new ArrayList<>(
-                Arrays.asList("fedoriaka@test.com", "basiuk@test.com", "matviichuk@test.com"));
-
-        for (int i = 0; i < students.size(); i++) {
-            students.get(i).setId(studentIndexes.get(i));
-            students.get(i).setFirstName(firstName.get(i));
-            students.get(i).setLastName(lastName.get(i));
-            students.get(i).setGender(genders.get(i));
-            students.get(i).setPhoneNumber(phoneNumbers.get(i));
-            students.get(i).setEmail(emails.get(i));
-            students.get(i).setGroup(groups.get(i));
-        }
-
-        List<Student> expectedStudents = new ArrayList<>(students.subList(2, 3));
-
-        when(studentDAO.findAll()).thenReturn(students);
-        when(studentDAO.getStudentGroup(students.get(0).getId())).thenReturn(groups.get(0));
-        when(studentDAO.getStudentGroup(students.get(1).getId())).thenReturn(groups.get(1));
-        when(studentDAO.getStudentGroup(students.get(2).getId())).thenReturn(groups.get(2));
-        List<Student> actualStudents = studentService.getStudentsFromGroup(groupId);
-
-        assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
-        verify(studentDAO).findAll();
-        for (int i = 0; i < students.size(); i++) {
-            verify(studentDAO).getStudentGroup(students.get(i).getId());
-        }
-
+        verify(studentDAO).findById(testId);
+        verify(studentDAO).delete(student);
     }
 
     @Test
@@ -472,7 +376,7 @@ class StudentServiceTest {
         student.setEmail("izakharchuk@gmail.com");
         student.setGroup(group1);
 
-        doThrow(DAOException.class).when(studentDAO).update(student.getId(), student);
+        doThrow(DAOException.class).when(studentDAO).update(student);
 
         assertThrows(ServiceException.class, () -> studentService.update(student));
     }
@@ -486,21 +390,8 @@ class StudentServiceTest {
     @Test
     void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(DAOException.class).when(studentDAO).deleteById(testId);
+        doThrow(DAOException.class).when(studentDAO).findById(testId);
         assertThrows(ServiceException.class, () -> studentService.deleteById(testId));
-    }
-
-    @Test
-    void shouldThrowServiceExceptionWhenStudentIdIsZeroWhileGetStudentsFromGroup() {
-        int testId = 0;
-        assertThrows(ServiceException.class, () -> studentService.getStudentsFromGroup(testId));
-    }
-
-    @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetStudentsFromGroup() {
-        int testId = 3;
-        when(studentDAO.findAll()).thenThrow(DAOException.class);
-        assertThrows(ServiceException.class, () -> studentService.getStudentsFromGroup(testId));
     }
 
     @Test
@@ -748,9 +639,6 @@ class StudentServiceTest {
         }
 
         when(studentDAO.findAll()).thenReturn(expectedStudents);
-        when(studentDAO.getStudentGroup(1)).thenReturn(group1);
-        when(studentDAO.getStudentGroup(2)).thenReturn(group2);
-        when(studentDAO.getStudentGroup(3)).thenReturn(group1);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -816,7 +704,7 @@ class StudentServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
         when(studentDAO.findById(testId)).thenThrow(daoException);
 
         try {
@@ -879,7 +767,6 @@ class StudentServiceTest {
         student.setGroup(group1);
 
         when(studentDAO.findById(testId)).thenReturn(student);
-        when(studentDAO.getStudentGroup(testId)).thenReturn(group1);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -986,7 +873,7 @@ class StudentServiceTest {
         student.setEmail("vatsiak@test.com");
         student.setGroup(group2);
 
-        doThrow(DAOException.class).when(studentDAO).update(student.getId(), student);
+        doThrow(DAOException.class).when(studentDAO).update(student);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1078,7 +965,7 @@ class StudentServiceTest {
     void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(DAOException.class).when(studentDAO).deleteById(testId);
+        doThrow(DAOException.class).when(studentDAO).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1120,144 +1007,6 @@ class StudentServiceTest {
         }
 
         studentService.deleteById(testId);
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenStudentIdIsNegativeWhileGetStudentsFromGroup() {
-        int testId = -8;
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get students from a group by id: " + testId + ".",
-                        "A given groupId " + testId + " is less than 1 when getStudentsFromGroup."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            studentService.getStudentsFromGroup(testId);
-        } catch (ServiceException serviceException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetStudentsFromGroup() {
-        int testId = 3;
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get students from a group by id: " + testId + ".",
-                        "There is some error in dao layer when get students from a group by groupId " + testId + "."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        when(studentDAO.findAll()).thenThrow(DAOException.class);
-
-        try {
-            studentService.getStudentsFromGroup(testId);
-        } catch (ServiceException serviceException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenResultIsEmptyWhileGetStudentsFromGroup() {
-        int testId = 4;
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get students from a group by id: " + testId + ".",
-                        "There are not any students in a group with id " + testId + "."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        studentService.getStudentsFromGroup(testId);
-
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenGetStudentsFromGroup() {
-        int testId = 2;
-        List<Student> students = new ArrayList<>(Arrays.asList(new Student(), new Student(), new Student()));
-        List<String> firstNames = new ArrayList<>(Arrays.asList("Olha", "Anna", "Iana"));
-        List<String> lastNames = new ArrayList<>(Arrays.asList("Koval", "Koval", "Polishchuk"));
-        List<Gender> genders = new ArrayList<>(Arrays.asList(Gender.FEMALE, Gender.FEMALE, Gender.FEMALE));
-        List<String> phoneNumbers = new ArrayList<>(Arrays.asList("+380456352741", "+380429865321", "+380456321456"));
-        List<String> emails = new ArrayList<>(
-                Arrays.asList("okoval@gmail.com", "akoval@gmail.com", "ipolishchuk@gmail.com"));
-
-        for (int i = 0; i < students.size(); i++) {
-            int index = i + 1;
-            students.get(i).setId(index);
-            students.get(i).setFirstName(firstNames.get(i));
-            students.get(i).setLastName(lastNames.get(i));
-            students.get(i).setGender(genders.get(i));
-            students.get(i).setPhoneNumber(phoneNumbers.get(i));
-            students.get(i).setEmail(emails.get(i));
-        }
-
-        List<Student> expectedStudents = new ArrayList<>(Arrays.asList(students.get(0), students.get(2)));
-        expectedStudents.stream().forEach(student -> student.setGroup(group2));
-
-        when(studentDAO.findAll()).thenReturn(students);
-        when(studentDAO.getStudentGroup(1)).thenReturn(group2);
-        when(studentDAO.getStudentGroup(2)).thenReturn(group1);
-        when(studentDAO.getStudentGroup(3)).thenReturn(group2);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get students from a group by id: " + testId + ".",
-                        "Students from group with id " + testId + " are: " + expectedStudents + "."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        studentService.getStudentsFromGroup(testId);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 

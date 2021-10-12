@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -32,9 +31,10 @@ import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LessonTimeServiceTest {
@@ -91,14 +91,18 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(endTime);
 
         lessonTimeService.update(lessonTime);
-        verify(lessonTimeDAO).update(lessonTime.getId(), lessonTime);
+        verify(lessonTimeDAO).update(lessonTime);
     }
 
     @Test
     void shouldDeleteLessonTimeById() {
         int lessonTimeId = 4;
+        LessonTime lessonTime = new LessonTime();
+        lessonTime.setId(lessonTimeId);
+        when(lessonTimeDAO.findById(lessonTimeId)).thenReturn(lessonTime);
         lessonTimeService.deleteById(lessonTimeId);
-        verify(lessonTimeDAO).deleteById(lessonTimeId);
+        verify(lessonTimeDAO).findById(lessonTimeId);
+        verify(lessonTimeDAO).delete(lessonTime);
     }
 
     @Test
@@ -187,7 +191,7 @@ class LessonTimeServiceTest {
         lessonTime.setId(5);
         lessonTime.setStartTime(LocalTime.of(15, 30));
         lessonTime.setEndTime(LocalTime.of(17, 30));
-        doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime.getId(), lessonTime);
+        doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
     }
 
@@ -200,7 +204,7 @@ class LessonTimeServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileDeleteById() {
         int testId = 2;
-        doThrow(DAOException.class).when(lessonTimeDAO).deleteById(testId);
+        doThrow(DAOException.class).when(lessonTimeDAO).findById(testId);
         assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
     }
 
@@ -548,7 +552,7 @@ class LessonTimeServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
         when(lessonTimeDAO.findById(testId)).thenThrow(daoException);
 
         try {
@@ -700,7 +704,7 @@ class LessonTimeServiceTest {
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
 
-        doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime.getId(), lessonTime);
+        doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -792,7 +796,7 @@ class LessonTimeServiceTest {
     void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
         int testId = 4;
 
-        doThrow(DAOException.class).when(lessonTimeDAO).deleteById(testId);
+        doThrow(DAOException.class).when(lessonTimeDAO).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));

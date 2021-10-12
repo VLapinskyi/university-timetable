@@ -36,10 +36,10 @@ import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
-import ua.com.foxminded.settings.SpringDAOTestConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringDAOTestConfiguration.class })
+@ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class StudentDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
@@ -169,7 +169,7 @@ class StudentDAOTest {
     void shouldDeleteStudent() {
         ScriptUtils.executeSqlScript(connection, testData);
         int deletedStudentId = 5;
-        Student deletedStudent = studentDAO.findById(deletedStudentId);
+        Student deletedStudent = new Student();
         for (int i = 0; i < expectedStudents.size(); i++) {
             if (expectedStudents.get(i).getId() == deletedStudentId) {
                 Student studentFromList = expectedStudents.get(i);

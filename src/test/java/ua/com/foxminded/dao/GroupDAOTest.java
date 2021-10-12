@@ -36,10 +36,10 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
-import ua.com.foxminded.settings.SpringDAOTestConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringDAOTestConfiguration.class })
+@ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class GroupDAOTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");

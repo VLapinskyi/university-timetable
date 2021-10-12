@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -31,9 +30,10 @@ import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class FacultyServiceTest {
@@ -86,14 +86,17 @@ class FacultyServiceTest {
         faculty.setName(testName);
         faculty.setId(facultyId);
         facultyService.update(faculty);
-        verify(facultyDAO).update(facultyId, faculty);
+        verify(facultyDAO).update(faculty);
     }
 
     @Test
     void shouldDeleteFacultyById() {
         int facultyId = 1;
+        Faculty faculty = new Faculty();
+        faculty.setId(facultyId);
+        when(facultyDAO.findById(facultyId)).thenReturn(faculty);
         facultyService.deleteById(facultyId);
-        verify(facultyDAO).deleteById(facultyId);
+        verify(facultyDAO).delete(faculty);
     }
 
     @Test
@@ -176,7 +179,7 @@ class FacultyServiceTest {
         Faculty faculty = new Faculty();
         faculty.setId(12);
         faculty.setName("Test faculty");
-        doThrow(DAOException.class).when(facultyDAO).update(faculty.getId(), faculty);
+        doThrow(DAOException.class).when(facultyDAO).update(faculty);
         assertThrows(ServiceException.class, () -> facultyService.update(faculty));
     }
 
@@ -189,7 +192,7 @@ class FacultyServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenDAOExceptionWhileDeleteById() {
         int testId = 2;
-        doThrow(DAOException.class).when(facultyDAO).deleteById(testId);
+        doThrow(DAOException.class).when(facultyDAO).findById(testId);
         assertThrows(ServiceException.class, () -> facultyService.deleteById(testId));
     }
 
@@ -493,7 +496,7 @@ class FacultyServiceTest {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
-        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
+        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
         when(facultyDAO.findById(testId)).thenThrow(daoException);
 
         try {
@@ -705,7 +708,7 @@ class FacultyServiceTest {
         testFaculty.setId(9);
         testFaculty.setName("Test name");
 
-        doThrow(DAOException.class).when(facultyDAO).update(testFaculty.getId(), testFaculty);
+        doThrow(DAOException.class).when(facultyDAO).update(testFaculty);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -792,7 +795,7 @@ class FacultyServiceTest {
     void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
         int testId = 7;
 
-        doThrow(DAOException.class).when(facultyDAO).deleteById(testId);
+        doThrow(DAOException.class).when(facultyDAO).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
