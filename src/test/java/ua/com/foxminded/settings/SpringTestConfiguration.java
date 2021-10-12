@@ -18,7 +18,7 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@ComponentScan("ua.com.foxminded.dao")
+@ComponentScan("ua.com.foxminded.repositories")
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @PropertySource("classpath:database.properties")
 @PropertySource("classpath:sql-queries.properties")

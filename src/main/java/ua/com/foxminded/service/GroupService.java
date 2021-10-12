@@ -5,36 +5,36 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ua.com.foxminded.dao.GroupDAO;
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.repositories.GroupRepository;
 
 @Service
 public class GroupService {
-    private GroupDAO groupDAO;
+    private GroupRepository groupRepository;
 
     @Autowired
-    public GroupService(GroupDAO groupDAO) {
-        this.groupDAO = groupDAO;
+    public GroupService(GroupRepository groupRepository) {
+        this.groupRepository = groupRepository;
     }
 
     public void create(Group group) {
-        groupDAO.create(group);
+        groupRepository.create(group);
     }
 
     public List<Group> getAll() {
-        return groupDAO.findAll();
+        return groupRepository.findAll();
     }
 
     public Group getById(int groupId) {
-        return groupDAO.findById(groupId);
+        return groupRepository.findById(groupId);
     }
 
     public void update(Group updatedGroup) {
-        groupDAO.update(updatedGroup);
+        groupRepository.update(updatedGroup);
     }
 
     public void deleteById(int groupId) {
-        Group group = groupDAO.findById(groupId);
-        groupDAO.delete(group);
+        Group group = groupRepository.findById(groupId);
+        groupRepository.delete(group);
     }
 }

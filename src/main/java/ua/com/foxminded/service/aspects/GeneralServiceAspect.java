@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-import ua.com.foxminded.dao.exceptions.DAOException;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.NotFoundEntityException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
@@ -51,9 +51,9 @@ public class GeneralServiceAspect {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The object {} was created.", object);
             }
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when create an object {}.", object, daoException);
-            throw new ServiceException("There is some error in dao layer when create object.", daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when create an object {}.", object, repositoryException);
+            throw new ServiceException("There is some error in repositories layer when create object.", repositoryException);
         }
     }
 
@@ -80,9 +80,9 @@ public class GeneralServiceAspect {
 
             return targetMethod;
 
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when getAll.", daoException);
-            throw new ServiceException("There is some error in dao layer when getAll.", daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when getAll.", repositoryException);
+            throw new ServiceException("There is some error in repositories layer when getAll.", repositoryException);
         }
     }
 
@@ -109,15 +109,15 @@ public class GeneralServiceAspect {
             }
 
             return targetMethod;
-        } catch (DAOException daoException) {
-            if (daoException.getException() instanceof NullPointerException) {
-                NotFoundEntityException notFoundEntityException = new NotFoundEntityException(daoException,
+        } catch (RepositoryException repositoryException) {
+            if (repositoryException.getException() instanceof NullPointerException) {
+                NotFoundEntityException notFoundEntityException = new NotFoundEntityException(repositoryException,
                         "The entity was not found wheh get by id.");
                 LOGGER.error("The entity is not found when get object by id {}.", id, notFoundEntityException);
                 throw new ServiceException("The entity is not found when get object by id.", notFoundEntityException);
             } else {
-                LOGGER.error("There is some error in dao layer when get object by id {}.", id, daoException);
-                throw new ServiceException("There is some error in dao layer when get object by id.", daoException);
+                LOGGER.error("There is some error in repositories layer when get object by id {}.", id, repositoryException);
+                throw new ServiceException("There is some error in repositories layer when get object by id.", repositoryException);
             }
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("A given id is incorrect when getById.", illegalArgumentException);
@@ -133,9 +133,9 @@ public class GeneralServiceAspect {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("The object {} was updated.", updatedObject);
             }
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when update an object {}.", updatedObject, daoException);
-            throw new ServiceException("Can't update an object.", daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when update an object {}.", updatedObject, repositoryException);
+            throw new ServiceException("Can't update an object.", repositoryException);
         }
     }
 
@@ -160,9 +160,9 @@ public class GeneralServiceAspect {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("An object was deleted by id {}.", id);
             }
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when delete an object by id {}.", id, daoException);
-            throw new ServiceException("There is some error in dao layer when delete an object by id.", daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when delete an object by id {}.", id, repositoryException);
+            throw new ServiceException("There is some error in repositories layer when delete an object by id.", repositoryException);
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("A given id is less than 1 when deleteById.", illegalArgumentException);
         }

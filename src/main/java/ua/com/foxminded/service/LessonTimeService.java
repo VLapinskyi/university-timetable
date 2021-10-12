@@ -5,36 +5,36 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ua.com.foxminded.dao.LessonTimeDAO;
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.repositories.LessonTimeRepository;
 
 @Service
 public class LessonTimeService {
-    private LessonTimeDAO lessonTimeDAO;
+    private LessonTimeRepository lessonTimeRepository;
 
     @Autowired
-    public LessonTimeService(LessonTimeDAO lessonTimeDAO) {
-        this.lessonTimeDAO = lessonTimeDAO;
+    public LessonTimeService(LessonTimeRepository lessonTimeRepository) {
+        this.lessonTimeRepository = lessonTimeRepository;
     }
 
     public void create(LessonTime lessonTime) {
-        lessonTimeDAO.create(lessonTime);
+        lessonTimeRepository.create(lessonTime);
     }
 
     public List<LessonTime> getAll() {
-        return lessonTimeDAO.findAll();
+        return lessonTimeRepository.findAll();
     }
 
     public LessonTime getById(int lessonTimeId) {
-        return lessonTimeDAO.findById(lessonTimeId);
+        return lessonTimeRepository.findById(lessonTimeId);
     }
 
     public void update(LessonTime updatedLessonTime) {
-        lessonTimeDAO.update(updatedLessonTime);
+        lessonTimeRepository.update(updatedLessonTime);
     }
 
     public void deleteById(int lessonTimeId) {
-        LessonTime lessonTime = lessonTimeDAO.findById(lessonTimeId);
-        lessonTimeDAO.delete(lessonTime);
+        LessonTime lessonTime = lessonTimeRepository.findById(lessonTimeId);
+        lessonTimeRepository.delete(lessonTime);
     }
 }

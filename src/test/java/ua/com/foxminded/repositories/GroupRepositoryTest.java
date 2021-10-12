@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -33,15 +33,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
-class GroupDAOTest {
+class GroupRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
@@ -49,7 +49,7 @@ class GroupDAOTest {
     private TestAppender testAppender = new TestAppender();
     
     @Autowired
-    private GroupDAO groupDAO;
+    private GroupRepository groupRepository;
     
     @Autowired
     private SessionFactory sessionFactory;
@@ -91,7 +91,7 @@ class GroupDAOTest {
     @Transactional
     void tearDown() throws Exception {
         testAppender.cleanEventList();
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", sessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", sessionFactory);
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
@@ -103,8 +103,8 @@ class GroupDAOTest {
         Group expectedGroup = new Group();
         expectedGroup.setId(1);
         expectedGroup.setName("TestGroup");
-        groupDAO.create(testGroup);
-        Group actualGroup = groupDAO.findAll().stream().findFirst().get();
+        groupRepository.create(testGroup);
+        Group actualGroup = groupRepository.findAll().stream().findFirst().get();
         assertEquals(expectedGroup, actualGroup);
     }
 
@@ -112,7 +112,7 @@ class GroupDAOTest {
     @Transactional
     void shouldFindAllGroups() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testData);
-        List<Group> actualGroups = groupDAO.findAll();
+        List<Group> actualGroups = groupRepository.findAll();
         assertTrue(expectedGroups.containsAll(actualGroups) && actualGroups.containsAll(expectedGroups));
     }
 
@@ -122,7 +122,7 @@ class GroupDAOTest {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 2;
         Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == testId).findFirst().get();
-        assertEquals(expectedGroup, groupDAO.findById(testId));
+        assertEquals(expectedGroup, groupRepository.findById(testId));
     }
 
     @Test
@@ -130,10 +130,10 @@ class GroupDAOTest {
     void shouldUpdateGroup() throws ScriptException, SQLException {
         ScriptUtils.executeSqlScript(connection, testData);
         int testGroupId = 2;
-        Group testGroup = groupDAO.findById(testGroupId);
+        Group testGroup = groupRepository.findById(testGroupId);
         testGroup.setName("TestGroupUpdated");
-        groupDAO.update(testGroup);
-        assertEquals(testGroup, groupDAO.findById(testGroupId));
+        groupRepository.update(testGroup);
+        assertEquals(testGroup, groupRepository.findById(testGroupId));
     }
 
     @Test
@@ -153,64 +153,64 @@ class GroupDAOTest {
                 i--;
             }
         }
-        groupDAO.delete(deletedGroup);
-        List<Group> actualGroups = groupDAO.findAll();
+        groupRepository.delete(deletedGroup);
+        List<Group> actualGroups = groupRepository.findAll();
         assertTrue(expectedGroups.containsAll(actualGroups) && actualGroups.containsAll(expectedGroups));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileCreate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
         Group group = new Group();
         group.setId(1);
         group.setName("Test");
-        assertThrows(DAOException.class, () -> groupDAO.create(group));
+        assertThrows(RepositoryException.class, () -> groupRepository.create(group));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> groupDAO.findAll());
+        assertThrows(RepositoryException.class, () -> groupRepository.findAll());
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenResultIsNullPointerExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(DAOException.class, () -> groupDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> groupRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> groupDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> groupRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileUpdate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
         Group testGroup = new Group();
         testGroup.setId(1);
         testGroup.setName("Test");
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> groupDAO.update(testGroup));
+        assertThrows(RepositoryException.class, () -> groupRepository.update(testGroup));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileDelete() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
         Group group = new Group();
         group.setId(2);
         group.setName("Test");
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> groupDAO.delete(group));
+        assertThrows(RepositoryException.class, () -> groupRepository.delete(group));
     }
 
     @Test
@@ -232,7 +232,7 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupDAO.create(testGroup);
+        groupRepository.create(testGroup);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -259,8 +259,8 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
         try {
-            groupDAO.create(testGroup);
-        } catch (DAOException exception) {
+            groupRepository.create(testGroup);
+        } catch (RepositoryException exception) {
             // do nothing
         }
 
@@ -285,7 +285,7 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupDAO.findAll();
+        groupRepository.findAll();
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
         assertEquals(expectedLogs.size(), actualLogs.size());
@@ -308,7 +308,7 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupDAO.findAll();
+        groupRepository.findAll();
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -322,7 +322,7 @@ class GroupDAOTest {
     @Test
     @Transactional
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -335,9 +335,9 @@ class GroupDAOTest {
         }
 
         try {
-            groupDAO.findAll();
+            groupRepository.findAll();
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Group.class);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
@@ -364,7 +364,7 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupDAO.findById(testId);
+        groupRepository.findById(testId);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -390,8 +390,8 @@ class GroupDAOTest {
         }
 
         try {
-            groupDAO.findById(testId);
-        } catch (DAOException daoEcxeption) {
+            groupRepository.findById(testId);
+        } catch (RepositoryException repositoryEcxeption) {
             // do nothing
         }
 
@@ -409,7 +409,7 @@ class GroupDAOTest {
     void shouldGenerateLogsWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
 
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -422,9 +422,9 @@ class GroupDAOTest {
         }
 
         try {
-            groupDAO.findById(testId);
+            groupRepository.findById(testId);
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Group.class);
-        } catch (DAOException daoEcxeption) {
+        } catch (RepositoryException repositoryEcxeption) {
             // do nothing
         }
 
@@ -456,7 +456,7 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupDAO.update(testGroup);
+        groupRepository.update(testGroup);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -474,7 +474,7 @@ class GroupDAOTest {
         testGroup.setName("TestGroup");
         testGroup.setId(1);
 
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -489,9 +489,9 @@ class GroupDAOTest {
         }
 
         try {
-            groupDAO.update(testGroup);
+            groupRepository.update(testGroup);
             verify(mockedSessionFactory.getCurrentSession()).update(testGroup);
-        } catch (DAOException daoEcxeption) {
+        } catch (RepositoryException repositoryEcxeption) {
             // do nothing
         }
 
@@ -520,7 +520,7 @@ class GroupDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupDAO.delete(deletedGroup);
+        groupRepository.delete(deletedGroup);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -538,7 +538,7 @@ class GroupDAOTest {
         testGroup.setId(1);
         testGroup.setName("Test");
 
-        ReflectionTestUtils.setField(groupDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(groupRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -552,9 +552,9 @@ class GroupDAOTest {
         }
 
         try {
-            groupDAO.delete(testGroup);
+            groupRepository.delete(testGroup);
             verify(mockedSessionFactory.getCurrentSession()).delete(testGroup);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 

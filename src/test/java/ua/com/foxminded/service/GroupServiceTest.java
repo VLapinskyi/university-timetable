@@ -24,10 +24,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.GroupDAO;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.repositories.GroupRepository;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.SpringTestConfiguration;
@@ -43,12 +43,12 @@ class GroupServiceTest {
     private GroupService groupService;
 
     @Mock
-    private GroupDAO groupDAO;
+    private GroupRepository groupRepository;
 
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(groupService, "groupDAO", groupDAO);
+        ReflectionTestUtils.setField(groupService, "groupRepository", groupRepository);
     }
 
     @AfterEach
@@ -66,20 +66,20 @@ class GroupServiceTest {
         testGroup.setFaculty(faculty);
 
         groupService.create(testGroup);
-        verify(groupDAO).create(testGroup);
+        verify(groupRepository).create(testGroup);
     }
 
     @Test
     void shouldGetAllGroups() {
         groupService.getAll();
-        verify(groupDAO).findAll();
+        verify(groupRepository).findAll();
     }
 
     @Test
     void shouldGetGroupById() {
         int testGroupId = 1;
         groupService.getById(testGroupId);
-        verify(groupDAO).findById(testGroupId);
+        verify(groupRepository).findById(testGroupId);
     }
 
     @Test
@@ -96,7 +96,7 @@ class GroupServiceTest {
         group.setFaculty(faculty);
 
         groupService.update(group);
-        verify(groupDAO).update(group);
+        verify(groupRepository).update(group);
     }
 
     @Test
@@ -105,10 +105,10 @@ class GroupServiceTest {
         Group group = new Group();
         group.setId(groupId);
         group.setName("Test");
-        when(groupDAO.findById(groupId)).thenReturn(group);
+        when(groupRepository.findById(groupId)).thenReturn(group);
         groupService.deleteById(groupId);
-        verify(groupDAO).findById(groupId);
-        verify(groupDAO).delete(group);
+        verify(groupRepository).findById(groupId);
+        verify(groupRepository).delete(group);
     }
 
     
@@ -165,7 +165,7 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileCreate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileCreate() {
         Group group = new Group();
         group.setName("Group");
         Faculty faculty = new Faculty();
@@ -173,13 +173,13 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        doThrow(DAOException.class).when(groupDAO).create(group);
+        doThrow(RepositoryException.class).when(groupRepository).create(group);
         assertThrows(ServiceException.class, () -> groupService.create(group));
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetAll() {
-        when(groupDAO.findAll()).thenThrow(DAOException.class);
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
+        when(groupRepository.findAll()).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> groupService.getAll());
     }
 
@@ -190,9 +190,9 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetById() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 2;
-        when(groupDAO.findById(testId)).thenThrow(DAOException.class);
+        when(groupRepository.findById(testId)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> groupService.getById(testId));
     }
 
@@ -216,14 +216,14 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileUpdate() {
         Group group = new Group();
         group.setId(5);
         group.setName("Group");
         Faculty faculty = new Faculty();
         faculty.setId(8);
         faculty.setName("Faculty");
-        doThrow(DAOException.class).when(groupDAO).update(group);
+        doThrow(RepositoryException.class).when(groupRepository).update(group);
         assertThrows(ServiceException.class, () -> groupService.update(group));
     }
 
@@ -234,9 +234,9 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
+    void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(DAOException.class).when(groupDAO).findById(testId);
+        doThrow(RepositoryException.class).when(groupRepository).findById(testId);
         assertThrows(ServiceException.class, () -> groupService.deleteById(testId));
     }
 
@@ -377,7 +377,7 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileCreate() {
         Group group = new Group();
         group.setName("Group");
         Faculty faculty = new Faculty();
@@ -388,14 +388,14 @@ class GroupServiceTest {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new group: " + group + ".",
-                "There is some error in dao layer when create an object " + group + "."));
+                "There is some error in repositories layer when create an object " + group + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(DAOException.class).when(groupDAO).create(group);
+        doThrow(RepositoryException.class).when(groupRepository).create(group);
 
         try {
             groupService.create(group);
@@ -466,18 +466,18 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetAll() {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get all objects.", "There is some error in dao layer when getAll."));
+                Arrays.asList("Try to get all objects.", "There is some error in repositories layer when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(groupDAO.findAll()).thenThrow(DAOException.class);
+        when(groupRepository.findAll()).thenThrow(RepositoryException.class);
 
         try {
             groupService.getAll();
@@ -516,7 +516,7 @@ class GroupServiceTest {
             expectedGroups.get(i).setName("Test name: " + index);
         }
 
-        when(groupDAO.findAll()).thenReturn(expectedGroups);
+        when(groupRepository.findAll()).thenReturn(expectedGroups);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -569,20 +569,20 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetById() {
         int testId = 7;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
-                "There is some error in dao layer when get object by id " + testId + "."));
+                "There is some error in repositories layer when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(groupDAO.findById(testId)).thenThrow(DAOException.class);
+        when(groupRepository.findById(testId)).thenThrow(RepositoryException.class);
 
         try {
             groupService.getById(testId);
@@ -613,9 +613,9 @@ class GroupServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
+        RepositoryException repositoryException = new RepositoryException("The result is empty", new NullPointerException());
 
-        when(groupDAO.findById(testId)).thenThrow(daoException);
+        when(groupRepository.findById(testId)).thenThrow(repositoryException);
 
         try {
             groupService.getById(testId);
@@ -644,7 +644,7 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        when(groupDAO.findById(testId)).thenReturn(group);
+        when(groupRepository.findById(testId)).thenReturn(group);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -767,7 +767,7 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileUpdate() {
         Group group = new Group();
         group.setId(4);
         group.setName("Group");
@@ -776,12 +776,12 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        doThrow(DAOException.class).when(groupDAO).update(group);
+        doThrow(RepositoryException.class).when(groupRepository).update(group);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a group: " + group + ".",
-                "There is some error in dao layer when update an object " + group + "."));
+                "There is some error in repositories layer when update an object " + group + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -864,15 +864,15 @@ class GroupServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(DAOException.class).when(groupDAO).findById(testId);
+        doThrow(RepositoryException.class).when(groupRepository).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
-                "There is some error in dao layer when delete an object by id " + testId + "."));
+                "There is some error in repositories layer when delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));

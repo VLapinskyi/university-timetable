@@ -19,6 +19,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 import java.util.List;
+
+import javax.persistence.QueryTimeoutException;
+
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -37,15 +39,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.validation.ConstraintViolationException;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.FacultyService;
 import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class GroupsControllerTest {
@@ -64,9 +67,9 @@ class GroupsControllerTest {
 
     private MockMvc mockMvc;
 
-    private DAOException daoException = new DAOException("DAO exception",
+    private RepositoryException repositoryException = new RepositoryException("repository exception",
             new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
 
     private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
             new IllegalArgumentException());
@@ -233,8 +236,8 @@ class GroupsControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileGetGroups() throws Exception {
-        when(groupService.getAll()).thenThrow(serviceWithDAOException);
+    void shouldReturnError500WhenRepositoryExceptionWhileGetGroups() throws Exception {
+        when(groupService.getAll()).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/groups")).andExpect(status().isInternalServerError());
         verify(groupService).getAll();
@@ -249,10 +252,10 @@ class GroupsControllerTest {
     }    
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileGetGroup() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileGetGroup() throws Exception {
         int id = 4;
 
-        when(groupService.getById(id)).thenThrow(serviceWithDAOException);
+        when(groupService.getById(id)).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isInternalServerError());
         verify(groupService).getById(id);
@@ -276,8 +279,8 @@ class GroupsControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileNewGroup() throws Exception {
-        doThrow(serviceWithDAOException).when(facultyService).getAll();
+    void shouldReturnError500WhenRepositoryExceptionWhileNewGroup() throws Exception {
+        doThrow(serviceWithRepositoryException).when(facultyService).getAll();
 
         mockMvc.perform(get("/groups/new"))
         .andExpect(status().isInternalServerError());
@@ -296,12 +299,12 @@ class GroupsControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileCreateGroup() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithDAOException).when(facultyService).getById(faculty.getId());
+        doThrow(serviceWithRepositoryException).when(facultyService).getById(faculty.getId());
 
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(faculty.getId())))
@@ -354,7 +357,7 @@ class GroupsControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileEditGroup() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileEditGroup() throws Exception {
         int groupId = 1;
         Group testGroup = new Group();
         testGroup.setId(groupId);
@@ -362,7 +365,7 @@ class GroupsControllerTest {
         testGroup.setFaculty(faculty);
 
         when(groupService.getById(groupId)).thenReturn(testGroup);
-        doThrow(serviceWithDAOException).when(facultyService).getAll();
+        doThrow(serviceWithRepositoryException).when(facultyService).getAll();
 
         mockMvc.perform(get("/groups/{id}/edit", groupId))
         .andExpect(status().isInternalServerError());
@@ -390,7 +393,7 @@ class GroupsControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileUpdateGroup() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileUpdateGroup() throws Exception {
         int groupId = 5;
         int facultyId = anotherFaculty.getId();
         Group testGroup = new Group();
@@ -398,7 +401,7 @@ class GroupsControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithDAOException).when(facultyService).getById(facultyId);
+        doThrow(serviceWithRepositoryException).when(facultyService).getById(facultyId);
 
         mockMvc.perform(patch("/groups/{id}", groupId)
                 .flashAttr("group", testGroup)
@@ -466,10 +469,10 @@ class GroupsControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileDeleteGroup() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileDeleteGroup() throws Exception {
         int testId = 2;
         
-        doThrow(serviceWithDAOException).when(groupService).deleteById(testId);
+        doThrow(serviceWithRepositoryException).when(groupService).deleteById(testId);
         
         mockMvc.perform(delete("/groups/{id}", testId))
         .andExpect(status().isInternalServerError());

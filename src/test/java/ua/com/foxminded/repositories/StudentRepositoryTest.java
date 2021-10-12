@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -31,17 +31,17 @@ import org.springframework.transaction.annotation.Transactional;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
-class StudentDAOTest {
+class StudentRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
@@ -49,7 +49,7 @@ class StudentDAOTest {
     private TestAppender testAppender = new TestAppender();
     
     @Autowired
-    private StudentDAO studentDAO;
+    private StudentRepository studentRepository;
     
     @Autowired
     SessionFactory sessionFactory;
@@ -110,7 +110,7 @@ class StudentDAOTest {
     @Transactional
     void tearDown() throws Exception {
         testAppender.cleanEventList();
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", sessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", sessionFactory);
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
@@ -129,9 +129,9 @@ class StudentDAOTest {
         testStudent.setLastName("Last-name");
         testStudent.setGender(Gender.MALE);
         testStudent.setPhoneNumber("1233");
-        studentDAO.create(testStudent);
+        studentRepository.create(testStudent);
 
-        Student actualStudent = studentDAO.findAll().stream().findFirst().get();
+        Student actualStudent = studentRepository.findAll().stream().findFirst().get();
         assertEquals(expectedStudent, actualStudent);
     }
 
@@ -139,7 +139,7 @@ class StudentDAOTest {
     @Transactional
     void shouldFindAllStudents() {
         ScriptUtils.executeSqlScript(connection, testData);
-        ArrayList<Student> actualStudents = (ArrayList<Student>) studentDAO.findAll();
+        ArrayList<Student> actualStudents = (ArrayList<Student>) studentRepository.findAll();
         assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
     }
 
@@ -149,7 +149,7 @@ class StudentDAOTest {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 5;
         Student expectedStudent = expectedStudents.stream().filter(student -> student.getId() == testId).findFirst().get();
-        assertEquals(expectedStudent, studentDAO.findById(testId));
+        assertEquals(expectedStudent, studentRepository.findById(testId));
     }
 
     @Test
@@ -157,11 +157,11 @@ class StudentDAOTest {
     void shouldUpdateStudent() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 6;
-        Student testStudent = studentDAO.findById(testId);
+        Student testStudent = studentRepository.findById(testId);
         testStudent.setFirstName("Vasyl");
         
-        studentDAO.update(testStudent);
-        assertEquals(testStudent, studentDAO.findById(testId));
+        studentRepository.update(testStudent);
+        assertEquals(testStudent, studentRepository.findById(testId));
     }
 
     @Test
@@ -185,14 +185,14 @@ class StudentDAOTest {
                 i--;
             }
         }
-        studentDAO.delete(deletedStudent);
-        ArrayList<Student> actualStudents = (ArrayList<Student>) studentDAO.findAll();
+        studentRepository.delete(deletedStudent);
+        ArrayList<Student> actualStudents = (ArrayList<Student>) studentRepository.findAll();
         assertTrue(expectedStudents.containsAll(actualStudents) && actualStudents.containsAll(expectedStudents));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileCreate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
         Student student = new Student();
         student.setId(1);
         student.setFirstName("Olha");
@@ -201,36 +201,36 @@ class StudentDAOTest {
         student.setEmail("oskladenko@test.com");
         student.setGender(Gender.FEMALE);
         student.setGroup(expectedStudents.get(0).getGroup());
-        assertThrows(DAOException.class, () -> studentDAO.create(student));
+        assertThrows(RepositoryException.class, () -> studentRepository.create(student));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistanceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+    void shouldThrowRepositoryExceptionWhenPersistanceExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> studentDAO.findAll());
+        assertThrows(RepositoryException.class, () -> studentRepository.findAll());
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenResultIsNullPointerExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(DAOException.class, () -> studentDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> studentRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> studentDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> studentRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileUpdate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
         Student testStudent = new Student();
         testStudent.setId(1);
         testStudent.setFirstName("Ivan");
@@ -238,14 +238,14 @@ class StudentDAOTest {
         testStudent.setGender(Gender.FEMALE);
         testStudent.setPhoneNumber("+3801236547");
         testStudent.setEmail("iivanov@test.com");
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> studentDAO.update(testStudent));
+        assertThrows(RepositoryException.class, () -> studentRepository.update(testStudent));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileDelete() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
         Student student = new Student();
         student.setId(1);
         student.setFirstName("Vasyl");
@@ -253,9 +253,9 @@ class StudentDAOTest {
         student.setGender(Gender.MALE);
         student.setPhoneNumber("+380547896321");
         student.setEmail("vvasyliev@test.com");
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> studentDAO.delete(student));
+        assertThrows(RepositoryException.class, () -> studentRepository.delete(student));
     }
 
     @Test
@@ -281,7 +281,7 @@ class StudentDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.create(testStudent);
+        studentRepository.create(testStudent);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -309,8 +309,8 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.create(testStudent);
-        } catch (DAOException daoException) {
+            studentRepository.create(testStudent);
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -335,7 +335,7 @@ class StudentDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.findAll();
+        studentRepository.findAll();
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
         assertEquals(expectedLogs.size(), actualLogs.size());
@@ -358,7 +358,7 @@ class StudentDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.findAll();
+        studentRepository.findAll();
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -372,7 +372,7 @@ class StudentDAOTest {
     @Test
     @Transactional
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -385,9 +385,9 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.findAll();
+            studentRepository.findAll();
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Student.class);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -417,7 +417,7 @@ class StudentDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.findById(testId);
+        studentRepository.findById(testId);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -443,8 +443,8 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.findById(testId);
-        } catch (DAOException daoException) {
+            studentRepository.findById(testId);
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -462,7 +462,7 @@ class StudentDAOTest {
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
         int testId = 5;
 
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -475,9 +475,9 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.findById(testId);
+            studentRepository.findById(testId);
             verify(mockedSessionFactory.getCurrentSession()).get(Student.class, testId);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -512,7 +512,7 @@ class StudentDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.update(testStudent);
+        studentRepository.update(testStudent);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -533,7 +533,7 @@ class StudentDAOTest {
         testStudent.setGender(Gender.FEMALE);
         testStudent.setEmail("test2@test.com");
 
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -548,9 +548,9 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.update(testStudent);
+            studentRepository.update(testStudent);
             verify(mockedSessionFactory.getCurrentSession()).update(testStudent);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -579,7 +579,7 @@ class StudentDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        studentDAO.delete(deletedStudent);
+        studentRepository.delete(deletedStudent);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -596,7 +596,7 @@ class StudentDAOTest {
         int testId = 6;
         Student deletedStudent = expectedStudents.stream().filter(student -> student.getId() == testId).findFirst().get();
 
-        ReflectionTestUtils.setField(studentDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(studentRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -609,9 +609,9 @@ class StudentDAOTest {
         }
 
         try {
-            studentDAO.delete(deletedStudent);
+            studentRepository.delete(deletedStudent);
             verify(mockedSessionFactory.getCurrentSession()).update(deletedStudent);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 

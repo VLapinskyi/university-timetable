@@ -26,9 +26,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.LessonTimeDAO;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.repositories.LessonTimeRepository;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.SpringTestConfiguration;
@@ -43,12 +43,12 @@ class LessonTimeServiceTest {
     private LessonTimeService lessonTimeService;
 
     @Mock
-    private LessonTimeDAO lessonTimeDAO;
+    private LessonTimeRepository lessonTimeRepository;
 
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(lessonTimeService, "lessonTimeDAO", lessonTimeDAO);
+        ReflectionTestUtils.setField(lessonTimeService, "lessonTimeRepository", lessonTimeRepository);
     }
 
     @AfterEach
@@ -65,20 +65,20 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(endTime);
 
         lessonTimeService.create(lessonTime);
-        verify(lessonTimeDAO).create(lessonTime);
+        verify(lessonTimeRepository).create(lessonTime);
     }
 
     @Test
     void shouldGetAllLessonTimes() {
         lessonTimeService.getAll();
-        verify(lessonTimeDAO).findAll();
+        verify(lessonTimeRepository).findAll();
     }
 
     @Test
     void shouldGetLessonTimeById() {
         int lessonTimeId = 2;
         lessonTimeService.getById(lessonTimeId);
-        verify(lessonTimeDAO).findById(lessonTimeId);
+        verify(lessonTimeRepository).findById(lessonTimeId);
     }
 
     @Test
@@ -91,7 +91,7 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(endTime);
 
         lessonTimeService.update(lessonTime);
-        verify(lessonTimeDAO).update(lessonTime);
+        verify(lessonTimeRepository).update(lessonTime);
     }
 
     @Test
@@ -99,10 +99,10 @@ class LessonTimeServiceTest {
         int lessonTimeId = 4;
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(lessonTimeId);
-        when(lessonTimeDAO.findById(lessonTimeId)).thenReturn(lessonTime);
+        when(lessonTimeRepository.findById(lessonTimeId)).thenReturn(lessonTime);
         lessonTimeService.deleteById(lessonTimeId);
-        verify(lessonTimeDAO).findById(lessonTimeId);
-        verify(lessonTimeDAO).delete(lessonTime);
+        verify(lessonTimeRepository).findById(lessonTimeId);
+        verify(lessonTimeRepository).delete(lessonTime);
     }
 
     @Test
@@ -143,17 +143,17 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileCreate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(1, 0));
-        doThrow(DAOException.class).when(lessonTimeDAO).create(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).create(lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetAll() {
-        when(lessonTimeDAO.findAll()).thenThrow(DAOException.class);
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
+        when(lessonTimeRepository.findAll()).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonTimeService.getAll());
     }
 
@@ -164,9 +164,9 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetById() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 2;
-        when(lessonTimeDAO.findById(testId)).thenThrow(DAOException.class);
+        when(lessonTimeRepository.findById(testId)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
     }
 
@@ -186,12 +186,12 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileUpdate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(5);
         lessonTime.setStartTime(LocalTime.of(15, 30));
         lessonTime.setEndTime(LocalTime.of(17, 30));
-        doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).update(lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
     }
 
@@ -202,9 +202,9 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileDeleteById() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
-        doThrow(DAOException.class).when(lessonTimeDAO).findById(testId);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).findById(testId);
         assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
     }
 
@@ -363,21 +363,21 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(12, 0));
         lessonTime.setEndTime(LocalTime.of(14, 0));
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a lessonTime: " + lessonTime + ".",
-                "There is some error in dao layer when create an object " + lessonTime + "."));
+                "There is some error in repositories layer when create an object " + lessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(DAOException.class).when(lessonTimeDAO).create(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).create(lessonTime);
 
         try {
             lessonTimeService.create(lessonTime);
@@ -444,18 +444,18 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetAll() {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get all objects.", "There is some error in dao layer when getAll."));
+                Arrays.asList("Try to get all objects.", "There is some error in repositories layer when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(lessonTimeDAO.findAll()).thenThrow(DAOException.class);
+        when(lessonTimeRepository.findAll()).thenThrow(RepositoryException.class);
 
         try {
             lessonTimeService.getAll();
@@ -486,7 +486,7 @@ class LessonTimeServiceTest {
             expectedLessonTimes.get(i).setEndTime(LocalTime.of(endHour, 0));
         }
 
-        when(lessonTimeDAO.findAll()).thenReturn(expectedLessonTimes);
+        when(lessonTimeRepository.findAll()).thenReturn(expectedLessonTimes);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -552,8 +552,8 @@ class LessonTimeServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
-        when(lessonTimeDAO.findById(testId)).thenThrow(daoException);
+        RepositoryException repositoryException = new RepositoryException("The result is empty", new NullPointerException());
+        when(lessonTimeRepository.findById(testId)).thenThrow(repositoryException);
 
         try {
             lessonTimeService.getById(testId);
@@ -571,20 +571,20 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetById() {
         int testId = 5;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
-                "There is some error in dao layer when get object by id " + testId + "."));
+                "There is some error in repositories layer when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(lessonTimeDAO.findById(testId)).thenThrow(DAOException.class);
+        when(lessonTimeRepository.findById(testId)).thenThrow(RepositoryException.class);
 
         try {
             lessonTimeService.getById(testId);
@@ -610,7 +610,7 @@ class LessonTimeServiceTest {
         expectedLessonTime.setStartTime(LocalTime.of(12, 0));
         expectedLessonTime.setEndTime(LocalTime.of(14, 0));
 
-        when(lessonTimeDAO.findById(testId)).thenReturn(expectedLessonTime);
+        when(lessonTimeRepository.findById(testId)).thenReturn(expectedLessonTime);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -698,18 +698,18 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileUpdate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(1);
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
 
-        doThrow(DAOException.class).when(lessonTimeDAO).update(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).update(lessonTime);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a lessonTime: " + lessonTime + ".",
-                "There is some error in dao layer when update an object " + lessonTime + "."));
+                "There is some error in repositories layer when update an object " + lessonTime + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -793,15 +793,15 @@ class LessonTimeServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 4;
 
-        doThrow(DAOException.class).when(lessonTimeDAO).findById(testId);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
-                "There is some error in dao layer when delete an object by id " + testId + "."));
+                "There is some error in repositories layer when delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));

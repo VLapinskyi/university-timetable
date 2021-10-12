@@ -9,8 +9,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,7 +17,6 @@ import jakarta.validation.constraints.NotNull;
 public class Student extends Person {
     
     @Enumerated(EnumType.STRING)
-    @Type(type = "pgsql_enum")
     @Column(name = "role")
     private final Role role = Role.STUDENT;
     

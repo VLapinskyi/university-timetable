@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao.aspects;
+package ua.com.foxminded.repositories.aspects;
 
 import java.time.DayOfWeek;
 import java.util.List;
@@ -13,18 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 
-import ua.com.foxminded.dao.exceptions.DAOException;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 
 @Aspect
 @Configuration
-public class LessonDAOAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LessonDAOAspect.class);
+public class LessonRepositoryAspect {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LessonRepositoryAspect.class);
 
-    @Pointcut("execution (java.util.List ua.com.foxminded.dao.LessonDAO.getGroupDayLessons(int, java.time.DayOfWeek))")
+    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.LessonRepository.getGroupDayLessons(int, java.time.DayOfWeek))")
     private void getGroupDayLessonsMethod() {
     }
 
-    @Pointcut("execution (java.util.List ua.com.foxminded.dao.LessonDAO.getLecturerDayLessons(int, java.time.DayOfWeek))")
+    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.LessonRepository.getLecturerDayLessons(int, java.time.DayOfWeek))")
     private void getLecturerDayLessonsMethod() {
     }
 
@@ -56,7 +56,7 @@ public class LessonDAOAspect {
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't get lessons for a group with id {} on a day {}.", groupId, weekDay,
                     persistenceException);
-            throw new DAOException("Can't get day lessons for a group.", persistenceException);
+            throw new RepositoryException("Can't get day lessons for a group.", persistenceException);
         }
     }
 
@@ -89,7 +89,7 @@ public class LessonDAOAspect {
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't get lessons for a lecturer with id {} on a day {}.", lecturerId, weekDay,
                     persistenceException);
-            throw new DAOException("Can't get day lessons for a lecturer.", persistenceException);
+            throw new RepositoryException("Can't get day lessons for a lecturer.", persistenceException);
         }
     }
 }

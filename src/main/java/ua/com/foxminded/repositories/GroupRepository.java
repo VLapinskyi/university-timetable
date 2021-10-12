@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import java.util.List;
 
@@ -11,11 +11,11 @@ import ua.com.foxminded.domain.Group;
 
 @Repository
 @Transactional
-public class GroupDAO implements GenericDAO<Group> {
+public class GroupRepository implements GenericRepository<Group> {
     private SessionFactory sessionFactory;
 
     @Autowired
-    public GroupDAO(SessionFactory sessionFactory) {
+    public GroupRepository(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 

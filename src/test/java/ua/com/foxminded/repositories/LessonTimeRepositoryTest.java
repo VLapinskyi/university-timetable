@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -32,14 +32,14 @@ import org.springframework.transaction.annotation.Transactional;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
-class LessonTimeDAOTest {
+class LessonTimeRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
@@ -47,7 +47,7 @@ class LessonTimeDAOTest {
     private TestAppender testAppender = new TestAppender();
     
     @Autowired
-    private LessonTimeDAO lessonTimeDAO;
+    private LessonTimeRepository lessonTimeRepository;
     
     @Autowired
     private SessionFactory sessionFactory;
@@ -81,7 +81,7 @@ class LessonTimeDAOTest {
     @Transactional
     void tearDown() throws Exception {
         testAppender.cleanEventList();
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", sessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", sessionFactory);
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
@@ -97,15 +97,15 @@ class LessonTimeDAOTest {
         expectedLessonTime.setStartTime(LocalTime.of(9, 0));
         expectedLessonTime.setEndTime(LocalTime.of(10, 0));
 
-        lessonTimeDAO.create(testLessonTime);
-        assertEquals(expectedLessonTime, lessonTimeDAO.findAll().stream().findFirst().get());
+        lessonTimeRepository.create(testLessonTime);
+        assertEquals(expectedLessonTime, lessonTimeRepository.findAll().stream().findFirst().get());
     }
 
     @Test
     @Transactional
     void shouldFindAllLessonTimes() {
         ScriptUtils.executeSqlScript(connection, testData);
-        List<LessonTime> actualLessonTimes = lessonTimeDAO.findAll();
+        List<LessonTime> actualLessonTimes = lessonTimeRepository.findAll();
         assertTrue(expectedLessonTimes.containsAll(actualLessonTimes)
                 && actualLessonTimes.containsAll(expectedLessonTimes));
     }
@@ -119,7 +119,7 @@ class LessonTimeDAOTest {
         expectedLessonTime.setId(checkedId);
         expectedLessonTime.setStartTime(LocalTime.of(10, 45));
         expectedLessonTime.setEndTime(LocalTime.of(12, 15));
-        assertEquals(expectedLessonTime, lessonTimeDAO.findById(checkedId));
+        assertEquals(expectedLessonTime, lessonTimeRepository.findById(checkedId));
     }
 
     @Test
@@ -127,11 +127,11 @@ class LessonTimeDAOTest {
     void shouldUpdateLessonTime() {
         ScriptUtils.executeSqlScript(connection, testData);
         int testId = 2;
-        LessonTime testLessonTime = lessonTimeDAO.findById(testId);
+        LessonTime testLessonTime = lessonTimeRepository.findById(testId);
         testLessonTime.setStartTime(LocalTime.of(11,0));
 
-        lessonTimeDAO.update(testLessonTime);
-        assertEquals(testLessonTime, lessonTimeDAO.findById(testId));
+        lessonTimeRepository.update(testLessonTime);
+        assertEquals(testLessonTime, lessonTimeRepository.findById(testId));
     }
 
     @Test
@@ -151,68 +151,68 @@ class LessonTimeDAOTest {
                 i--;
             }
         }
-        lessonTimeDAO.delete(deletedLessonTime);
-        List<LessonTime> actualLessonTimes = lessonTimeDAO.findAll();
+        lessonTimeRepository.delete(deletedLessonTime);
+        List<LessonTime> actualLessonTimes = lessonTimeRepository.findAll();
         assertTrue(expectedLessonTimes.containsAll(actualLessonTimes)
                 && actualLessonTimes.containsAll(expectedLessonTimes));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileCreate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(8);
-        assertThrows(DAOException.class, () -> lessonTimeDAO.create(lessonTime));
+        assertThrows(RepositoryException.class, () -> lessonTimeRepository.create(lessonTime));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonTimeDAO.findAll());
+        assertThrows(RepositoryException.class, () -> lessonTimeRepository.findAll());
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenResultIsNullPointerExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(DAOException.class, () -> lessonTimeDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> lessonTimeRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonTimeDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> lessonTimeRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileUpdate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
         LessonTime testLessonTime = new LessonTime();
         testLessonTime.setId(4);
         testLessonTime.setStartTime(LocalTime.of(14, 0));
         testLessonTime.setEndTime(LocalTime.of(15, 0));
         
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonTimeDAO.update(testLessonTime));
+        assertThrows(RepositoryException.class, () -> lessonTimeRepository.update(testLessonTime));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileDelete() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(4);
         lessonTime.setStartTime(LocalTime.of(10, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
         
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonTimeDAO.delete(lessonTime));
+        assertThrows(RepositoryException.class, () -> lessonTimeRepository.delete(lessonTime));
     }
 
     @Test
@@ -238,7 +238,7 @@ class LessonTimeDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonTimeDAO.create(testLessonTime);
+        lessonTimeRepository.create(testLessonTime);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -267,8 +267,8 @@ class LessonTimeDAOTest {
         }
 
         try {
-            lessonTimeDAO.create(testLessonTime);
-        } catch (DAOException daoException) {
+            lessonTimeRepository.create(testLessonTime);
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -294,7 +294,7 @@ class LessonTimeDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonTimeDAO.findAll();
+        lessonTimeRepository.findAll();
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -319,7 +319,7 @@ class LessonTimeDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonTimeDAO.findAll();
+        lessonTimeRepository.findAll();
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -333,7 +333,7 @@ class LessonTimeDAOTest {
     @Test
     @Transactional
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -347,9 +347,9 @@ class LessonTimeDAOTest {
         }
 
         try {
-            lessonTimeDAO.findAll();
+            lessonTimeRepository.findAll();
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), LessonTime.class);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -379,7 +379,7 @@ class LessonTimeDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonTimeDAO.findById(testId);
+        lessonTimeRepository.findById(testId);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -405,8 +405,8 @@ class LessonTimeDAOTest {
         }
 
         try {
-            lessonTimeDAO.findById(testId);
-        } catch (DAOException daoException) {
+            lessonTimeRepository.findById(testId);
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -424,7 +424,7 @@ class LessonTimeDAOTest {
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
         int testId = 2;
 
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -438,9 +438,9 @@ class LessonTimeDAOTest {
         }
 
         try {
-            lessonTimeDAO.findById(testId);
+            lessonTimeRepository.findById(testId);
             verify(mockedSessionFactory.getCurrentSession()).get(LessonTime.class, testId);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -473,7 +473,7 @@ class LessonTimeDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonTimeDAO.update(testLessonTime);
+        lessonTimeRepository.update(testLessonTime);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -492,7 +492,7 @@ class LessonTimeDAOTest {
         testLessonTime.setStartTime(LocalTime.of(16, 0));
         testLessonTime.setEndTime(LocalTime.of(17, 30));
 
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -507,9 +507,9 @@ class LessonTimeDAOTest {
         }
 
         try {
-            lessonTimeDAO.update(testLessonTime);
+            lessonTimeRepository.update(testLessonTime);
             verify(mockedSessionFactory.getCurrentSession()).update(testLessonTime);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -538,7 +538,7 @@ class LessonTimeDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonTimeDAO.delete(testLessonTime);
+        lessonTimeRepository.delete(testLessonTime);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -555,7 +555,7 @@ class LessonTimeDAOTest {
         int testId = 3;
         LessonTime testLessonTime = expectedLessonTimes.stream().filter(lessonTime -> lessonTime.getId() == testId).findAny().get();
         
-        ReflectionTestUtils.setField(lessonTimeDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonTimeRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -569,9 +569,9 @@ class LessonTimeDAOTest {
         }
 
         try {
-            lessonTimeDAO.delete(testLessonTime);
+            lessonTimeRepository.delete(testLessonTime);
             verify(mockedSessionFactory.getCurrentSession()).delete(testLessonTime);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 

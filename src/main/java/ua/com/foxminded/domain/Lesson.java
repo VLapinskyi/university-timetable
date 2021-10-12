@@ -14,16 +14,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
-@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
 @Table(name = "lessons")
 public class Lesson {
     
@@ -56,7 +52,6 @@ public class Lesson {
     private String audience;
 
     @Enumerated(EnumType.STRING)
-    @Type(type = "pgsql_enum")
     @Column(name = "week_day")
     @NotNull(message = "Lesson day can't be null")
     private DayOfWeek day;

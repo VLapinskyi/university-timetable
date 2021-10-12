@@ -5,36 +5,36 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ua.com.foxminded.dao.StudentDAO;
 import ua.com.foxminded.domain.Student;
+import ua.com.foxminded.repositories.StudentRepository;
 
 @Service
 public class StudentService {
-    private StudentDAO studentDAO;
+    private StudentRepository studentRepository;
 
     @Autowired
-    public StudentService(StudentDAO studentDAO) {
-        this.studentDAO = studentDAO;
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
     }
 
     public void create(Student student) {
-        studentDAO.create(student);
+        studentRepository.create(student);
     }
 
     public List<Student> getAll() {
-        return studentDAO.findAll();
+        return studentRepository.findAll();
     }
 
     public Student getById(int studentId) {
-        return studentDAO.findById(studentId);
+        return studentRepository.findById(studentId);
     }
 
     public void update(Student updatedStudent) {
-        studentDAO.update(updatedStudent);
+        studentRepository.update(updatedStudent);
     }
 
     public void deleteById(int studentId) {
-        Student student = studentDAO.findById(studentId);
-        studentDAO.delete(student);
+        Student student = studentRepository.findById(studentId);
+        studentRepository.delete(student);
     }
 }

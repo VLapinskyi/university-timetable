@@ -8,16 +8,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
 @MappedSuperclass
-@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
 public abstract class Person {
     
     @Id
@@ -37,7 +33,6 @@ public abstract class Person {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
-    @Type(type = "pgsql_enum")
     @Column(name = "gender")
     @NotNull(message = "Person gender can't be null")
     private Gender gender;

@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import java.util.List;
 
@@ -12,13 +12,12 @@ import ua.com.foxminded.domain.Role;
 
 @Repository
 @Transactional
-public class LecturerDAO implements GenericDAO<Lecturer> {
-    private static final Role ROLE = Role.LECTURER;
+public class LecturerRepository implements GenericRepository<Lecturer> {
     
     private SessionFactory sessionFactory;
 
     @Autowired
-    public LecturerDAO(SessionFactory sessionFactory) {
+    public LecturerRepository(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
@@ -29,7 +28,7 @@ public class LecturerDAO implements GenericDAO<Lecturer> {
 
     @Override
     public List<Lecturer> findAll() {
-        return sessionFactory.getCurrentSession().createQuery("from Lecturer where role = '" + ROLE + "'", Lecturer.class).getResultList();
+        return sessionFactory.getCurrentSession().createQuery("from Lecturer where role = '" + Role.LECTURER + "'", Lecturer.class).getResultList();
     }
 
     @Override

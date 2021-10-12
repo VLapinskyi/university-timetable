@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.server.ResponseStatusException;
 
-import ua.com.foxminded.dao.exceptions.DAOException;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
@@ -48,7 +48,7 @@ public class ScheduleControllerAspect {
         try {
             return (String) proceedingJoinPoint.proceed();
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when prepare search schedule form.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -78,7 +78,7 @@ public class ScheduleControllerAspect {
             return resultMethod;
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get week schedule for a lecturer with id {}.",
                         lecturerId, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -115,7 +115,7 @@ public class ScheduleControllerAspect {
             return resultMethod;
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error(
                         "There are some errors in dao layer when get schedule of a month {} for a lecturer with id {}.",
                         monthValue, lecturerId, serviceException);
@@ -154,7 +154,7 @@ public class ScheduleControllerAspect {
             return resultMethod;
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get week schedule for a group with id {}.",
                         groupId, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -191,7 +191,7 @@ public class ScheduleControllerAspect {
             return resultMethod;
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error(
                         "There are some errors in dao layer when get schedule of a month {} for a group with id {}.",
                         monthValue, groupId, serviceException);

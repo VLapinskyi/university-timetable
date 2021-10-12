@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import java.time.DayOfWeek;
 import java.util.List;
@@ -12,11 +12,11 @@ import ua.com.foxminded.domain.Lesson;
 
 @Repository
 @Transactional
-public class LessonDAO implements GenericDAO<Lesson> {
+public class LessonRepository implements GenericRepository<Lesson> {
     private SessionFactory sessionFactory;
 
     @Autowired
-    public LessonDAO(SessionFactory sessoinFactory) {
+    public LessonRepository(SessionFactory sessoinFactory) {
         this.sessionFactory = sessoinFactory;
     }
 

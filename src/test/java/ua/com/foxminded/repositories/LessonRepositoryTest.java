@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao;
+package ua.com.foxminded.repositories;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -34,26 +34,26 @@ import org.springframework.transaction.annotation.Transactional;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
-class LessonDAOTest {
+class LessonRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
 
     private TestAppender testAppender = new TestAppender();
     @Autowired
-    private LessonDAO lessonDAO;
+    private LessonRepository lessonRepository;
     @Autowired
     private SessionFactory sessionFactory;
     private List<Lesson> expectedLessons;
@@ -156,7 +156,7 @@ class LessonDAOTest {
     @Transactional
     void tearDown() throws Exception {
         testAppender.cleanEventList();
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", sessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", sessionFactory);
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
@@ -174,15 +174,15 @@ class LessonDAOTest {
         expectedLesson.setAudience("101");
         expectedLesson.setDay(DayOfWeek.TUESDAY);
 
-        lessonDAO.create(testLesson);
-        assertEquals(expectedLesson, lessonDAO.findAll().stream().findFirst().get());
+        lessonRepository.create(testLesson);
+        assertEquals(expectedLesson, lessonRepository.findAll().stream().findFirst().get());
     }
 
     @Test
     @Transactional
     void shouldFindAllLessons() {
         ScriptUtils.executeSqlScript(connection, testData);
-        List<Lesson> actualLessons = lessonDAO.findAll();
+        List<Lesson> actualLessons = lessonRepository.findAll();
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
 
@@ -193,7 +193,7 @@ class LessonDAOTest {
         int testId = 2;
         Lesson expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
 
-        assertEquals(expectedLesson, lessonDAO.findById(testId));
+        assertEquals(expectedLesson, lessonRepository.findById(testId));
     }
 
     @Test
@@ -205,8 +205,8 @@ class LessonDAOTest {
         Lesson testLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
         testLesson.setAudience("999");
 
-        lessonDAO.update(testLesson);
-        assertEquals(testLesson, lessonDAO.findById(testId));
+        lessonRepository.update(testLesson);
+        assertEquals(testLesson, lessonRepository.findById(testId));
 
     }
 
@@ -231,8 +231,8 @@ class LessonDAOTest {
                 i--;
             }
         }
-        lessonDAO.delete(deletedLesson);
-        List<Lesson> actualLessons = lessonDAO.findAll();
+        lessonRepository.delete(deletedLesson);
+        List<Lesson> actualLessons = lessonRepository.findAll();
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
 
@@ -243,7 +243,7 @@ class LessonDAOTest {
         int groupId = 1;
         DayOfWeek testDay = DayOfWeek.SUNDAY;
         Lesson expectedLesson = expectedLessons.get(0);
-        List<Lesson> actualLessons = lessonDAO.getGroupDayLessons(groupId, testDay);
+        List<Lesson> actualLessons = lessonRepository.getGroupDayLessons(groupId, testDay);
         assertTrue(actualLessons.contains(expectedLesson) && actualLessons.size() == 1);
     }
 
@@ -255,7 +255,7 @@ class LessonDAOTest {
         DayOfWeek testDay = DayOfWeek.WEDNESDAY;
         expectedLessons = new ArrayList<>(Arrays.asList(expectedLessons.get(2), expectedLessons.get(3)));
 
-        List<Lesson> actualLessons = lessonDAO.getLecturerDayLessons(lecturerId, testDay);
+        List<Lesson> actualLessons = lessonRepository.getLecturerDayLessons(lecturerId, testDay);
 
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
@@ -283,7 +283,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.create(testLesson);
+        lessonRepository.create(testLesson);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -296,76 +296,76 @@ class LessonDAOTest {
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileCreate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
         Lesson lesson = new Lesson();
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setId(2);
-        assertThrows(DAOException.class, () -> lessonDAO.create(lesson));
+        assertThrows(RepositoryException.class, () -> lessonRepository.create(lesson));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonDAO.findAll());
+        assertThrows(RepositoryException.class, () -> lessonRepository.findAll());
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenResultIsNullPointerExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(DAOException.class, () -> lessonDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileFindById() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonDAO.findById(testId));
+        assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileUpdate() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
         Lesson testLesson = new Lesson();
         testLesson.setDay(DayOfWeek.FRIDAY);
         testLesson.setId(5);
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonDAO.update(testLesson));
+        assertThrows(RepositoryException.class, () -> lessonRepository.update(testLesson));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileDelete() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
         int testId = 1;
         Lesson deletedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonDAO.delete(deletedLesson));
+        assertThrows(RepositoryException.class, () -> lessonRepository.delete(deletedLesson));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileGetGroupDayLessons() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileGetGroupDayLessons() {
         int groupId = 2;
         DayOfWeek weekDay = DayOfWeek.SATURDAY;
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonDAO.getGroupDayLessons(groupId, weekDay));
+        assertThrows(RepositoryException.class, () -> lessonRepository.getGroupDayLessons(groupId, weekDay));
     }
 
     @Test
     @Transactional
-    void shouldThrowDAOExceptionWhenPersistenceExceptionWhileGetLecturerDayLessons() {
+    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileGetLecturerDayLessons() {
         int lecturerId = 1;
         DayOfWeek weekDay = DayOfWeek.MONDAY;
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
-        assertThrows(DAOException.class, () -> lessonDAO.getLecturerDayLessons(lecturerId, weekDay));
+        assertThrows(RepositoryException.class, () -> lessonRepository.getLecturerDayLessons(lecturerId, weekDay));
     }
 
     @Test
@@ -384,8 +384,8 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
         try {
-            lessonDAO.create(testLesson);
-        } catch (DAOException daoException) {
+            lessonRepository.create(testLesson);
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -410,7 +410,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.findAll();
+        lessonRepository.findAll();
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -434,7 +434,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.findAll();
+        lessonRepository.findAll();
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -448,7 +448,7 @@ class LessonDAOTest {
     @Test
     @Transactional
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -460,9 +460,9 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
         try {
-            lessonDAO.findAll();
+            lessonRepository.findAll();
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Lesson.class);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -490,7 +490,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.findById(testId);
+        lessonRepository.findById(testId);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -515,9 +515,9 @@ class LessonDAOTest {
         }
 
         try {
-            lessonDAO.findById(testId);
+            lessonRepository.findById(testId);
             verify(mockedSessionFactory.getCurrentSession()).get(Lesson.class, testId);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -535,7 +535,7 @@ class LessonDAOTest {
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
         int testId = 2;
 
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -548,9 +548,9 @@ class LessonDAOTest {
         }
 
         try {
-            lessonDAO.findById(testId);
+            lessonRepository.findById(testId);
             verify(mockedSessionFactory.getCurrentSession()).get(Lesson.class, testId);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -581,7 +581,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.update(testLesson);
+        lessonRepository.update(testLesson);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -599,7 +599,7 @@ class LessonDAOTest {
         testLesson.setDay(DayOfWeek.SATURDAY);
         testLesson.setId(42);
 
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -613,9 +613,9 @@ class LessonDAOTest {
         }
 
         try {
-            lessonDAO.update(testLesson);
+            lessonRepository.update(testLesson);
             verify(mockedSessionFactory.getCurrentSession()).update(testLesson);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -644,7 +644,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.delete(deletedLesson);
+        lessonRepository.delete(deletedLesson);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -661,7 +661,7 @@ class LessonDAOTest {
         int testId = 3;
         Lesson deletedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
 
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -674,9 +674,9 @@ class LessonDAOTest {
         }
 
         try {
-            lessonDAO.delete(deletedLesson);
+            lessonRepository.delete(deletedLesson);
             verify(mockedSessionFactory.getCurrentSession()).delete(deletedLesson);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -706,7 +706,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.getGroupDayLessons(groupId, weekDay);
+        lessonRepository.getGroupDayLessons(groupId, weekDay);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -739,7 +739,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.getGroupDayLessons(groupId, weekDay);
+        lessonRepository.getGroupDayLessons(groupId, weekDay);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -756,7 +756,7 @@ class LessonDAOTest {
         int groupId = 2;
         DayOfWeek weekDay = DayOfWeek.SATURDAY;
 
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -770,9 +770,9 @@ class LessonDAOTest {
         }
 
         try {
-            lessonDAO.getGroupDayLessons(groupId, weekDay);
+            lessonRepository.getGroupDayLessons(groupId, weekDay);
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Lesson.class);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
@@ -802,7 +802,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.getLecturerDayLessons(lecturerId, weekDay);
+        lessonRepository.getLecturerDayLessons(lecturerId, weekDay);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -835,7 +835,7 @@ class LessonDAOTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonDAO.getLecturerDayLessons(lecturerId, weekDay);
+        lessonRepository.getLecturerDayLessons(lecturerId, weekDay);
 
         List<ILoggingEvent> actualLogs = testAppender.getEvents();
 
@@ -852,7 +852,7 @@ class LessonDAOTest {
         int lecturerId = 3;
         DayOfWeek weekDay = DayOfWeek.THURSDAY;
 
-        ReflectionTestUtils.setField(lessonDAO, "sessionFactory", mockedSessionFactory);
+        ReflectionTestUtils.setField(lessonRepository, "sessionFactory", mockedSessionFactory);
         when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
@@ -866,9 +866,9 @@ class LessonDAOTest {
         }
 
         try {
-            lessonDAO.getLecturerDayLessons(lecturerId, weekDay);
+            lessonRepository.getLecturerDayLessons(lecturerId, weekDay);
             verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Lesson.class);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             // do nothing
         }
 

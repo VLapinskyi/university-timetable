@@ -38,14 +38,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.LessonDAO;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.repositories.LessonRepository;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.SpringTestConfiguration;
@@ -61,7 +61,7 @@ class LessonServiceTest {
     private LessonService lessonService;
 
     @Mock
-    private LessonDAO lessonDAO;
+    private LessonRepository lessonRepository;
 
     private Lecturer lecturer1;
     private Lecturer lecturer2;
@@ -78,7 +78,7 @@ class LessonServiceTest {
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(lessonService, "lessonDAO", lessonDAO);
+        ReflectionTestUtils.setField(lessonService, "lessonRepository", lessonRepository);
 
         lecturer1 = new Lecturer();
         lecturer1.setId(1);
@@ -134,13 +134,13 @@ class LessonServiceTest {
         creatingLesson.setLessonTime(lessonTime2);
 
         lessonService.create(creatingLesson);
-        verify(lessonDAO).create(creatingLesson);
+        verify(lessonRepository).create(creatingLesson);
     }
 
     @Test
     void shouldGetAllLessons() {
         lessonService.getAll();
-        verify(lessonDAO).findAll();
+        verify(lessonRepository).findAll();
     }
 
     @Test
@@ -154,9 +154,9 @@ class LessonServiceTest {
         lesson.setGroup(group1);
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime1);
-        when(lessonDAO.findById(lessonId)).thenReturn(lesson);
+        when(lessonRepository.findById(lessonId)).thenReturn(lesson);
         lessonService.getById(lessonId);
-        verify(lessonDAO).findById(lessonId);
+        verify(lessonRepository).findById(lessonId);
     }
 
     @Test
@@ -173,7 +173,7 @@ class LessonServiceTest {
 
         lessonService.update(lesson);
 
-        verify(lessonDAO).update(lesson);
+        verify(lessonRepository).update(lesson);
     }
 
     @Test
@@ -181,10 +181,10 @@ class LessonServiceTest {
         int lessonId = 456;
         Lesson lesson = new Lesson();
         lesson.setId(lessonId);
-        when(lessonDAO.findById(lessonId)).thenReturn(lesson);
+        when(lessonRepository.findById(lessonId)).thenReturn(lesson);
         lessonService.deleteById(lessonId);
-        verify(lessonDAO).findById(lessonId);
-        verify(lessonDAO).delete(lesson);
+        verify(lessonRepository).findById(lessonId);
+        verify(lessonRepository).delete(lesson);
     }
 
     @Test
@@ -192,7 +192,7 @@ class LessonServiceTest {
         int groupId = 2;
         lessonService.getGroupWeekLessons(groupId);
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            verify(lessonDAO).getGroupDayLessons(groupId, DayOfWeek.of(i));
+            verify(lessonRepository).getGroupDayLessons(groupId, DayOfWeek.of(i));
         }
     }
 
@@ -207,7 +207,7 @@ class LessonServiceTest {
         expectedDays.addAll(Arrays.asList(DayOfWeek.values()));
         expectedDays.addAll(Arrays.asList(DayOfWeek.values()));
         lessonService.getGroupMonthLessons(groupId, month);
-        verify(lessonDAO, times(monthLength)).getGroupDayLessons(numberCaptor.capture(), dayCaptor.capture());
+        verify(lessonRepository, times(monthLength)).getGroupDayLessons(numberCaptor.capture(), dayCaptor.capture());
 
         List<DayOfWeek> actualDays = dayCaptor.getAllValues();
         List<Integer> actualGroupIndexes = numberCaptor.getAllValues();
@@ -225,11 +225,11 @@ class LessonServiceTest {
         lesson1.setId(1);
         Lesson lesson2 = new Lesson();
         lesson2.setId(2);
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY))
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY))
                 .thenReturn(new ArrayList<Lesson>(Arrays.asList(lesson1, lesson2)));
         lessonService.getLecturerWeekLessons(lecturerId);
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            verify(lessonDAO).getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
+            verify(lessonRepository).getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
         }
     }
 
@@ -246,7 +246,7 @@ class LessonServiceTest {
         expectedDays.addAll(Arrays.asList(DayOfWeek.values()));
         expectedDays.addAll(Arrays.asList(DayOfWeek.of(1), DayOfWeek.of(2), DayOfWeek.of(3), DayOfWeek.of(4)));
         lessonService.getLecturerMonthLessons(lecturerId, month);
-        verify(lessonDAO, times(monthLength)).getLecturerDayLessons(numberCaptor.capture(), dayCaptor.capture());
+        verify(lessonRepository, times(monthLength)).getLecturerDayLessons(numberCaptor.capture(), dayCaptor.capture());
 
         List<DayOfWeek> actualDays = dayCaptor.getAllValues();
         List<Integer> actualLecturerIndexes = numberCaptor.getAllValues();
@@ -447,7 +447,7 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileCreate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileCreate() {
         Lesson lesson = new Lesson();
         lesson.setName("Lesson-18");
         lesson.setAudience("106");
@@ -456,14 +456,14 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.THURSDAY);
         lesson.setLessonTime(lessonTime2);
 
-        doThrow(DAOException.class).when(lessonDAO).create(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).create(lesson);
 
         assertThrows(ServiceException.class, () -> lessonService.create(lesson));
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetAll() {
-        when(lessonDAO.findAll()).thenThrow(DAOException.class);
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
+        when(lessonRepository.findAll()).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getAll());
     }
 
@@ -474,9 +474,9 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetById() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 4;
-        when(lessonDAO.findById(testId)).thenThrow(DAOException.class);
+        when(lessonRepository.findById(testId)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getById(testId));
     }
 
@@ -501,7 +501,7 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileUpdate() {
         Lesson lesson = new Lesson();
         lesson.setId(45);
         lesson.setName("Lesson-1");
@@ -511,7 +511,7 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime2);
 
-        doThrow(DAOException.class).when(lessonDAO).update(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).update(lesson);
 
         assertThrows(ServiceException.class, () -> lessonService.update(lesson));
     }
@@ -523,9 +523,9 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
+    void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 74;
-        doThrow(DAOException.class).when(lessonDAO).findById(testId);
+        doThrow(RepositoryException.class).when(lessonRepository).findById(testId);
         assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
     }
 
@@ -536,10 +536,10 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptioinWhenDAOExceptionWhileGetGroupWeekLessons() {
+    void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileGetGroupWeekLessons() {
         int testId = 74;
         DayOfWeek testDay = DayOfWeek.MONDAY;
-        when(lessonDAO.getGroupDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        when(lessonRepository.getGroupDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
     }
 
@@ -551,11 +551,11 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetGroupMonthLessons() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetGroupMonthLessons() {
         int testId = 14;
         YearMonth testMonth = YearMonth.of(2021, 4);
         DayOfWeek testDay = DayOfWeek.THURSDAY;
-        when(lessonDAO.getGroupDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        when(lessonRepository.getGroupDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
     }
 
@@ -566,10 +566,10 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptioinWhenDAOExceptionWhileGetLecturerWeekLessons() {
+    void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileGetLecturerWeekLessons() {
         int testId = 12;
         DayOfWeek testDay = DayOfWeek.THURSDAY;
-        when(lessonDAO.getLecturerDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        when(lessonRepository.getLecturerDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
     }
 
@@ -581,11 +581,11 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetLecturerMonthLessons() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetLecturerMonthLessons() {
         int testId = 19;
         YearMonth testMonth = YearMonth.of(2021, 2);
         DayOfWeek testDay = DayOfWeek.FRIDAY;
-        when(lessonDAO.getLecturerDayLessons(testId, testDay)).thenThrow(DAOException.class);
+        when(lessonRepository.getLecturerDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
     }
 
@@ -693,7 +693,7 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileCreate() {
         Lesson lesson = new Lesson();
         lesson.setName("Lesson");
         lesson.setAudience("103");
@@ -705,14 +705,14 @@ class LessonServiceTest {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new lesson: " + lesson + ".",
-                "There is some error in dao layer when create an object " + lesson + "."));
+                "There is some error in repositories layer when create an object " + lesson + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(DAOException.class).when(lessonDAO).create(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).create(lesson);
 
         try {
             lessonService.create(lesson);
@@ -784,18 +784,18 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetAll() {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get all objects.", "There is some error in dao layer when getAll."));
+                Arrays.asList("Try to get all objects.", "There is some error in repositories layer when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(lessonDAO.findAll()).thenThrow(DAOException.class);
+        when(lessonRepository.findAll()).thenThrow(RepositoryException.class);
 
         try {
             lessonService.getAll();
@@ -834,7 +834,7 @@ class LessonServiceTest {
             expectedLessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonDAO.findAll()).thenReturn(expectedLessons);
+        when(lessonRepository.findAll()).thenReturn(expectedLessons);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -900,8 +900,8 @@ class LessonServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new NullPointerException());
-        when(lessonDAO.findById(testId)).thenThrow(daoException);
+        RepositoryException repositoryException = new RepositoryException("The result is empty", new NullPointerException());
+        when(lessonRepository.findById(testId)).thenThrow(repositoryException);
 
         try {
             lessonService.getById(testId);
@@ -919,20 +919,20 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetById() {
         int testId = 1;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
-                "There is some error in dao layer when get object by id " + testId + "."));
+                "There is some error in repositories layer when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(lessonDAO.findById(testId)).thenThrow(DAOException.class);
+        when(lessonRepository.findById(testId)).thenThrow(RepositoryException.class);
 
         try {
             lessonService.getById(testId);
@@ -962,7 +962,7 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.TUESDAY);
         lesson.setLessonTime(lessonTime1);
 
-        when(lessonDAO.findById(testId)).thenReturn(lesson);
+        when(lessonRepository.findById(testId)).thenReturn(lesson);
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -1058,7 +1058,7 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileUpdate() {
         Lesson lesson = new Lesson();
         lesson.setId(9);
         lesson.setName("Lesson-9");
@@ -1068,12 +1068,12 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime1);
 
-        doThrow(DAOException.class).when(lessonDAO).update(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).update(lesson);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a lesson: " + lesson + ".",
-                "There is some error in dao layer when update an object " + lesson + "."));
+                "There is some error in repositories layer when update an object " + lesson + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1157,15 +1157,15 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
 
-        doThrow(DAOException.class).when(lessonDAO).findById(testId);
+        doThrow(RepositoryException.class).when(lessonRepository).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
-                "There is some error in dao layer when delete an object by id " + testId + "."));
+                "There is some error in repositories layer when delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1268,16 +1268,16 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetGroupWeekLessons() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetGroupWeekLessons() {
         int testId = 4;
 
-        when(lessonDAO.getGroupDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(DAOException.class);
+        when(lessonRepository.getGroupDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
                 Arrays.asList("Try to get week lessons for a group with id: " + testId + ".",
-                        "There is some error in dao layer when get week lessons for a group with id " + testId + "."));
+                        "There is some error in repositories layer when get week lessons for a group with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1321,8 +1321,8 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<DayOfWeek, List<Lesson>> expectedLessons = new TreeMap<>();
         expectedLessons.put(DayOfWeek.SUNDAY, new ArrayList<>());
@@ -1417,18 +1417,18 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetGroupMonthLessons() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetGroupMonthLessons() {
         int testId = 1;
         YearMonth testMonth = YearMonth.of(2020, 12);
 
-        when(lessonDAO.getGroupDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(DAOException.class);
+        when(lessonRepository.getGroupDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
                 "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear()
                         + " year lessons for a group with id: " + testId + ".",
-                "There is some error in dao layer when get " + testMonth.getMonth() + " month of " + testMonth.getYear()
+                "There is some error in repositories layer when get " + testMonth.getMonth() + " month of " + testMonth.getYear()
                         + " year lessons for a group with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -1475,9 +1475,9 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
-        when(lessonDAO.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<LocalDate, List<Lesson>> expectedLessons = new TreeMap<>();
 
@@ -1575,16 +1575,16 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetLecturerWeekLessons() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetLecturerWeekLessons() {
         int testId = 10;
 
-        when(lessonDAO.getLecturerDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(DAOException.class);
+        when(lessonRepository.getLecturerDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
                 "Try to get week lessons for a lecturer with id: " + testId + ".",
-                "There is some error in dao layer when get week lessons for a lecturer with id " + testId + "."));
+                "There is some error in repositories layer when get week lessons for a lecturer with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -1628,9 +1628,9 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.TUESDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.TUESDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<DayOfWeek, List<Lesson>> expectedLessons = new TreeMap<>();
         expectedLessons.put(DayOfWeek.SUNDAY, new ArrayList<>());
@@ -1726,18 +1726,18 @@ class LessonServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetLecturerMonthLessons() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetLecturerMonthLessons() {
         int testId = 6;
         YearMonth testMonth = YearMonth.of(2020, 9);
 
-        when(lessonDAO.getLecturerDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(DAOException.class);
+        when(lessonRepository.getLecturerDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
                 "Try to get " + testMonth.getMonth() + " month of " + testMonth.getYear()
                         + " year lessons for a lecturer with id: " + testId + ".",
-                "There is some error in dao layer when get " + testMonth.getMonth() + " month of " + testMonth.getYear()
+                "There is some error in repositories layer when get " + testMonth.getMonth() + " month of " + testMonth.getYear()
                         + " year lessons for a lecturer with id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
@@ -1783,9 +1783,9 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
-        when(lessonDAO.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<LocalDate, List<Lesson>> expectedLessons = new TreeMap<>();
 

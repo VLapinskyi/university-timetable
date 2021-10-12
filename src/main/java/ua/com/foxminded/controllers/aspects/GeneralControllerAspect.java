@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.ConstraintViolationException;
-import ua.com.foxminded.dao.exceptions.DAOException;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
@@ -57,7 +57,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get all objects.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -80,7 +80,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get an object with id{}.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -107,7 +107,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when create an object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -137,7 +137,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when update an object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -167,7 +167,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when delete object with id {}.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -195,7 +195,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get a page for creating a new object.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());
@@ -219,7 +219,7 @@ public class GeneralControllerAspect {
             return (String) proceedingJoinPoint.proceed();
 
         } catch (ServiceException serviceException) {
-            if (serviceException.getException() instanceof DAOException) {
+            if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get a page for editing a new object.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         serviceException.getServiceExceptionMessage());

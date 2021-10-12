@@ -1,4 +1,4 @@
-package ua.com.foxminded.dao.aspects;
+package ua.com.foxminded.repositories.aspects;
 
 import java.util.List;
 
@@ -12,30 +12,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 
-import ua.com.foxminded.dao.exceptions.DAOException;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 
 @Aspect
 @Configuration
-public class GeneralDAOAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralDAOAspect.class);
+public class GeneralRepositoryAspect {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralRepositoryAspect.class);
 
-    @Pointcut("execution (void ua.com.foxminded.dao.*.create(*))")
+    @Pointcut("execution (void ua.com.foxminded.repositories.*.create(*))")
     private void createMethods() {
     }
 
-    @Pointcut("execution (java.util.List ua.com.foxminded.dao.*.findAll())")
+    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.*.findAll())")
     private void findAllMethods() {
     }
 
-    @Pointcut("execution (* ua.com.foxminded.dao.*.findById(int))")
+    @Pointcut("execution (* ua.com.foxminded.repositories.*.findById(int))")
     private void findByIdMethods() {
     }
 
-    @Pointcut("execution (void ua.com.foxminded.dao.*.update(*))")
+    @Pointcut("execution (void ua.com.foxminded.repositories.*.update(*))")
     private void updateMethods() {
     }
 
-    @Pointcut("execution (void ua.com.foxminded.dao.*.delete(*))")
+    @Pointcut("execution (void ua.com.foxminded.repositories.*.delete(*))")
     private void deleteMethods() {
     }
 
@@ -54,7 +54,7 @@ public class GeneralDAOAspect {
             }
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't insert the object: {}.", object, persistenceException);
-            throw new DAOException("Can't insert the object", persistenceException);
+            throw new RepositoryException("Can't insert the object", persistenceException);
         }
     }
 
@@ -83,7 +83,7 @@ public class GeneralDAOAspect {
 
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't find all objects.", persistenceException);
-            throw new DAOException("Can't find all objects.", persistenceException);
+            throw new RepositoryException("Can't find all objects.", persistenceException);
         }
     }
 
@@ -110,10 +110,10 @@ public class GeneralDAOAspect {
 
         } catch (NullPointerException nullPointerException) {
             LOGGER.error("There is no result when find an object by id {}.", id, nullPointerException);
-            throw new DAOException("Can't find an object by id.", nullPointerException);
+            throw new RepositoryException("Can't find an object by id.", nullPointerException);
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't find an object by id {}.", id, persistenceException);
-            throw new DAOException("Can't find an object by id.", persistenceException);
+            throw new RepositoryException("Can't find an object by id.", persistenceException);
         }
     }
 
@@ -132,7 +132,7 @@ public class GeneralDAOAspect {
             }
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't update an object {}.", updatedObject, persistenceException);
-            throw new DAOException("Can't update an object.", persistenceException);
+            throw new RepositoryException("Can't update an object.", persistenceException);
         }
     }
 
@@ -152,7 +152,7 @@ public class GeneralDAOAspect {
             }
         } catch (PersistenceException persistenceException) {
             LOGGER.error("Can't delete an object {}.", object, persistenceException);
-            throw new DAOException("Can't delete an object.", persistenceException);
+            throw new RepositoryException("Can't delete an object.", persistenceException);
         }
     }
 }
