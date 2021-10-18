@@ -1,32 +1,52 @@
 package ua.com.foxminded.domain;
 
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 
+@MappedSuperclass
 public abstract class Person {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     @PositiveOrZero(message = "Peson id can't be negative")
     private int id;
 
+    @Column(name = "first_name")
     @NotNull(message = "Person firstname can't be null")
     @Pattern(regexp = "\\S{2,}.*", message = "Person firstname must have at least two symbols and startwith non-white space")
     private String firstName;
 
+    @Column(name = "last_name")
     @NotNull(message = "Person lastname can't be null")
     @Pattern(regexp = "\\S{2,}.*", message = "Person lastname must have at least two symbols and start with non-white space")
     private String lastName;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
     @NotNull(message = "Person gender can't be null")
     private Gender gender;
 
+    @Column(name = "phone_number")
     @NotNull(message = "Person phone number can't be null")
     @Pattern(regexp = "\\+\\d{12}", message = "Person phone number should starts from symbol \"+\" and additional twelve numbers")
     private String phoneNumber;
 
+    @Column(name = "email")
     @NotNull(message = "Person email can't be null")
     @Email(message = "Person email must be formatted well")
     private String email;
+    
 
     public int getId() {
         return id;

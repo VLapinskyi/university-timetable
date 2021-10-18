@@ -13,8 +13,8 @@ DROP TYPE IF EXISTS
     role CASCADE;
     
 CREATE TYPE gender AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE week_day AS ENUM ('1', '2', '3', '4', '5', '6', '7');
-CREATE TYPE role AS ENUM ('student', 'lecturer');
+CREATE TYPE week_day AS ENUM ('SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY');
+CREATE TYPE role AS ENUM ('STUDENT', 'LECTURER');
 
 CREATE TABLE faculties (
     id serial NOT NULL,

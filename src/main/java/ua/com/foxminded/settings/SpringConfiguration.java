@@ -1,8 +1,12 @@
 package ua.com.foxminded.settings;
 
+import java.util.Properties;
+
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import org.hibernate.validator.HibernateValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +15,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jndi.JndiTemplate;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
@@ -28,6 +35,7 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 
 @Configuration
+@EnableTransactionManagement
 @ComponentScan("ua.com.foxminded")
 @EnableWebMvc
 @EnableAspectJAutoProxy(proxyTargetClass = true)
@@ -35,7 +43,7 @@ import jakarta.validation.ValidatorFactory;
 @PropertySource("classpath:sql-queries.properties")
 public class SpringConfiguration implements WebMvcConfigurer {
     private final ApplicationContext context;
-    
+
     private Environment environment;
 
     @Autowired
@@ -46,18 +54,17 @@ public class SpringConfiguration implements WebMvcConfigurer {
 
     @Bean
     public DataSource getDataSource() throws NamingException {
-        return (DataSource) new JndiTemplate().lookup(environment.getProperty("jndi.datasource.name"));
-    }
-
-    @Bean
-    public JdbcTemplate getJdbcTemplate() throws NamingException {
-        return new JdbcTemplate(getDataSource());
+        return (BasicDataSource) new JndiTemplate().lookup(environment.getProperty("jndi.datasource.name"));
     }
 
     @Bean
     public Validator validator() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        return factory.getValidator();
+        return validatorFactory().getValidator();
+    }
+    
+    @Bean
+    public ValidatorFactory validatorFactory() {
+        return Validation.byProvider(HibernateValidator.class).configure().buildValidatorFactory();
     }
 
     @Bean
@@ -86,6 +93,37 @@ public class SpringConfiguration implements WebMvcConfigurer {
         templateEngine.setEnableSpringELCompiler(true);
         templateEngine.addDialect(new Java8TimeDialect());
         return templateEngine;
+    }
+
+    @Bean
+    public LocalSessionFactoryBean sessionFactory() throws NamingException {
+        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+        sessionFactory.setDataSource(getDataSource());
+        sessionFactory.setPackagesToScan("ua.com.foxminded.domain");
+        sessionFactory.setHibernateProperties(hibernateProperties());
+        return sessionFactory;
+    }
+    
+    @Bean
+    public PlatformTransactionManager hibernateTransactionManager() throws NamingException {
+        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+        transactionManager.setSessionFactory(sessionFactory().getObject());
+        return transactionManager;
+    }
+
+    private final Properties hibernateProperties() {
+        Properties hibernateProperties = new Properties();
+        
+        hibernateProperties.put( "hibernate.dialect",
+                "org.hibernate.dialect.PostgreSQL10Dialect");
+        
+        hibernateProperties.put("javax.persistence.validation.mode", "none");
+        
+        hibernateProperties.put("show_sql", "true");
+        
+        hibernateProperties.put("hibernate.hbm2ddl.auto", "validate");
+
+        return hibernateProperties;
     }
 
     @Override

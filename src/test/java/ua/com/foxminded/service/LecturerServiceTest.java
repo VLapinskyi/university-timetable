@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -26,15 +25,16 @@ import org.springframework.test.util.ReflectionTestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
-import ua.com.foxminded.dao.LecturerDAO;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
+import ua.com.foxminded.repositories.LecturerRepository;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LecturerServiceTest {
@@ -44,12 +44,12 @@ class LecturerServiceTest {
     private LecturerService lecturerService;
 
     @Mock
-    private LecturerDAO lecturerDAO;
+    private LecturerRepository lecturerRepository;
 
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(lecturerService, "lecturerDAO", lecturerDAO);
+        ReflectionTestUtils.setField(lecturerService, "lecturerRepository", lecturerRepository);
     }
 
     @AfterEach
@@ -66,13 +66,13 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380671234567");
         lecturer.setEmail("valentinlapinskiy@gmail.com");
         lecturerService.create(lecturer);
-        verify(lecturerDAO).create(lecturer);
+        verify(lecturerRepository).create(lecturer);
     }
 
     @Test
     void shouldGetAllLecturers() {
         lecturerService.getAll();
-        verify(lecturerDAO).findAll();
+        verify(lecturerRepository).findAll();
     }
 
     @Test
@@ -80,7 +80,7 @@ class LecturerServiceTest {
         int lecturerId = 2;
 
         lecturerService.getById(lecturerId);
-        verify(lecturerDAO).findById(lecturerId);
+        verify(lecturerRepository).findById(lecturerId);
     }
 
     @Test
@@ -93,14 +93,18 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380671234567");
         lecturer.setEmail("valentinlapiskiy@gmail.com");
         lecturerService.update(lecturer);
-        verify(lecturerDAO).update(lecturer.getId(), lecturer);
+        verify(lecturerRepository).update(lecturer);
     }
 
     @Test
     void shouldDeleteLecturerById() {
         int testLecturerId = 5;
+        Lecturer testLecturer = new Lecturer();
+        testLecturer.setId(testLecturerId);
+        when(lecturerRepository.findById(testLecturerId)).thenReturn(testLecturer);
         lecturerService.deleteById(testLecturerId);
-        verify(lecturerDAO).deleteById(testLecturerId);
+        verify(lecturerRepository).findById(testLecturerId);
+        verify(lecturerRepository).delete(testLecturer);
     }
 
     @Test
@@ -250,7 +254,7 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileCreate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileCreate() {
         Lecturer lecturer = new Lecturer();
         lecturer.setFirstName("Viacheslav");
         lecturer.setLastName("Iaremenko");
@@ -258,14 +262,14 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380961234567");
         lecturer.setEmail("VIaremenko@gmail.com");
 
-        doThrow(DAOException.class).when(lecturerDAO).create(lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).create(lecturer);
 
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetAll() {
-        when(lecturerDAO.findAll()).thenThrow(DAOException.class);
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
+        when(lecturerRepository.findAll()).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lecturerService.getAll());
     }
 
@@ -276,9 +280,9 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileGetById() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 3;
-        when(lecturerDAO.findById(testId)).thenThrow(DAOException.class);
+        when(lecturerRepository.findById(testId)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
     }
 
@@ -302,7 +306,7 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptionWhenDAOExceptionWhileUpdate() {
+    void shouldThrowServiceExceptionWhenRepositoryExceptionWhileUpdate() {
         Lecturer lecturer = new Lecturer();
         lecturer.setId(1);
         lecturer.setFirstName("Ivan");
@@ -311,7 +315,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380981234567");
         lecturer.setEmail("izakharchuk@gmail.com");
 
-        doThrow(DAOException.class).when(lecturerDAO).update(lecturer.getId(), lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).update(lecturer);
 
         assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
     }
@@ -323,9 +327,9 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldThrowServiceExceptioinWhenDAOExceptionWhileDeleteById() {
+    void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(DAOException.class).when(lecturerDAO).deleteById(testId);
+        doThrow(RepositoryException.class).when(lecturerRepository).findById(testId);
         assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
     }
 
@@ -430,7 +434,7 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileCreate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileCreate() {
         Lecturer lecturer = new Lecturer();
         lecturer.setFirstName("Natalia");
         lecturer.setLastName("Kohan");
@@ -441,14 +445,14 @@ class LecturerServiceTest {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to create a new person: " + lecturer + ".",
-                "There is some error in dao layer when create an object " + lecturer + "."));
+                "There is some error in repositories layer when create an object " + lecturer + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(DAOException.class).when(lecturerDAO).create(lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).create(lecturer);
 
         try {
             lecturerService.create(lecturer);
@@ -519,18 +523,18 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetAll() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetAll() {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to get all objects.", "There is some error in dao layer when getAll."));
+                Arrays.asList("Try to get all objects.", "There is some error in repositories layer when getAll."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(lecturerDAO.findAll()).thenThrow(DAOException.class);
+        when(lecturerRepository.findAll()).thenThrow(RepositoryException.class);
 
         try {
             lecturerService.getAll();
@@ -568,7 +572,7 @@ class LecturerServiceTest {
             expectedLecturers.get(i).setEmail(emails.get(i));
         }
 
-        when(lecturerDAO.findAll()).thenReturn(expectedLecturers);
+        when(lecturerRepository.findAll()).thenReturn(expectedLecturers);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -634,8 +638,8 @@ class LecturerServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        DAOException daoException = new DAOException("The result is empty", new EmptyResultDataAccessException(1));
-        when(lecturerDAO.findById(testId)).thenThrow(daoException);
+        RepositoryException repositoryException = new RepositoryException("The result is empty", new NullPointerException());
+        when(lecturerRepository.findById(testId)).thenThrow(repositoryException);
 
         try {
             lecturerService.getById(testId);
@@ -653,20 +657,20 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileGetById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileGetById() {
         int testId = 6;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to get an object by id: " + testId + ".",
-                "There is some error in dao layer when get object by id " + testId + "."));
+                "There is some error in repositories layer when get object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        when(lecturerDAO.findById(testId)).thenThrow(DAOException.class);
+        when(lecturerRepository.findById(testId)).thenThrow(RepositoryException.class);
 
         try {
             lecturerService.getById(testId);
@@ -695,7 +699,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380453982147");
         lecturer.setEmail("irak@test.com");
 
-        when(lecturerDAO.findById(testId)).thenReturn(lecturer);
+        when(lecturerRepository.findById(testId)).thenReturn(lecturer);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -819,7 +823,7 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileUpdate() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileUpdate() {
         Lecturer lecturer = new Lecturer();
         lecturer.setId(4);
         lecturer.setFirstName("Nataliia");
@@ -828,12 +832,12 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380459621567");
         lecturer.setEmail("khodorkovska@test.com");
 
-        doThrow(DAOException.class).when(lecturerDAO).update(lecturer.getId(), lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).update(lecturer);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to update a person: " + lecturer + ".",
-                "There is some error in dao layer when update an object " + lecturer + "."));
+                "There is some error in repositories layer when update an object " + lecturer + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -916,15 +920,15 @@ class LecturerServiceTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenDAOExceptionWhileDeleteById() {
+    void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(DAOException.class).when(lecturerDAO).deleteById(testId);
+        doThrow(RepositoryException.class).when(lecturerRepository).findById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id: " + testId + ".",
-                "There is some error in dao layer when delete an object by id " + testId + "."));
+                "There is some error in repositories layer when delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));

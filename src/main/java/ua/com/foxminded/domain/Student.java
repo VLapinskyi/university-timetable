@@ -1,12 +1,34 @@
 package ua.com.foxminded.domain;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+@Entity
+@Table(name = "people")
 public class Student extends Person {
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private final Role role = Role.STUDENT;
+    
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "student_group_id")
     @NotNull(message = "Student must be in some group")
     @Valid
     private Group group;
+    
+    public Student() {
+        
+    }
 
     public Group getGroup() {
         return group;

@@ -20,8 +20,8 @@ import org.springframework.context.annotation.Configuration;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Lesson;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
@@ -197,11 +197,11 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when get week lessons for a group.",
                     illegalArgumentException);
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get week lessons for a group with id {}.", groupId,
-                    daoException);
-            throw new ServiceException("There is some error in dao layer when get week lessons for a group.",
-                    daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when get week lessons for a group with id {}.", groupId,
+                    repositoryException);
+            throw new ServiceException("There is some error in repositories layer when get week lessons for a group.",
+                    repositoryException);
         }
     }
 
@@ -253,12 +253,12 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when get month lessons for a group.",
                     illegalArgumentException);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             LOGGER.error(
-                    "There is some error in dao layer when get {} month of {} year lessons for a group with id {}.",
-                    month.getMonth(), month.getYear(), groupId, daoException);
-            throw new ServiceException("There is some error in dao layer when get month lessons for a group.",
-                    daoException);
+                    "There is some error in repositories layer when get {} month of {} year lessons for a group with id {}.",
+                    month.getMonth(), month.getYear(), groupId, repositoryException);
+            throw new ServiceException("There is some error in repositories layer when get month lessons for a group.",
+                    repositoryException);
         }
     }
 
@@ -306,11 +306,11 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when get week lessons for a lecturer.",
                     illegalArgumentException);
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get week lessons for a lecturer with id {}.",
-                    lecturerId, daoException);
-            throw new ServiceException("There is some error in dao layer when get week lessons for a group.",
-                    daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when get week lessons for a lecturer with id {}.",
+                    lecturerId, repositoryException);
+            throw new ServiceException("There is some error in repositories layer when get week lessons for a group.",
+                    repositoryException);
         }
     }
 
@@ -363,12 +363,12 @@ public class LessonAspect {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("There is an error with given number when getting month lessons for a lecturer.",
                     illegalArgumentException);
-        } catch (DAOException daoException) {
+        } catch (RepositoryException repositoryException) {
             LOGGER.error(
-                    "There is some error in dao layer when get {} month of {} year lessons for a lecturer with id {}.",
-                    month.getMonth(), month.getYear(), lecturerId, daoException);
-            throw new ServiceException("There is some error in dao layer when get month lessons for a group.",
-                    daoException);
+                    "There is some error in repositories layer when get {} month of {} year lessons for a lecturer with id {}.",
+                    month.getMonth(), month.getYear(), lecturerId, repositoryException);
+            throw new ServiceException("There is some error in repositories layer when get month lessons for a group.",
+                    repositoryException);
         }
     }
 }

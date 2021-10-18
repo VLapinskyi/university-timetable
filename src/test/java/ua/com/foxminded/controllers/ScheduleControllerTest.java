@@ -30,13 +30,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.persistence.QueryTimeoutException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -46,21 +47,22 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.validation.ConstraintViolationException;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.domain.LessonTime;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.LessonService;
 import ua.com.foxminded.service.LessonTimeService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class ScheduleControllerTest {
@@ -92,9 +94,9 @@ class ScheduleControllerTest {
 
     private MockMvc mockMvc;
 
-    private DAOException daoException = new DAOException("DAO exception",
+    private RepositoryException repositoryException = new RepositoryException("repository exception",
             new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
     private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
             new ConstraintViolationException(null));
 
@@ -758,8 +760,8 @@ class ScheduleControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileSearchSchedule() throws Exception {
-        when(groupService.getAll()).thenThrow(serviceWithDAOException);
+    void shouldReturnError500WhenRepositoryExceptionWhileSearchSchedule() throws Exception {
+        when(groupService.getAll()).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/search-schedule")).andExpect(status().isInternalServerError());
         verify(lecturerService).getAll();
@@ -776,10 +778,10 @@ class ScheduleControllerTest {
     
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileResultSchedule() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileResultSchedule() throws Exception {
         int lecturerId = 4;
 
-        when(lecturerService.getById(lecturerId)).thenThrow(serviceWithDAOException);
+        when(lecturerService.getById(lecturerId)).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/lessons").param("people-role-radio", "lecturer")
                 .param("lecturer-value", Integer.toString(lecturerId)).param("period-radio", "week"))
@@ -821,12 +823,12 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileCreateLessonTime() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileCreateLessonTime() throws Exception {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(10, 0));
         
-        doThrow(serviceWithDAOException).when(lessonTimeService).create(lessonTime);
+        doThrow(serviceWithRepositoryException).when(lessonTimeService).create(lessonTime);
         
         mockMvc.perform(post("/lesson-time-parameters")
                 .flashAttr("lessonTime", lessonTime))
@@ -881,10 +883,10 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileEditLessonTime() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileEditLessonTime() throws Exception {
         int testId = 12;
         
-        doThrow(serviceWithDAOException).when(lessonTimeService).getById(testId);
+        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(testId);
         
         mockMvc.perform(get("/lesson-time-parameters/{id}/edit", testId))
         .andExpect(status().isInternalServerError());
@@ -905,14 +907,14 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileUpdateLessonTime() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileUpdateLessonTime() throws Exception {
         int testId = 12;
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(testId);
         lessonTime.setStartTime(LocalTime.of(14, 0));
         lessonTime.setEndTime(LocalTime.of(15, 0));
         
-        doThrow(serviceWithDAOException).when(lessonTimeService).update(lessonTime);
+        doThrow(serviceWithRepositoryException).when(lessonTimeService).update(lessonTime);
         
         mockMvc.perform(patch("/lesson-time-parameters/{id}", testId)
                 .flashAttr("lessonTime", lessonTime))
@@ -973,10 +975,10 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturn500WhenDAOExceptionWhileDeleteLessonTime() throws Exception {
+    void shouldReturn500WhenRepositoryExceptionWhileDeleteLessonTime() throws Exception {
         int testId = 741;
         
-        doThrow(serviceWithDAOException).when(lessonTimeService).deleteById(testId);
+        doThrow(serviceWithRepositoryException).when(lessonTimeService).deleteById(testId);
         
         mockMvc.perform(delete("/lesson-time-parameters/{id}", testId))
         .andExpect(status().isInternalServerError());
@@ -1009,8 +1011,8 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturn500WhenDAOExceptionWhileNewLesson() throws Exception {
-        doThrow(serviceWithDAOException).when(groupService).getAll();
+    void shouldReturn500WhenRepositoryExceptionWhileNewLesson() throws Exception {
+        doThrow(serviceWithRepositoryException).when(groupService).getAll();
         
         mockMvc.perform(get("/lessons-new"))
         .andExpect(status().isInternalServerError());
@@ -1030,7 +1032,7 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileCreateLesson() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileCreateLesson() throws Exception {
         Lesson lesson = new Lesson();
         lesson.setName("Test lesson");
         lesson.setAudience("101");
@@ -1039,7 +1041,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithDAOException).when(lessonTimeService).getById(lessonTime.getId());
+        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
         
         mockMvc.perform(post("/search-schedule")
                 .flashAttr("lesson", lesson)
@@ -1129,7 +1131,7 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileEditLesson() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileEditLesson() throws Exception {
         int lessonId = 12;
         Lesson lesson = new Lesson();
         lesson.setId(lessonId);
@@ -1140,7 +1142,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithDAOException).when(lessonService).getById(lessonId);
+        doThrow(serviceWithRepositoryException).when(lessonService).getById(lessonId);
         
         mockMvc.perform(get("/lessons/{id}/edit", lessonId)
                 .flashAttr("lesson", lesson)
@@ -1179,7 +1181,7 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileUpdateLesson() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileUpdateLesson() throws Exception {
         int lessonId = 3;
         Lesson lesson = new Lesson();
         lesson.setId(lessonId);
@@ -1190,7 +1192,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithDAOException).when(lessonTimeService).getById(lessonTime.getId());
+        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
         
         mockMvc.perform(patch("/lessons/{id}", lessonId)
                 .flashAttr("lesson", lesson)
@@ -1285,10 +1287,10 @@ class ScheduleControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileDeleteLesson() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileDeleteLesson() throws Exception {
         int testId = 2;
         
-        doThrow(serviceWithDAOException).when(lessonService).deleteById(testId);
+        doThrow(serviceWithRepositoryException).when(lessonService).deleteById(testId);
         
         mockMvc.perform(delete("/lessons/{id}", testId))
         .andExpect(status().isInternalServerError());

@@ -18,8 +18,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class IndexControllerTest {

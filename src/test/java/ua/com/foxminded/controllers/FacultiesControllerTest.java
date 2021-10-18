@@ -12,13 +12,14 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.Arrays;
 
+import javax.persistence.QueryTimeoutException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -28,13 +29,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.validation.ConstraintViolationException;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Faculty;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.FacultyService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class FacultiesControllerTest {
@@ -50,9 +52,9 @@ class FacultiesControllerTest {
 
     private MockMvc mockMvc;
 
-    private DAOException daoException = new DAOException("DAO exception",
+    private RepositoryException repositoryException = new RepositoryException("repository exception",
             new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
 
     private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
             new IllegalArgumentException());
@@ -165,8 +167,8 @@ class FacultiesControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileGetFaculties() throws Exception {
-        when(facultyService.getAll()).thenThrow(serviceWithDAOException);
+    void shouldReturnError500WhenRepositoryExceptionWhileGetFaculties() throws Exception {
+        when(facultyService.getAll()).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/faculties")).andExpect(status().isInternalServerError());
         verify(facultyService).getAll();
@@ -181,10 +183,10 @@ class FacultiesControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileGetFaculty() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileGetFaculty() throws Exception {
         int id = 2;
 
-        when(facultyService.getById(id)).thenThrow(serviceWithDAOException);
+        when(facultyService.getById(id)).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isInternalServerError());
         verify(facultyService).getById(id);
@@ -209,11 +211,11 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileCreateFaculty() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileCreateFaculty() throws Exception {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithDAOException).when(facultyService).create(testFaculty);
+        doThrow(serviceWithRepositoryException).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
             .andExpect(status().isInternalServerError());
@@ -261,10 +263,10 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileEditFaculty() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileEditFaculty() throws Exception {
         int testId = 9;
         
-        doThrow(serviceWithDAOException).when(facultyService).getById(testId);
+        doThrow(serviceWithRepositoryException).when(facultyService).getById(testId);
         
         mockMvc.perform(get("/faculties/{id}/edit", testId))
         .andExpect(status().isInternalServerError());
@@ -286,13 +288,13 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileUpdateFaculty() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileUpdateFaculty() throws Exception {
         int testId = 4;
         Faculty testFaculty = new Faculty();
         testFaculty.setId(testId);
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithDAOException).when(facultyService).update(testFaculty);
+        doThrow(serviceWithRepositoryException).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
             .andExpect(status().isInternalServerError());
@@ -346,10 +348,10 @@ class FacultiesControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileDeleteFaculty() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileDeleteFaculty() throws Exception {
         int testId = 75;
         
-        doThrow(serviceWithDAOException).when(facultyService).deleteById(testId);
+        doThrow(serviceWithRepositoryException).when(facultyService).deleteById(testId);
 
         mockMvc.perform(delete("/faculties/{id}", testId))
             .andExpect(status().isInternalServerError());

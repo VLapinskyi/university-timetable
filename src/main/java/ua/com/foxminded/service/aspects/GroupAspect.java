@@ -18,8 +18,8 @@ import org.springframework.context.annotation.Configuration;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
@@ -171,10 +171,10 @@ public class GroupAspect {
             throw new ServiceException(
                     "There is an error with given number when getting groups from one faculty by faculty id.",
                     illegalArgumentException);
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when getGroupsFromFaculty by faculty id {}.", facultyId,
-                    daoException);
-            throw new ServiceException("There is some error in dao layer when getGroupsFromFaculty.", daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when getGroupsFromFaculty by faculty id {}.", facultyId,
+                    repositoryException);
+            throw new ServiceException("There is some error in repositories layer when getGroupsFromFaculty.", repositoryException);
         }
     }
 }

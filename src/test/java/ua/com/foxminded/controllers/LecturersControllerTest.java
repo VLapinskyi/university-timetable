@@ -19,13 +19,14 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Arrays;
 
+import javax.persistence.QueryTimeoutException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -35,14 +36,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.validation.ConstraintViolationException;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class })
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LecturersControllerTest {
@@ -58,9 +60,9 @@ class LecturersControllerTest {
 
     private MockMvc mockMvc;
 
-    private DAOException daoException = new DAOException("DAO exception",
+    private RepositoryException repositoryException = new RepositoryException("repository exception",
             new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithDAOException = new ServiceException("Service exception", daoException);
+    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
 
     private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
             new IllegalArgumentException());
@@ -224,8 +226,8 @@ class LecturersControllerTest {
     }
 
     @Test
-    void sholdReturnError500WhenDAOExceptionWhileGetLecturers() throws Exception {
-        when(lecturerService.getAll()).thenThrow(serviceWithDAOException);
+    void sholdReturnError500WhenRepositoryExceptionWhileGetLecturers() throws Exception {
+        when(lecturerService.getAll()).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/lecturers")).andExpect(status().isInternalServerError());
         verify(lecturerService).getAll();
@@ -240,10 +242,10 @@ class LecturersControllerTest {
     }
 
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileGetLecturer() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileGetLecturer() throws Exception {
         int id = 2;
 
-        when(lecturerService.getById(id)).thenThrow(serviceWithDAOException);
+        when(lecturerService.getById(id)).thenThrow(serviceWithRepositoryException);
 
         mockMvc.perform(get("/lecturers/{id}", id)).andExpect(status().isInternalServerError());
         verify(lecturerService).getById(id);
@@ -267,7 +269,7 @@ class LecturersControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileCreate() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileCreate() throws Exception {
         Lecturer lecturer = new Lecturer();
         lecturer.setFirstName("Mariia");
         lecturer.setLastName("Romanova");
@@ -275,7 +277,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380459865321");
         lecturer.setEmail("MRomanova@test.com");
         
-        doThrow(serviceWithDAOException).when(lecturerService).create(lecturer);
+        doThrow(serviceWithRepositoryException).when(lecturerService).create(lecturer);
         
         mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.FEMALE.toString()))
@@ -339,10 +341,10 @@ class LecturersControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileEdit() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileEdit() throws Exception {
         int testId = 13;
         
-        doThrow(serviceWithDAOException).when(lecturerService).getById(testId);
+        doThrow(serviceWithRepositoryException).when(lecturerService).getById(testId);
         
         mockMvc.perform(get("/lecturers/{id}/edit", testId))
         .andExpect(status().isInternalServerError());
@@ -363,7 +365,7 @@ class LecturersControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileUpdate() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileUpdate() throws Exception {
         int testId = 1;
         
         Lecturer lecturer = new Lecturer();
@@ -374,7 +376,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380984563214");
         lecturer.setEmail("VKolisnichenko@test.com");
         
-        doThrow(serviceWithDAOException).when(lecturerService).update(lecturer);
+        doThrow(serviceWithRepositoryException).when(lecturerService).update(lecturer);
         
         mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.MALE.toString()))
@@ -447,10 +449,10 @@ class LecturersControllerTest {
     }
     
     @Test
-    void shouldReturnError500WhenDAOExceptionWhileDelete() throws Exception {
+    void shouldReturnError500WhenRepositoryExceptionWhileDelete() throws Exception {
         int testId = 12;
         
-        doThrow(serviceWithDAOException).when(lecturerService).deleteById(testId);
+        doThrow(serviceWithRepositoryException).when(lecturerService).deleteById(testId);
         
         mockMvc.perform(delete("/lecturers/{id}", testId))
         .andExpect(status().isInternalServerError());

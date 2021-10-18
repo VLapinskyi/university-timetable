@@ -5,35 +5,36 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ua.com.foxminded.dao.LecturerDAO;
 import ua.com.foxminded.domain.Lecturer;
+import ua.com.foxminded.repositories.LecturerRepository;
 
 @Service
 public class LecturerService {
-    private LecturerDAO lecturerDAO;
+    private LecturerRepository lecturerRepository;
 
     @Autowired
-    public LecturerService(LecturerDAO lecturerDAO) {
-        this.lecturerDAO = lecturerDAO;
+    public LecturerService(LecturerRepository lecturerRepository) {
+        this.lecturerRepository = lecturerRepository;
     }
 
     public void create(Lecturer lecturer) {
-        lecturerDAO.create(lecturer);
+        lecturerRepository.create(lecturer);
     }
 
     public List<Lecturer> getAll() {
-        return lecturerDAO.findAll();
+        return lecturerRepository.findAll();
     }
 
     public Lecturer getById(int lecturerId) {
-        return lecturerDAO.findById(lecturerId);
+        return lecturerRepository.findById(lecturerId);
     }
 
     public void update(Lecturer lecturer) {
-        lecturerDAO.update(lecturer.getId(), lecturer);
+        lecturerRepository.update(lecturer);
     }
 
     public void deleteById(int lecturerId) {
-        lecturerDAO.deleteById(lecturerId);
+        Lecturer lecturer = lecturerRepository.findById(lecturerId);
+        lecturerRepository.delete(lecturer);
     }
 }

@@ -19,8 +19,8 @@ import org.springframework.core.annotation.Order;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-import ua.com.foxminded.dao.exceptions.DAOException;
 import ua.com.foxminded.domain.Student;
+import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
@@ -128,11 +128,11 @@ public class StudentAspect {
             }
 
             return targetMethod;
-        } catch (DAOException daoException) {
-            LOGGER.error("There is some error in dao layer when get students from a group by groupId {}.", groupId,
-                    daoException);
-            throw new ServiceException("There is some error in dao layer when get students from a group.",
-                    daoException);
+        } catch (RepositoryException repositoryException) {
+            LOGGER.error("There is some error in repositories layer when get students from a group by groupId {}.", groupId,
+                    repositoryException);
+            throw new ServiceException("There is some error in repositories layer when get students from a group.",
+                    repositoryException);
         }
     }
 }
