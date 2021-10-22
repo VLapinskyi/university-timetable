@@ -17,39 +17,39 @@ import javax.persistence.QueryTimeoutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import jakarta.validation.ConstraintViolationException;
+import javax.validation.ConstraintViolationException;
+
+import ua.com.foxminded.controllers.aspects.GeneralControllerAspect;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.FacultyService;
 import ua.com.foxminded.service.exceptions.ServiceException;
-import ua.com.foxminded.settings.SpringConfiguration;
 import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
 @ExtendWith(SpringExtension.class)
-@WebAppConfiguration
+@WebMvcTest({FacultiesController.class, GeneralControllerAspect.class})
+@ContextConfiguration(classes = SpringTestConfiguration.class)
 class FacultiesControllerTest {
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private FacultiesController facultiesController;
 
-    @Mock
+    @MockBean
     private FacultyService facultyService;
 
+    @Autowired
     private MockMvc mockMvc;
 
     private RepositoryException repositoryException = new RepositoryException("repository exception",
@@ -64,8 +64,6 @@ class FacultiesControllerTest {
 
     @BeforeEach
     void init() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(facultiesController, "facultyService", facultyService);
     }
 

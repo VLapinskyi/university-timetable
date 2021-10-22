@@ -2,8 +2,10 @@ package ua.com.foxminded.repositories;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 
 import org.hibernate.SessionFactory;
@@ -22,10 +25,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ScriptException;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,35 +41,35 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
-import ua.com.foxminded.settings.SpringTestConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringTestConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class FacultyRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");
     private final ClassPathResource testTablesCreator = new ClassPathResource("/Creating tables.sql");
     private final ClassPathResource testDatabaseCleaner = new ClassPathResource("/Clearing database.sql");
 
+    @Autowired
     private TestAppender testAppender = new TestAppender();
+    
     private Connection connection;
     
     @Autowired
-    private SessionFactory sessionFactory;
+    private EntityManager entityManager;
 
     @Autowired
     private FacultyRepository facultyRepository;
     
     private List<Faculty> expectedFaculties;
 
-    @Mock
-    private SessionFactory mockedSessionFactory;
+    @MockBean
+    private EntityManager mockedEntityManager;
 
     @BeforeEach
     @Transactional
     void setUp() throws ScriptException, SQLException {
-        MockitoAnnotations.openMocks(this);
-        connection = ((SessionImpl)sessionFactory.getCurrentSession()).connection();
+
+        connection = entityManager.unwrap(Connection.class);
         ScriptUtils.executeSqlScript(connection, testTablesCreator);
 
         expectedFaculties = new ArrayList<>(Arrays.asList(new Faculty(), new Faculty(), new Faculty()));
@@ -79,7 +85,7 @@ class FacultyRepositoryTest {
     @Transactional
     void tearDown() throws ScriptException, SQLException {
         testAppender.cleanEventList();
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", sessionFactory);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", entityManager);
         ScriptUtils.executeSqlScript(connection, testDatabaseCleaner);
     }
 
@@ -159,8 +165,8 @@ class FacultyRepositoryTest {
     @Test
     @Transactional
     void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(entityManager).createQuery(anyString(), Faculty.class);
         assertThrows(RepositoryException.class, () -> facultyRepository.findAll());
     }
 
@@ -175,8 +181,8 @@ class FacultyRepositoryTest {
     @Transactional
     void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        when(mockedEntityManager.find(Faculty.class, anyInt())).thenThrow(PersistenceException.class);
         assertThrows(RepositoryException.class, () -> facultyRepository.findById(testId));
     }
 
@@ -186,8 +192,8 @@ class FacultyRepositoryTest {
         Faculty testFaculty = new Faculty();
         testFaculty.setId(1);
         testFaculty.setName("Test faculty");
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entitryManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(mockedEntityManager).merge(Faculty.class);
         assertThrows(RepositoryException.class, () -> facultyRepository.update(testFaculty));
     }
 
@@ -197,8 +203,8 @@ class FacultyRepositoryTest {
         Faculty testFaculty = new Faculty();
         testFaculty.setId(2);
         testFaculty.setName("Test faculty");
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(mockedEntityManager).remove(Faculty.class);
         assertThrows(RepositoryException.class, () -> facultyRepository.delete(testFaculty));
     }
 
@@ -313,8 +319,8 @@ class FacultyRepositoryTest {
     @Test
     @Transactional
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery(anyString(), Faculty.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
@@ -327,7 +333,7 @@ class FacultyRepositoryTest {
 
         try {
             facultyRepository.findAll();
-            verify(mockedSessionFactory.getCurrentSession()).createQuery(anyString(), Faculty.class);
+            verify(mockedEntityManager).createQuery(anyString(), Faculty.class);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }
@@ -401,8 +407,8 @@ class FacultyRepositoryTest {
     @Transactional
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
         int testId = 1;
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(NullPointerException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(NullPointerException.class).when(mockedEntityManager.find(Faculty.class, anyInt()));
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
@@ -415,7 +421,7 @@ class FacultyRepositoryTest {
 
         try {
             facultyRepository.findById(testId);
-            verify(mockedSessionFactory.getCurrentSession()).get(Faculty.class, testId);
+            verify(mockedEntityManager).find(Faculty.class, testId);
         } catch (RepositoryException repositoryEcxeption) {
             // do nothing
         }
@@ -466,8 +472,8 @@ class FacultyRepositoryTest {
         testFaculty.setId(3);
         testFaculty.setName("TestFaculty");
 
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(mockedEntityManager).merge(testFaculty);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -482,7 +488,7 @@ class FacultyRepositoryTest {
 
         try {
             facultyRepository.update(testFaculty);
-            verify(mockedSessionFactory.getCurrentSession()).update(testFaculty);
+            verify(mockedEntityManager).merge(testFaculty);
         } catch (RepositoryException repositoryEcxeption) {
             // do nothing
         }
@@ -531,8 +537,8 @@ class FacultyRepositoryTest {
         testFaculty.setId(5);
         testFaculty.setName("test");
 
-        ReflectionTestUtils.setField(facultyRepository, "sessionFactory", mockedSessionFactory);
-        when(mockedSessionFactory.getCurrentSession()).thenThrow(PersistenceException.class);
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(mockedEntityManager).remove(testFaculty);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -546,7 +552,7 @@ class FacultyRepositoryTest {
 
         try {
             facultyRepository.delete(testFaculty);
-            verify(mockedSessionFactory.getCurrentSession()).delete(testFaculty);
+            verify(mockedEntityManager).remove(testFaculty);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }

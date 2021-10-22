@@ -1,7 +1,7 @@
 package ua.com.foxminded.domain.validation;
 
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 import ua.com.foxminded.domain.LessonTime;
 
 public class LessonTimeValidator implements ConstraintValidator<CheckLessonTime, LessonTime> {

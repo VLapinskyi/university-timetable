@@ -1,67 +1,23 @@
 package ua.com.foxminded.settings;
 
-import java.util.Properties;
-
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
-import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
-import org.springframework.transaction.PlatformTransactionManager;
+
+import ch.qos.logback.classic.Logger;
 
 @Configuration
-@ComponentScan("ua.com.foxminded.repositories")
-@EnableAspectJAutoProxy(proxyTargetClass = true)
-@PropertySource("classpath:database.properties")
-@PropertySource("classpath:sql-queries.properties")
+@ComponentScan("ua.com.foxminded")
 public class SpringTestConfiguration {
+    
     @Autowired
-    private Environment environment;
-
-    @Bean
-    public DataSource getDataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(environment.getProperty("driver.class.name"));
-        dataSource.setUrl(environment.getProperty("url"));
-        dataSource.setUsername(environment.getProperty("user"));
-        dataSource.setPassword(environment.getProperty("password"));
-        return dataSource;
-    }
-
-    @Bean
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(getDataSource());
-        sessionFactory.setPackagesToScan("ua.com.foxminded.domain");
-        sessionFactory.setHibernateProperties(hibernateProperties());
-        return sessionFactory;
+    private TestAppender testAppender;
+    
+    private void setTestAppender(ConfigurableApplicationContext context, TestAppender testAppender){
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        rootLogger.addAppender(testAppender);
     }
     
-    @Bean
-    public PlatformTransactionManager hibernateTransactionManager() throws NamingException {
-        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-        transactionManager.setSessionFactory(sessionFactory().getObject());
-        return transactionManager;
-    }
-    
-    private final Properties hibernateProperties() {
-        Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty(
-                "hibernate.hbm2ddl.auto", "create-drop");
-
-        hibernateProperties.setProperty( "hibernate.dialect",
-                "org.hibernate.dialect.H2Dialect");
-        
-        hibernateProperties.put("javax.persistence.validation.mode", "none");
-
-        return hibernateProperties;
-    }
 }
