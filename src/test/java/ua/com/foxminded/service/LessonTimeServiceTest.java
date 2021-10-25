@@ -31,10 +31,10 @@ import ua.com.foxminded.repositories.LessonTimeRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 import ua.com.foxminded.settings.SpringConfiguration;
-import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.SpringTestLogConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
+@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestLogConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 class LessonTimeServiceTest {

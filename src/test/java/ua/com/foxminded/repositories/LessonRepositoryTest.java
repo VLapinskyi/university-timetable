@@ -41,10 +41,10 @@ import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
-import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.SpringTestLogConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringTestConfiguration.class })
+@ContextConfiguration(classes = { SpringTestLogConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class LessonRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");

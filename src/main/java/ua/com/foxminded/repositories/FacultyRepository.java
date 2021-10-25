@@ -3,6 +3,7 @@ package ua.com.foxminded.repositories;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import ua.com.foxminded.domain.Faculty;
 @Repository
 @Transactional
 public class FacultyRepository implements GenericRepository<Faculty> {
-    
+   
    private EntityManager entityManager;
     
     @Autowired
@@ -43,6 +44,7 @@ public class FacultyRepository implements GenericRepository<Faculty> {
 
     @Override
     public void delete(Faculty faculty) {
-        entityManager.remove(faculty);
+        Faculty deletedFaculty = entityManager.merge(faculty);
+        entityManager.remove(deletedFaculty);
     }
 }

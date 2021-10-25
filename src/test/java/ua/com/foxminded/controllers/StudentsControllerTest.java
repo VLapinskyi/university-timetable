@@ -26,20 +26,18 @@ import javax.persistence.QueryTimeoutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ConstraintViolationException;
+
+import ua.com.foxminded.controllers.aspects.GeneralControllerAspect;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
@@ -50,19 +48,20 @@ import ua.com.foxminded.service.StudentService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @ExtendWith(SpringExtension.class)
+@WebMvcTest(StudentsController.class)
+@Import({AopAutoConfiguration.class, GeneralControllerAspect.class})
 class StudentsControllerTest {
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private StudentsController studentsController;
 
-    @Mock
+    @MockBean
     private StudentService studentService;
 
-    @Mock
+    @MockBean
     private GroupService groupService;
 
+    @Autowired
     private MockMvc mockMvc;
 
     private RepositoryException repositoryException = new RepositoryException("repository exception",
@@ -80,8 +79,6 @@ class StudentsControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(studentsController, "studentService", studentService);
         ReflectionTestUtils.setField(studentsController, "groupService", groupService);
         group = new Group();

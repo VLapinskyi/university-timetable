@@ -2,7 +2,7 @@
 <configuration>
 	<property name="LOG_FILE" value="Log File" />
 	<property name="ROOT_PROJECT_FOLDER"
-		value="E:\\university-timetable\\logs"></property>
+		value="C:\\Users\Boy1\\OneDrive\\Рабочий стол\\logs"></property>
 
 	<appender name="CONSOLE"
 		class="ch.qos.logback.core.ConsoleAppender">

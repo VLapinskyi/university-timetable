@@ -10,7 +10,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "people")
@@ -22,7 +21,6 @@ public class Student extends Person {
     
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "student_group_id")
-    @NotNull(message = "Student must be in some group")
     @Valid
     private Group group;
     

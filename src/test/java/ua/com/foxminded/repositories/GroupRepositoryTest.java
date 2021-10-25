@@ -36,10 +36,10 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
-import ua.com.foxminded.settings.SpringTestConfiguration;
+import ua.com.foxminded.settings.SpringTestLogConfiguration;
 import ua.com.foxminded.settings.TestAppender;
 
-@ContextConfiguration(classes = { SpringTestConfiguration.class })
+@ContextConfiguration(classes = { SpringTestLogConfiguration.class })
 @ExtendWith(SpringExtension.class)
 class GroupRepositoryTest {
     private final ClassPathResource testData = new ClassPathResource("/Test data.sql");

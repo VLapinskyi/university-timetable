@@ -9,7 +9,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="ua.com.foxminded" level="DEBUG" additivity="false">
+	<logger name="root" level="DEBUG" additivity="false">
 
 		<appender-ref ref="TEST_APPENDER" />
 	</logger>

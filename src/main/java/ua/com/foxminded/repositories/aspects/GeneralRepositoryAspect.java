@@ -17,7 +17,7 @@ import ua.com.foxminded.repositories.exceptions.RepositoryException;
 @Aspect
 @Configuration
 public class GeneralRepositoryAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralRepositoryAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(GeneralRepositoryAspect.class);
 
     @Pointcut("execution (void ua.com.foxminded.repositories.*.create(*))")
     private void createMethods() {
@@ -43,25 +43,25 @@ public class GeneralRepositoryAspect {
     void aroundCreateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object object = proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to insert a new object: {}.", object);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to insert a new object: {}.", object);
         }
 
         try {
             proceedingJoinPoint.proceed();
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object {} was inserted.", object);
+            if (logger.isDebugEnabled()) {
+                logger.debug("The object {} was inserted.", object);
             }
         } catch (PersistenceException persistenceException) {
-            LOGGER.error("Can't insert the object: {}.", object, persistenceException);
+            logger.error("Can't insert the object: {}.", object, persistenceException);
             throw new RepositoryException("Can't insert the object", persistenceException);
         }
     }
 
     @Around("findAllMethods()")
     Object aroundFindAllAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to find all objects.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to find all objects.");
         }
 
         try {
@@ -69,12 +69,12 @@ public class GeneralRepositoryAspect {
             if (targetMethod instanceof List<?>) {
 
                 if (((List<?>) targetMethod).isEmpty()) {
-                    LOGGER.warn("There are not any objects in the result when findAll.");
+                    logger.warn("There are not any objects in the result when findAll.");
 
                 } else {
 
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("The result is: {}.", targetMethod);
                     }
                 }
             }
@@ -82,7 +82,7 @@ public class GeneralRepositoryAspect {
             return targetMethod;
 
         } catch (PersistenceException persistenceException) {
-            LOGGER.error("Can't find all objects.", persistenceException);
+            logger.error("Can't find all objects.", persistenceException);
             throw new RepositoryException("Can't find all objects.", persistenceException);
         }
     }
@@ -91,8 +91,8 @@ public class GeneralRepositoryAspect {
     Object aroundFindByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to find an object by id: {}.", id);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to find an object by id: {}.", id);
         }
 
         try {
@@ -102,17 +102,17 @@ public class GeneralRepositoryAspect {
                 throw new NullPointerException("There is no object in the database with pointed id.");
             }
             
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The result object with id {} is {}.", id, targetMethod);
+            if (logger.isDebugEnabled()) {
+                logger.debug("The result object with id {} is {}.", id, targetMethod);
             }
 
             return targetMethod;
 
         } catch (NullPointerException nullPointerException) {
-            LOGGER.error("There is no result when find an object by id {}.", id, nullPointerException);
+            logger.error("There is no result when find an object by id {}.", id, nullPointerException);
             throw new RepositoryException("Can't find an object by id.", nullPointerException);
         } catch (PersistenceException persistenceException) {
-            LOGGER.error("Can't find an object by id {}.", id, persistenceException);
+            logger.error("Can't find an object by id {}.", id, persistenceException);
             throw new RepositoryException("Can't find an object by id.", persistenceException);
         }
     }
@@ -121,17 +121,17 @@ public class GeneralRepositoryAspect {
     void aroundUpdateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object updatedObject = proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update an object {}.", updatedObject);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to update an object {}.", updatedObject);
         }
         try {
             proceedingJoinPoint.proceed();
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object {} was updated.", updatedObject);
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("The object {} was updated.", updatedObject);
             }
         } catch (PersistenceException persistenceException) {
-            LOGGER.error("Can't update an object {}.", updatedObject, persistenceException);
+            logger.error("Can't update an object {}.", updatedObject, persistenceException);
             throw new RepositoryException("Can't update an object.", persistenceException);
         }
     }
@@ -139,19 +139,19 @@ public class GeneralRepositoryAspect {
     @Around("deleteMethods()")
     void aroundDeleteByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object object = proceedingJoinPoint.getArgs()[0];
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to delete an object {}.", object);
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to delete an object {}.", object);            
         }
 
         try {
             proceedingJoinPoint.proceed();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object {} was deleted.", object);
+            if (logger.isDebugEnabled()) {
+                logger.debug("The object {} was deleted.", object);
             }
         } catch (PersistenceException persistenceException) {
-            LOGGER.error("Can't delete an object {}.", object, persistenceException);
+            logger.error("Can't delete an object {}.", object, persistenceException);
             throw new RepositoryException("Can't delete an object.", persistenceException);
         }
     }

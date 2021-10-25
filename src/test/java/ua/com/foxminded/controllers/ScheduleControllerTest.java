@@ -35,20 +35,19 @@ import javax.persistence.QueryTimeoutException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ConstraintViolationException;
+
+import ua.com.foxminded.controllers.aspects.GeneralControllerAspect;
+import ua.com.foxminded.controllers.aspects.ScheduleControllerAspect;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
@@ -63,24 +62,23 @@ import ua.com.foxminded.service.LessonTimeService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @ExtendWith(SpringExtension.class)
+@WebMvcTest(ScheduleController.class)
+@Import({AopAutoConfiguration.class, ScheduleControllerAspect.class, GeneralControllerAspect.class})
 class ScheduleControllerTest {
-
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private ScheduleController scheduleController;
 
-    @Mock
+    @MockBean
     private LessonService lessonService;
 
-    @Mock
+    @MockBean
     private LecturerService lecturerService;
 
-    @Mock
+    @MockBean
     private GroupService groupService;
 
-    @Mock
+    @MockBean
     private LessonTimeService lessonTimeService;
     
     private Group group;
@@ -90,6 +88,7 @@ class ScheduleControllerTest {
     private LessonTime lessonTime;
     private LessonTime anotherLessonTime;
 
+    @Autowired
     private MockMvc mockMvc;
 
     private RepositoryException repositoryException = new RepositoryException("repository exception",
@@ -103,8 +102,6 @@ class ScheduleControllerTest {
 
     @BeforeEach
     void init() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(scheduleController, "lessonService", lessonService);
         ReflectionTestUtils.setField(scheduleController, "lecturerService", lecturerService);
         ReflectionTestUtils.setField(scheduleController, "groupService", groupService);
@@ -657,8 +654,7 @@ class ScheduleControllerTest {
                 .param("group-value", Integer.toString(group.getId()))
                 .param("lecturer-value", Integer.toString(lecturer.getId())))
         .andExpect(status().is3xxRedirection())
-        .andExpect(view().name("redirect:/search-schedule"))
-        .andExpect(model().attribute("lesson", equalTo(testLesson)));
+        .andExpect(view().name("redirect:/search-schedule"));
         
         verify(lessonTimeService).getById(lessonTime.getId());
         verify(groupService).getById(group.getId());
