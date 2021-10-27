@@ -19,7 +19,7 @@ public class Student extends Person {
     @Column(name = "role")
     private final Role role = Role.STUDENT;
     
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "student_group_id")
     @Valid
     private Group group;

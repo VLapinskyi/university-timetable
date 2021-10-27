@@ -34,13 +34,13 @@ public class Group {
     @Pattern(regexp = "\\S{2,}.*", message = "Group name must have at least two symbols and start with non-white space")
     private String name;
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE})
+    @ManyToOne (cascade = CascadeType.ALL)
     @JoinColumn(name = "faculty_id")
     @NotNull(message = "Group faculty can't be null")
     @Valid
     private Faculty faculty;
     
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE},
+    @OneToMany(cascade = CascadeType.ALL,
             mappedBy = "group")
     private List<Student> students;
     

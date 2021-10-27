@@ -1,11 +1,9 @@
 package ua.com.foxminded.repositories;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.sql.SQLException;
@@ -14,36 +12,25 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaBaseConfiguration;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.JpaContext;
 import org.springframework.jdbc.datasource.init.ScriptException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
-import org.springframework.test.context.jdbc.SqlConfig;
-import org.springframework.test.context.jdbc.SqlConfig.ErrorMode;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -54,23 +41,24 @@ import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.repositories.aspects.GeneralRepositoryAspect;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
-import ua.com.foxminded.settings.SpringTestConfiguration;
-import ua.com.foxminded.settings.TestAppender;
 
-@ExtendWith(SpringExtension.class)
-@DataJpaTest
-@AutoConfigureTestDatabase
+@DataJpaTest(showSql = true)
 @Import({AopAutoConfiguration.class, GeneralRepositoryAspect.class})
 @TestPropertySource("/application-test.properties")
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 class FacultyRepositoryTest {
     private final String testData = "/Test data.sql";
-    private final String testTablesCreator = "/Creating tables.sql";
-    private final String testDatabaseCleaner = "/Clearing database.sql";
     
     private ListAppender<ILoggingEvent> testAppender;
     
     @Autowired
     private GeneralRepositoryAspect generalRepositoryAspect;
+    
+    @Autowired
+    private TestEntityManager testEntityManager;
+    
+    @MockBean
+    private EntityManager mockedEntityManager;
 
     @Autowired
     @SpyBean
@@ -79,7 +67,6 @@ class FacultyRepositoryTest {
     private List<Faculty> expectedFaculties;
 
     @BeforeEach
-    @Sql(scripts = testTablesCreator, executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
     void setUp() {
         Logger logger = (Logger) ReflectionTestUtils.getField(generalRepositoryAspect, "logger");
         testAppender = new ListAppender<>();
@@ -94,10 +81,11 @@ class FacultyRepositoryTest {
             expectedFaculties.get(i).setId(facultyIndexes.get(i));
             expectedFaculties.get(i).setName(facultyNames.get(i));
         }
+        
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", testEntityManager.getEntityManager());
     }
 
     @AfterEach
-    @Sql(scripts = testDatabaseCleaner, executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
     void tearDown() {
         testAppender.stop();
     }
@@ -115,14 +103,14 @@ class FacultyRepositoryTest {
     }
 
     @Test
-    @Sql(scripts = testData, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(testData)
     void shouldFindAllFaculties() throws ScriptException, SQLException {
         List<Faculty> actualFaculties = facultyRepository.findAll();
         assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
     }
 
     @Test
-    @Sql(scripts = testData, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(testData)
     void shouldFindFacultyById() throws ScriptException, SQLException {
         int checkedId = 2;
         Faculty expectedFaculty = new Faculty();
@@ -132,7 +120,7 @@ class FacultyRepositoryTest {
     }
 
     @Test
-    @Sql(scripts = testData, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(testData)
     void shouldUpdateFaculty() throws ScriptException, SQLException {
         int testId = 2;
         Faculty testFaculty = facultyRepository.findById(testId);
@@ -142,23 +130,17 @@ class FacultyRepositoryTest {
     }
 
     @Test
-    @Sql(scripts = testData, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(testData)
     void shouldDeleteFaculty(){
         int deletedFacultyId = 2;
-        Faculty deletedFaculty = new Faculty();
-        for (int i = 0; i < expectedFaculties.size(); i++) {
-            if (expectedFaculties.get(i).getId() == deletedFacultyId) {
-                Faculty facultyFromList = expectedFaculties.get(i);
-                deletedFaculty.setId(facultyFromList.getId());
-                deletedFaculty.setName(facultyFromList.getName());
-                deletedFaculty.setGroups(facultyFromList.getGroups());
-                expectedFaculties.remove(i);
-                i--;
-            }
-        }
+        Faculty deletedFaculty = testEntityManager.find(Faculty.class, deletedFacultyId);
         facultyRepository.delete(deletedFaculty);
-        List<Faculty> actualFaculties = facultyRepository.findAll();
-        assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
+        Faculty afterDeletingFaculty = testEntityManager.find(Faculty.class, deletedFacultyId);
+        
+        System.out.println(afterDeletingFaculty);
+        System.out.println(expectedFaculties);
+        
+        assertThat(afterDeletingFaculty).isNull();
     }
 
     @Test
@@ -172,7 +154,7 @@ class FacultyRepositoryTest {
 
     @Test
     void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
-        doThrow(PersistenceException.class).when(facultyRepository).create(any(Faculty.class));
+        when(facultyRepository.findAll()).thenThrow(RepositoryException.class);
         assertThrows(RepositoryException.class, () -> facultyRepository.findAll());
     }
 
@@ -183,6 +165,7 @@ class FacultyRepositoryTest {
     }
 
     @Test
+    @Sql(testData)
     void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
         int testId = 1;
         when(facultyRepository.findById(testId)).thenThrow(PersistenceException.class);
@@ -219,8 +202,8 @@ class FacultyRepositoryTest {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + loggingResultFaculty + ".", "The object " + loggingResultFaculty + " was inserted."));
-
+                "Try to insert a new object: " + testFaculty + ".", "The object " + loggingResultFaculty + " was inserted."));
+        
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
@@ -238,9 +221,10 @@ class FacultyRepositoryTest {
 
     @Test
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileCreate() {
+        int wrongId = 123;
         Faculty testFaculty = new Faculty();
-        testFaculty.setId(1);
         testFaculty.setName("Test");
+        testFaculty.setId(wrongId);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
@@ -250,6 +234,7 @@ class FacultyRepositoryTest {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
+        
         try {
             facultyRepository.create(testFaculty);
         } catch (RepositoryException exception) {
@@ -257,6 +242,8 @@ class FacultyRepositoryTest {
         }
 
         List<ILoggingEvent> actualLogs = testAppender.list;
+        
+        System.out.println(actualLogs);
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -313,8 +300,9 @@ class FacultyRepositoryTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        doThrow(PersistenceException.class).when(facultyRepository).findAll();
+    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() { 
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("FROM Faculty", Faculty.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(
@@ -331,6 +319,8 @@ class FacultyRepositoryTest {
             // do nothing
         }
         List<ILoggingEvent> actualLogs = testAppender.list;
+        
+        System.out.println(actualLogs);
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -395,13 +385,16 @@ class FacultyRepositoryTest {
     }
 
     @Test
+    @Sql(testData)
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);        
         int testId = 1;
-        doThrow(NullPointerException.class).when(facultyRepository).findById(testId);
+        when(mockedEntityManager.find(Faculty.class, testId)).thenThrow(PersistenceException.class);
+        
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
-                "There is no result when find an object by id " + testId + "."));
+                "Can't find an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -454,11 +447,13 @@ class FacultyRepositoryTest {
 
     @Test
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileUpdate() {
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        
         Faculty testFaculty = new Faculty();
         testFaculty.setId(3);
         testFaculty.setName("TestFaculty");
 
-        doThrow(PersistenceException.class).when(facultyRepository).update(testFaculty);
+        when(mockedEntityManager.merge(testFaculty)).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -490,7 +485,7 @@ class FacultyRepositoryTest {
     @Sql(scripts = testData)
     void shouldGenerateLogsWhenDelete() {
         int testId = 3;
-        Faculty deletedFaculty = expectedFaculties.stream().filter(faculty -> faculty.getId() == testId).findFirst().get();
+        Faculty deletedFaculty = testEntityManager.find(Faculty.class, testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -516,12 +511,14 @@ class FacultyRepositoryTest {
 
     @Test
     void shouldGenerateLogsWhenThrowPersistenceExceptionWhileDelete() {
+        ReflectionTestUtils.setField(facultyRepository, "entityManager", mockedEntityManager);
+        
         Faculty testFaculty = new Faculty();
         testFaculty.setId(5);
         testFaculty.setName("test");
-
-        doThrow(PersistenceException.class).when(facultyRepository).delete(testFaculty);
-
+        
+        when(mockedEntityManager.merge(testFaculty)).thenThrow(PersistenceException.class);
+        
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + testFaculty + ".",
