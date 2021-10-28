@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.ArgumentMatchers.any;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +24,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.datasource.init.ScriptException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
@@ -104,14 +102,14 @@ class FacultyRepositoryTest {
 
     @Test
     @Sql(testData)
-    void shouldFindAllFaculties() throws ScriptException, SQLException {
+    void shouldFindAllFaculties() {
         List<Faculty> actualFaculties = facultyRepository.findAll();
         assertTrue(expectedFaculties.containsAll(actualFaculties) && actualFaculties.containsAll(expectedFaculties));
     }
 
     @Test
     @Sql(testData)
-    void shouldFindFacultyById() throws ScriptException, SQLException {
+    void shouldFindFacultyById(){
         int checkedId = 2;
         Faculty expectedFaculty = new Faculty();
         expectedFaculty.setId(checkedId);
@@ -121,7 +119,7 @@ class FacultyRepositoryTest {
 
     @Test
     @Sql(testData)
-    void shouldUpdateFaculty() throws ScriptException, SQLException {
+    void shouldUpdateFaculty() {
         int testId = 2;
         Faculty testFaculty = facultyRepository.findById(testId);
         testFaculty.setName("TestFacultyUpdated");
@@ -136,9 +134,6 @@ class FacultyRepositoryTest {
         Faculty deletedFaculty = testEntityManager.find(Faculty.class, deletedFacultyId);
         facultyRepository.delete(deletedFaculty);
         Faculty afterDeletingFaculty = testEntityManager.find(Faculty.class, deletedFacultyId);
-        
-        System.out.println(afterDeletingFaculty);
-        System.out.println(expectedFaculties);
         
         assertThat(afterDeletingFaculty).isNull();
     }
@@ -242,8 +237,6 @@ class FacultyRepositoryTest {
         }
 
         List<ILoggingEvent> actualLogs = testAppender.list;
-        
-        System.out.println(actualLogs);
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -319,8 +312,6 @@ class FacultyRepositoryTest {
             // do nothing
         }
         List<ILoggingEvent> actualLogs = testAppender.list;
-        
-        System.out.println(actualLogs);
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -500,7 +491,6 @@ class FacultyRepositoryTest {
         facultyRepository.delete(deletedFaculty);
 
         List<ILoggingEvent> actualLogs = testAppender.list;
-        System.out.println(actualLogs);
         
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {

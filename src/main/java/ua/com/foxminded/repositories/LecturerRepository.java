@@ -29,7 +29,7 @@ public class LecturerRepository implements GenericRepository<Lecturer> {
 
     @Override
     public List<Lecturer> findAll() {
-        return entityManager.createQuery("from Lecturer where role = '" + Role.LECTURER + "'", Lecturer.class).getResultList();
+        return entityManager.createQuery("FROM Lecturer where role = '" + Role.LECTURER + "'", Lecturer.class).getResultList();
     }
 
     @Override
@@ -44,6 +44,7 @@ public class LecturerRepository implements GenericRepository<Lecturer> {
 
     @Override
     public void delete(Lecturer lecturer) {
-        entityManager.remove(lecturer);
+        Lecturer deletedLecturer = entityManager.merge(lecturer);
+        entityManager.remove(deletedLecturer);
     }
 }

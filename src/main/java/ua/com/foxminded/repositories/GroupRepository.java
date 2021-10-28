@@ -42,6 +42,7 @@ public class GroupRepository implements GenericRepository<Group> {
 
     @Override
     public void delete(Group group) {
-        entityManager.remove(group);
+        Group deletedGroup = entityManager.merge(group);
+        entityManager.remove(deletedGroup);
     }
 }
