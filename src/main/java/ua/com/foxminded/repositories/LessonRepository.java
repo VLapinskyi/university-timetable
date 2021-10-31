@@ -29,7 +29,7 @@ public class LessonRepository implements GenericRepository<Lesson> {
 
     @Override
     public List<Lesson> findAll() {
-        return entityManager.createQuery("from Lesson", Lesson.class).getResultList();
+        return entityManager.createQuery("FROM Lesson", Lesson.class).getResultList();
     }
 
     @Override
@@ -44,7 +44,8 @@ public class LessonRepository implements GenericRepository<Lesson> {
 
     @Override
     public void delete(Lesson lesson) {
-        entityManager.remove(lesson);
+        Lesson deletedLesson = entityManager.merge(lesson);
+        entityManager.remove(deletedLesson);
     }
 
     @SuppressWarnings("unchecked")

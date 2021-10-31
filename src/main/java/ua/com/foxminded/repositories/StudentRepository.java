@@ -45,6 +45,7 @@ public class StudentRepository implements GenericRepository<Student> {
 
     @Override
     public void delete(Student student) {
-        entityManager.remove(student);
+        Student deletedStudent = entityManager.merge(student);
+        entityManager.remove(deletedStudent);
     }
 }

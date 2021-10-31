@@ -25,7 +25,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Aspect
 @Configuration
 public class GroupAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(GroupAspect.class);
 
     private Validator validator;
 
@@ -50,14 +50,14 @@ public class GroupAspect {
     void beforeCreateAdvice(JoinPoint joinPoint) {
         Group group = (Group) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a new group: {}.", group);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to create a new group: {}.", group);
         }
 
         try {
             if (group == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("A group can't be null when create.");
-                LOGGER.error("A group {} can't be null when create.", group, exception);
+                logger.error("A group {} can't be null when create.", group, exception);
                 throw exception;
             }
 
@@ -72,7 +72,7 @@ public class GroupAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When create the group is not valid: " + errorMessages, violations);
-                LOGGER.error("The group {} is not valid when create. There are errors: {}.", group, errorMessages,
+                logger.error("The group {} is not valid when create. There are errors: {}.", group, errorMessages,
                         exception);
                 throw exception;
             }
@@ -81,7 +81,7 @@ public class GroupAspect {
 
             if (groupId != 0) {
                 IllegalArgumentException exception = new IllegalArgumentException("A group id isn't 0 when create.");
-                LOGGER.error("A group {} has wrong id {} which is not equal zero when create.", group, groupId,
+                logger.error("A group {} has wrong id {} which is not equal zero when create.", group, groupId,
                         exception);
                 throw exception;
             }
@@ -96,14 +96,14 @@ public class GroupAspect {
     void beforeUpdateAdvice(JoinPoint joinPoint) {
         Group group = (Group) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a group: {}.", group);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to update a group: {}.", group);
         }
 
         try {
             if (group == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("An updated group is null.");
-                LOGGER.error("An updated group {} is null.", group, exception);
+                logger.error("An updated group {} is null.", group, exception);
                 throw exception;
             }
 
@@ -118,7 +118,7 @@ public class GroupAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When update the group is not valid:" + errorMessages, violations);
-                LOGGER.error("The group {} is not valid when update. There are errors: {}.", group, errorMessages,
+                logger.error("The group {} is not valid when update. There are errors: {}.", group, errorMessages,
                         exception);
                 throw exception;
             }
@@ -128,7 +128,7 @@ public class GroupAspect {
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A group id isn't positive for existing object.");
-                LOGGER.error("An updated group {} has wrong id {} which is not positive.", group, groupId, exception);
+                logger.error("An updated group {} has wrong id {} which is not positive.", group, groupId, exception);
                 throw exception;
             }
         } catch (IllegalArgumentException illegalArgumentException) {
@@ -142,8 +142,8 @@ public class GroupAspect {
     Object aroundGetGroupsFromFacultyAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int facultyId = (int) proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get groups from faculty by faculty id: {}.", facultyId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get groups from faculty by faculty id: {}.", facultyId);
         }
 
         try {
@@ -151,7 +151,7 @@ public class GroupAspect {
             if (facultyId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A faculty id isn't positive for existing object.");
-                LOGGER.error("A faculty id {} is not positive when get groups from a faculty by faculty id.", facultyId,
+                logger.error("A faculty id {} is not positive when get groups from a faculty by faculty id.", facultyId,
                         exception);
                 throw exception;
             }
@@ -159,10 +159,10 @@ public class GroupAspect {
             Object targetMethod = proceedingJoinPoint.proceed();
             if (targetMethod instanceof List<?>) {
                 if (((List<?>) targetMethod).isEmpty()) {
-                    LOGGER.warn("There are not any groups from faculty with id {}.", facultyId);
+                    logger.warn("There are not any groups from faculty with id {}.", facultyId);
                 } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("The result is: {}.", targetMethod);
                     }
                 }
             }
@@ -172,7 +172,7 @@ public class GroupAspect {
                     "There is an error with given number when getting groups from one faculty by faculty id.",
                     illegalArgumentException);
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when getGroupsFromFaculty by faculty id {}.", facultyId,
+            logger.error("There is some error in repositories layer when getGroupsFromFaculty by faculty id {}.", facultyId,
                     repositoryException);
             throw new ServiceException("There is some error in repositories layer when getGroupsFromFaculty.", repositoryException);
         }

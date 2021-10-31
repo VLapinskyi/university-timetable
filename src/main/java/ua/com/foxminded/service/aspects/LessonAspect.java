@@ -27,7 +27,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Aspect
 @Configuration
 public class LessonAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LessonAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(LessonAspect.class);
 
     private Validator validator;
 
@@ -64,14 +64,14 @@ public class LessonAspect {
     void beforeCreateAdvice(JoinPoint joinPoint) {
         Lesson lesson = (Lesson) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a new lesson: {}.", lesson);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to create a new lesson: {}.", lesson);
         }
 
         try {
             if (lesson == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("A lesson can't be null.");
-                LOGGER.error("A lesson {} can't be null when create.", lesson, exception);
+                logger.error("A lesson {} can't be null when create.", lesson, exception);
                 throw exception;
             }
 
@@ -86,7 +86,7 @@ public class LessonAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When create the lesson is not valid: " + errorMessages, violations);
-                LOGGER.error("The lesson {} is not valid when create. There are errors: {}.", lesson, errorMessages,
+                logger.error("The lesson {} is not valid when create. There are errors: {}.", lesson, errorMessages,
                         exception);
                 throw exception;
             }
@@ -95,7 +95,7 @@ public class LessonAspect {
 
             if (lessonId != 0) {
                 IllegalArgumentException exception = new IllegalArgumentException("A lesson id isn't 0 when create.");
-                LOGGER.error("A lesson {} has wrong id {} which is not equal zero when create.", lesson, lessonId,
+                logger.error("A lesson {} has wrong id {} which is not equal zero when create.", lesson, lessonId,
                         exception);
                 throw exception;
             }
@@ -110,14 +110,14 @@ public class LessonAspect {
     void beforeUpdateAdvice(JoinPoint joinPoint) {
         Lesson lesson = (Lesson) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a lesson: {}.", lesson);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to update a lesson: {}.", lesson);
         }
 
         try {
             if (lesson == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("An updated lesson is null.");
-                LOGGER.error("An updated lesson {} is null.", lesson, exception);
+                logger.error("An updated lesson {} is null.", lesson, exception);
                 throw exception;
             }
 
@@ -132,7 +132,7 @@ public class LessonAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When update the lesson is not valid:" + errorMessages, violations);
-                LOGGER.error("The lesson {} is not valid when update. There are errors: {}.", lesson, errorMessages,
+                logger.error("The lesson {} is not valid when update. There are errors: {}.", lesson, errorMessages,
                         exception);
                 throw exception;
             }
@@ -142,7 +142,7 @@ public class LessonAspect {
             if (lessonId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A lesson id isn't positive for existing object.");
-                LOGGER.error("An updated lesson {} has wrong id {} which is not positive.", lesson, lessonId,
+                logger.error("An updated lesson {} has wrong id {} which is not positive.", lesson, lessonId,
                         exception);
                 throw exception;
             }
@@ -157,8 +157,8 @@ public class LessonAspect {
     Object aroundGetGroupWeekLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get week lessons for a group with id: {}.", groupId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get week lessons for a group with id: {}.", groupId);
         }
 
         try {
@@ -166,7 +166,7 @@ public class LessonAspect {
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A group id isn't positive for existing object.");
-                LOGGER.error("A group id {} is not positive when get week lessons for a group.", groupId, exception);
+                logger.error("A group id {} is not positive when get week lessons for a group.", groupId, exception);
                 throw exception;
             }
 
@@ -185,10 +185,10 @@ public class LessonAspect {
                 }
 
                 if (isEmpty) {
-                    LOGGER.warn("There are not any week lessons for a group with id {}.", groupId);
+                    logger.warn("There are not any week lessons for a group with id {}.", groupId);
                 } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("When get week lessons for a group with id {} the result is: {}.", groupId,
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("When get week lessons for a group with id {} the result is: {}.", groupId,
                                 targetMethod);
                     }
                 }
@@ -198,7 +198,7 @@ public class LessonAspect {
             throw new ServiceException("There is an error with given number when get week lessons for a group.",
                     illegalArgumentException);
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when get week lessons for a group with id {}.", groupId,
+            logger.error("There is some error in repositories layer when get week lessons for a group with id {}.", groupId,
                     repositoryException);
             throw new ServiceException("There is some error in repositories layer when get week lessons for a group.",
                     repositoryException);
@@ -210,8 +210,8 @@ public class LessonAspect {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
         YearMonth month = (YearMonth) proceedingJoinPoint.getArgs()[1];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get {} month of {} year lessons for a group with id: {}.", month.getMonth(),
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get {} month of {} year lessons for a group with id: {}.", month.getMonth(),
                     month.getYear(), groupId);
         }
 
@@ -220,7 +220,7 @@ public class LessonAspect {
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A group id isn't positive for existing object.");
-                LOGGER.error("A group id {} is not positive when get {} month of {} year lessons for a group.", groupId,
+                logger.error("A group id {} is not positive when get {} month of {} year lessons for a group.", groupId,
                         month.getMonth(), month.getYear(), exception);
                 throw exception;
             }
@@ -240,11 +240,11 @@ public class LessonAspect {
                 }
 
                 if (isEmpty) {
-                    LOGGER.warn("There are not any {} month of {} year lessons for a group with id {}.",
+                    logger.warn("There are not any {} month of {} year lessons for a group with id {}.",
                             month.getMonth(), month.getYear(), groupId);
                 } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("When get {} month of {} year lessons for a group with id {} the result is: {}.",
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("When get {} month of {} year lessons for a group with id {} the result is: {}.",
                                 month.getMonth(), month.getYear(), groupId, targetMethod);
                     }
                 }
@@ -254,7 +254,7 @@ public class LessonAspect {
             throw new ServiceException("There is an error with given number when get month lessons for a group.",
                     illegalArgumentException);
         } catch (RepositoryException repositoryException) {
-            LOGGER.error(
+            logger.error(
                     "There is some error in repositories layer when get {} month of {} year lessons for a group with id {}.",
                     month.getMonth(), month.getYear(), groupId, repositoryException);
             throw new ServiceException("There is some error in repositories layer when get month lessons for a group.",
@@ -266,8 +266,8 @@ public class LessonAspect {
     Object aroundGetLecturerWeekLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int lecturerId = (int) proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get week lessons for a lecturer with id: {}.", lecturerId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get week lessons for a lecturer with id: {}.", lecturerId);
         }
 
         try {
@@ -275,7 +275,7 @@ public class LessonAspect {
             if (lecturerId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A lecturer id isn't positive for existing object.");
-                LOGGER.error("A lecturer id {} is not positive when get week lessons for a lecturer.", lecturerId,
+                logger.error("A lecturer id {} is not positive when get week lessons for a lecturer.", lecturerId,
                         exception);
                 throw exception;
             }
@@ -294,10 +294,10 @@ public class LessonAspect {
                 }
 
                 if (isEmpty) {
-                    LOGGER.warn("There are not any week lessons for a lecturer with id {}.", lecturerId);
+                    logger.warn("There are not any week lessons for a lecturer with id {}.", lecturerId);
                 } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("When get week lessons for a lecturer with id {} the result is: {}.", lecturerId,
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("When get week lessons for a lecturer with id {} the result is: {}.", lecturerId,
                                 targetMethod);
                     }
                 }
@@ -307,7 +307,7 @@ public class LessonAspect {
             throw new ServiceException("There is an error with given number when get week lessons for a lecturer.",
                     illegalArgumentException);
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when get week lessons for a lecturer with id {}.",
+            logger.error("There is some error in repositories layer when get week lessons for a lecturer with id {}.",
                     lecturerId, repositoryException);
             throw new ServiceException("There is some error in repositories layer when get week lessons for a group.",
                     repositoryException);
@@ -319,8 +319,8 @@ public class LessonAspect {
         int lecturerId = (int) proceedingJoinPoint.getArgs()[0];
         YearMonth month = (YearMonth) proceedingJoinPoint.getArgs()[1];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get {} month of {} year lessons for a lecturer with id: {}.", month.getMonth(),
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get {} month of {} year lessons for a lecturer with id: {}.", month.getMonth(),
                     month.getYear(), lecturerId);
         }
 
@@ -329,7 +329,7 @@ public class LessonAspect {
             if (lecturerId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A lecturer id isn't positive for existing object.");
-                LOGGER.error("A lecturer id {} is not positive when get {} month of {} year lessons for a lecturer.",
+                logger.error("A lecturer id {} is not positive when get {} month of {} year lessons for a lecturer.",
                         lecturerId, month.getMonth(), month.getYear(), exception);
                 throw exception;
             }
@@ -349,11 +349,11 @@ public class LessonAspect {
                 }
 
                 if (isEmpty) {
-                    LOGGER.warn("There are not any {} month of {} year lessons for a lecturer with id {}.",
+                    logger.warn("There are not any {} month of {} year lessons for a lecturer with id {}.",
                             month.getMonth(), month.getYear(), lecturerId);
                 } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(
                                 "When get {} month of {} year lessons for a lecturer with id {} the result is: {}.",
                                 month.getMonth(), month.getYear(), lecturerId, targetMethod);
                     }
@@ -364,7 +364,7 @@ public class LessonAspect {
             throw new ServiceException("There is an error with given number when getting month lessons for a lecturer.",
                     illegalArgumentException);
         } catch (RepositoryException repositoryException) {
-            LOGGER.error(
+            logger.error(
                     "There is some error in repositories layer when get {} month of {} year lessons for a lecturer with id {}.",
                     month.getMonth(), month.getYear(), lecturerId, repositoryException);
             throw new ServiceException("There is some error in repositories layer when get month lessons for a group.",

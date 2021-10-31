@@ -14,47 +14,71 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.repositories.LecturerRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.service.aspects.GeneralServiceAspect;
+import ua.com.foxminded.service.aspects.LecturerAspect;
+import ua.com.foxminded.service.aspects.PersonAspect;
 import ua.com.foxminded.service.exceptions.ServiceException;
-import ua.com.foxminded.settings.SpringConfiguration;
-import ua.com.foxminded.settings.SpringTestLogConfiguration;
-import ua.com.foxminded.settings.TestAppender;
+import ua.com.foxminded.settings.SpringTestConfiguration;
 
-@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestLogConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
+@ContextConfiguration(classes = SpringTestConfiguration.class)
 class LecturerServiceTest {
-    private TestAppender testAppender = new TestAppender();
-
+    private ListAppender<ILoggingEvent> testAppender;
+    
+    @Autowired
+    private GeneralServiceAspect generalServiceAspect;
+    
+    @Autowired
+    private LecturerAspect lecturerAspect;
+    
+    @Autowired
+    private PersonAspect personAspect;
+    
     @Autowired
     private LecturerService lecturerService;
 
-    @Mock
+    @MockBean
     private LecturerRepository lecturerRepository;
 
     @BeforeEach
     void init() {
-        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(lecturerService, "lecturerRepository", lecturerRepository);
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger generalLogger = (Logger) ReflectionTestUtils.getField(generalServiceAspect, "logger");
+        Logger lecturerLogger = (Logger) ReflectionTestUtils.getField(lecturerAspect, "logger");
+        Logger personLogger = (Logger) ReflectionTestUtils.getField(personAspect, "logger");
+        
+        testAppender = new ListAppender<>();
+        testAppender.setContext(loggerContext);
+        testAppender.start();
+        
+        generalLogger.addAppender(testAppender);
+        lecturerLogger.addAppender(testAppender);
+        personLogger.addAppender(testAppender);
     }
 
     @AfterEach
     void tearDown() {
-        testAppender.cleanEventList();
+        testAppender.stop();
     }
 
     @Test
@@ -352,7 +376,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -388,7 +412,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -424,7 +448,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -460,7 +484,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -490,7 +514,7 @@ class LecturerServiceTest {
 
         lecturerService.create(lecturer);
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -513,7 +537,7 @@ class LecturerServiceTest {
 
         lecturerService.getAll();
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -542,7 +566,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -586,7 +610,7 @@ class LecturerServiceTest {
 
         lecturerService.getAll();
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -615,7 +639,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -647,7 +671,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -678,7 +702,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -713,7 +737,7 @@ class LecturerServiceTest {
 
         lecturerService.getById(testId);
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -742,7 +766,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -776,7 +800,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -813,7 +837,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -850,7 +874,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -881,7 +905,7 @@ class LecturerServiceTest {
 
         lecturerService.update(lecturer);
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -910,7 +934,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -941,7 +965,7 @@ class LecturerServiceTest {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -966,7 +990,7 @@ class LecturerServiceTest {
 
         lecturerService.deleteById(testId);
 
-        List<ILoggingEvent> actualLogs = testAppender.getEvents();
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {

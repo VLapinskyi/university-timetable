@@ -24,13 +24,13 @@ INSERT INTO people (role, first_name, last_name, gender, phone_number, email)
 INSERT INTO people (role, first_name, last_name, gender, phone_number, email)
     VALUES ('LECTURER', 'Ihor', 'Zakharchuk', 'MALE', '+380125263741', 'i.zakharchuk@gmail.com');
 INSERT INTO people (role, first_name, last_name, gender, phone_number, email)
-    VALUES ('LECTURER', 'Vasyl', 'Dudchenko', 'MALE', '+3804578963', 'vdudchenko@test.com');
+    VALUES ('LECTURER', 'Vasyl', 'Dudchenko', 'MALE', '+380457895263', 'vdudchenko@test.com');
     
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Ukranian', 1, 1, '101', 'SUNDAY', 1);
+    VALUES ('Ukranian', 4, 1, '101', 'SUNDAY', 1);
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Music', 2, 3, '102', 'TUESDAY', 1);
+    VALUES ('Music', 5, 3, '102', 'TUESDAY', 1);
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Physical Exercises', 3, 1, '103', 'WEDNESDAY', 3);
+    VALUES ('Physical Exercises', 6, 1, '103', 'WEDNESDAY', 3);
 INSERT INTO lessons (name, lecturer_id, group_id, audience, week_day, lesson_time_id)
-    VALUES ('Physical Exercises', 3, 2, '103', 'WEDNESDAY', 2);
+    VALUES ('Physical Exercises', 6, 2, '103', 'WEDNESDAY', 2);

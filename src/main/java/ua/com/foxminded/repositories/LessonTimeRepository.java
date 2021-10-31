@@ -43,6 +43,7 @@ public class LessonTimeRepository implements GenericRepository<LessonTime> {
 
     @Override
     public void delete(LessonTime lessonTime) {
-        entityManager.remove(lessonTime);
+        LessonTime deletedLessonTime = entityManager.merge(lessonTime);
+        entityManager.remove(deletedLessonTime);
     }
 }

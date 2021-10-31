@@ -23,13 +23,11 @@ import javax.persistence.QueryTimeoutException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -42,7 +40,6 @@ import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(LecturersController.class)
 @Import({AopAutoConfiguration.class, GeneralControllerAspect.class})
 class LecturersControllerTest {

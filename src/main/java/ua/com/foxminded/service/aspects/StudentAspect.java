@@ -27,7 +27,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(20)
 public class StudentAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(StudentAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(StudentAspect.class);
 
     private Validator validator;
 
@@ -65,12 +65,20 @@ public class StudentAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When create the student is not valid: " + errorMessages, violations);
-                LOGGER.error("The student {} is not valid when create. There are errors: {}.", student, errorMessages,
+                logger.error("The student {} is not valid when create. There are errors: {}.", student, errorMessages,
                         exception);
                 throw exception;
             }
+            
+            if (student.getGroup() == null) {
+                NullPointerException nullPointerException = new NullPointerException("Student group can't be null.");
+                logger.error("The student {} can't have group which is null", nullPointerException);
+                throw nullPointerException;
+            }
         } catch (ConstraintViolationException constraintViolationException) {
             throw new ServiceException("A given student isn't valid when create.", constraintViolationException);
+        } catch (NullPointerException nullPointerException) {
+            throw new ServiceException("A given student is wrong.", nullPointerException);
         }
     }
 
@@ -90,7 +98,7 @@ public class StudentAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When update the student is not valid:" + errorMessages, violations);
-                LOGGER.error("The student {} is not valid when update. There are errors: {}.", student, errorMessages,
+                logger.error("The student {} is not valid when update. There are errors: {}.", student, errorMessages,
                         exception);
                 throw exception;
             }
@@ -102,15 +110,15 @@ public class StudentAspect {
     @Around("getStudentsFromGroupMethod()")
     Object aroundGetStudentsFromGroupAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int groupId = (int) proceedingJoinPoint.getArgs()[0];
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get students from a group by id: {}.", groupId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get students from a group by id: {}.", groupId);
         }
 
         try {
             if (groupId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A given groupId is less than 1 when getStudentsFromGroup");
-                LOGGER.error("A given groupId {} is less than 1 when getStudentsFromGroup.", groupId, exception);
+                logger.error("A given groupId {} is less than 1 when getStudentsFromGroup.", groupId, exception);
                 throw new ServiceException("A given groupId is less than 1 when getStudentsFromGroup.", exception);
             }
 
@@ -118,18 +126,18 @@ public class StudentAspect {
             if (targetMethod instanceof List<?>) {
 
                 if (((List<?>) targetMethod).isEmpty()) {
-                    LOGGER.warn("There are not any students in a group with id {}.", groupId);
+                    logger.warn("There are not any students in a group with id {}.", groupId);
                 } else {
 
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Students from group with id {} are: {}.", groupId, targetMethod);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Students from group with id {} are: {}.", groupId, targetMethod);
                     }
                 }
             }
 
             return targetMethod;
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when get students from a group by groupId {}.", groupId,
+            logger.error("There is some error in repositories layer when get students from a group by groupId {}.", groupId,
                     repositoryException);
             throw new ServiceException("There is some error in repositories layer when get students from a group.",
                     repositoryException);

@@ -16,7 +16,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(10)
 public class PersonAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PersonAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(PersonAspect.class);
 
     @Pointcut("execution (void ua.com.foxminded.service.LecturerService.create(ua.com.foxminded.domain.Lecturer))")
     private void createLecturerMethod() {
@@ -46,15 +46,15 @@ public class PersonAspect {
     void beforeCreateAdvice(JoinPoint joinPoint) {
         Person person = (Person) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a new person: {}.", person);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to create a new person: {}.", person);
         }
 
         try {
             if (person == null) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A person can't be null when create.");
-                LOGGER.error("A person {} can't be null when create.", person, exception);
+                logger.error("A person {} can't be null when create.", person, exception);
                 throw exception;
             }
 
@@ -62,7 +62,7 @@ public class PersonAspect {
 
             if (personId != 0) {
                 IllegalArgumentException exception = new IllegalArgumentException("A person id isn't 0 when create.");
-                LOGGER.error("A person {} has wrong id {} which is not equal zero when create.", person, personId,
+                logger.error("A person {} has wrong id {} which is not equal zero when create.", person, personId,
                         exception);
                 throw exception;
             }
@@ -74,14 +74,14 @@ public class PersonAspect {
     @Before("updateStudentAndLecturerMethods()")
     void beforeUpdateStudentAndLecturerAdvice(JoinPoint joinPoint) {
         Person person = (Person) joinPoint.getArgs()[0];
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a person: {}.", person);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to update a person: {}.", person);
         }
 
         try {
             if (person == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("An updated person is null.");
-                LOGGER.error("An updated person {} is null.", person, exception);
+                logger.error("An updated person {} is null.", person, exception);
                 throw exception;
             }
 
@@ -90,7 +90,7 @@ public class PersonAspect {
             if (personId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A person id isn't positive for existing object.");
-                LOGGER.error("An updated person {} has wrong id {} which is not positive.", person, personId,
+                logger.error("An updated person {} has wrong id {} which is not positive.", person, personId,
                         exception);
                 throw exception;
             }

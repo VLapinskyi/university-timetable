@@ -163,7 +163,6 @@ class GroupRepositoryTest {
     @Test
     void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
         Group group = new Group();
-        group.setId(1);
         group.setName("Test");
         doThrow(PersistenceException.class).when(groupRepository).create(group);
         assertThrows(RepositoryException.class, () -> groupRepository.create(group));

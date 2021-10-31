@@ -23,7 +23,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(20)
 public class LecturerAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LecturerAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(LecturerAspect.class);
 
     private Validator validator;
 
@@ -57,7 +57,7 @@ public class LecturerAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When create the lecturer is not valid: " + errorMessages, violations);
-                LOGGER.error("The lecturer {} is not valid when create. There are errors: {}.", lecturer, errorMessages,
+                logger.error("The lecturer {} is not valid when create. There are errors: {}.", lecturer, errorMessages,
                         exception);
                 throw exception;
             }
@@ -82,7 +82,7 @@ public class LecturerAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When update the lecturer is not valid:" + errorMessages, violations);
-                LOGGER.error("The lecturer {} is not valid when update. There are errors: {}.", lecturer, errorMessages,
+                logger.error("The lecturer {} is not valid when update. There are errors: {}.", lecturer, errorMessages,
                         exception);
                 throw exception;
             }
