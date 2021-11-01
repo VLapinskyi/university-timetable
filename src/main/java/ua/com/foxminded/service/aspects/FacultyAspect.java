@@ -12,16 +12,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
 @Aspect
 @Configuration
 public class FacultyAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FacultyAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(FacultyAspect.class);
 
     private Validator validator;
 
@@ -42,15 +42,15 @@ public class FacultyAspect {
     void beforeCreateAdvice(JoinPoint joinPoint) {
         Faculty faculty = (Faculty) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a new faculty: {}.", faculty);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to create a new faculty: {}.", faculty);
         }
 
         try {
             if (faculty == null) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A faculty can't be null when create.");
-                LOGGER.error("A faculty {} can't be null when create.", faculty, exception);
+                logger.error("A faculty {} can't be null when create.", faculty, exception);
                 throw exception;
             }
 
@@ -65,7 +65,7 @@ public class FacultyAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When create the faculty is not valid: " + errorMessages, violations);
-                LOGGER.error("The faculty {} is not valid when create. There are errors: {}.", faculty, errorMessages,
+                logger.error("The faculty {} is not valid when create. There are errors: {}.", faculty, errorMessages,
                         exception);
                 throw exception;
             }
@@ -74,7 +74,7 @@ public class FacultyAspect {
 
             if (facultyId != 0) {
                 IllegalArgumentException exception = new IllegalArgumentException("A faculty id isn't 0 when create.");
-                LOGGER.error("A faculty {} has wrong id {} which is not equal zero when create.", faculty, facultyId,
+                logger.error("A faculty {} has wrong id {} which is not equal zero when create.", faculty, facultyId,
                         exception);
                 throw exception;
             }
@@ -89,14 +89,14 @@ public class FacultyAspect {
     void beforeUpdateAdvice(JoinPoint joinPoint) {
         Faculty faculty = (Faculty) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a faculty: {}.", faculty);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to update a faculty: {}.", faculty);
         }
 
         try {
             if (faculty == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("An updated faculty is null.");
-                LOGGER.error("An updated faculty {} is null.", faculty, exception);
+                logger.error("An updated faculty {} is null.", faculty, exception);
                 throw exception;
             }
 
@@ -111,7 +111,7 @@ public class FacultyAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When update the faculty is not valid: " + errorMessages, violations);
-                LOGGER.error("The faculty {} is not valid when update. There are errors: {}.", faculty, errorMessages,
+                logger.error("The faculty {} is not valid when update. There are errors: {}.", faculty, errorMessages,
                         exception);
                 throw exception;
             }
@@ -121,7 +121,7 @@ public class FacultyAspect {
             if (facultyId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A faculty id isn't positive for existing object.");
-                LOGGER.error("An updated faculty {} has wrong id {} which is not positive.", faculty, facultyId,
+                logger.error("An updated faculty {} has wrong id {} which is not positive.", faculty, facultyId,
                         exception);
                 throw exception;
             }

@@ -19,7 +19,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(30)
 public class GeneralServiceAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralServiceAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(GeneralServiceAspect.class);
 
     @Pointcut("execution (void ua.com.foxminded.service.*.create(*))")
     private void createMethods() {
@@ -48,19 +48,19 @@ public class GeneralServiceAspect {
         try {
             proceedingJoinPoint.proceed();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object {} was created.", object);
+            if (logger.isDebugEnabled()) {
+                logger.debug("The object {} was created.", object);
             }
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when create an object {}.", object, repositoryException);
+            logger.error("There is some error in repositories layer when create an object {}.", object, repositoryException);
             throw new ServiceException("There is some error in repositories layer when create object.", repositoryException);
         }
     }
 
     @Around("getAllMethods()")
     Object aroundGetAllAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get all objects.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get all objects.");
         }
 
         try {
@@ -68,12 +68,12 @@ public class GeneralServiceAspect {
             if (targetMethod instanceof List<?>) {
 
                 if (((List<?>) targetMethod).isEmpty()) {
-                    LOGGER.warn("There are not any objects in the result when getAll.");
+                    logger.warn("There are not any objects in the result when getAll.");
 
                 } else {
 
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("The result is: {}.", targetMethod);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("The result is: {}.", targetMethod);
                     }
                 }
             }
@@ -81,7 +81,7 @@ public class GeneralServiceAspect {
             return targetMethod;
 
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when getAll.", repositoryException);
+            logger.error("There is some error in repositories layer when getAll.", repositoryException);
             throw new ServiceException("There is some error in repositories layer when getAll.", repositoryException);
         }
     }
@@ -90,22 +90,22 @@ public class GeneralServiceAspect {
     Object aroundGetByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to get an object by id: {}.", id);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to get an object by id: {}.", id);
         }
 
         try {
             if (id < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A given id is less than 1 when getById.");
-                LOGGER.error("A given id {} is less than 1 when getById.", id, exception);
+                logger.error("A given id {} is less than 1 when getById.", id, exception);
                 throw exception;
             }
 
             Object targetMethod = proceedingJoinPoint.proceed();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The result object with id {} is {}.", id, targetMethod);
+            if (logger.isDebugEnabled()) {
+                logger.debug("The result object with id {} is {}.", id, targetMethod);
             }
 
             return targetMethod;
@@ -113,10 +113,10 @@ public class GeneralServiceAspect {
             if (repositoryException.getException() instanceof NullPointerException) {
                 NotFoundEntityException notFoundEntityException = new NotFoundEntityException(repositoryException,
                         "The entity was not found wheh get by id.");
-                LOGGER.error("The entity is not found when get object by id {}.", id, notFoundEntityException);
+                logger.error("The entity is not found when get object by id {}.", id, notFoundEntityException);
                 throw new ServiceException("The entity is not found when get object by id.", notFoundEntityException);
             } else {
-                LOGGER.error("There is some error in repositories layer when get object by id {}.", id, repositoryException);
+                logger.error("There is some error in repositories layer when get object by id {}.", id, repositoryException);
                 throw new ServiceException("There is some error in repositories layer when get object by id.", repositoryException);
             }
         } catch (IllegalArgumentException illegalArgumentException) {
@@ -130,11 +130,11 @@ public class GeneralServiceAspect {
         try {
             proceedingJoinPoint.proceed();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("The object {} was updated.", updatedObject);
+            if (logger.isDebugEnabled()) {
+                logger.debug("The object {} was updated.", updatedObject);
             }
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when update an object {}.", updatedObject, repositoryException);
+            logger.error("There is some error in repositories layer when update an object {}.", updatedObject, repositoryException);
             throw new ServiceException("Can't update an object.", repositoryException);
         }
     }
@@ -143,25 +143,25 @@ public class GeneralServiceAspect {
     void aroundDeleteByIdAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to delete an object by id: {}.", id);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to delete an object by id: {}.", id);
         }
 
         try {
             if (id < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A given id is less than 1 when deleteById.");
-                LOGGER.error("A given id {} is less than 1 when deleteById.", id, exception);
+                logger.error("A given id {} is less than 1 when deleteById.", id, exception);
                 throw exception;
             }
 
             proceedingJoinPoint.proceed();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("An object was deleted by id {}.", id);
+            if (logger.isDebugEnabled()) {
+                logger.debug("An object was deleted by id {}.", id);
             }
         } catch (RepositoryException repositoryException) {
-            LOGGER.error("There is some error in repositories layer when delete an object by id {}.", id, repositoryException);
+            logger.error("There is some error in repositories layer when delete an object by id {}.", id, repositoryException);
             throw new ServiceException("There is some error in repositories layer when delete an object by id.", repositoryException);
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new ServiceException("A given id is less than 1 when deleteById.", illegalArgumentException);

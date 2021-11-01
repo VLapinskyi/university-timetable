@@ -2,7 +2,8 @@ package ua.com.foxminded.repositories;
 
 import java.util.List;
 
-import org.hibernate.SessionFactory;
+import javax.persistence.EntityManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,35 +15,36 @@ import ua.com.foxminded.domain.Role;
 @Transactional
 public class LecturerRepository implements GenericRepository<Lecturer> {
     
-    private SessionFactory sessionFactory;
+    private EntityManager entityManager;
 
     @Autowired
-    public LecturerRepository(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public LecturerRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
     public void create(Lecturer lecturer) {
-        sessionFactory.getCurrentSession().persist(lecturer);
+        entityManager.persist(lecturer);
     }
 
     @Override
     public List<Lecturer> findAll() {
-        return sessionFactory.getCurrentSession().createQuery("from Lecturer where role = '" + Role.LECTURER + "'", Lecturer.class).getResultList();
+        return entityManager.createQuery("FROM Lecturer where role = '" + Role.LECTURER + "'", Lecturer.class).getResultList();
     }
 
     @Override
     public Lecturer findById(int id) {
-        return sessionFactory.getCurrentSession().get(Lecturer.class, id);
+        return entityManager.find(Lecturer.class, id);
     }
 
     @Override
     public void update(Lecturer lecturer) {
-        sessionFactory.getCurrentSession().update(lecturer);
+        entityManager.merge(lecturer);
     }
 
     @Override
     public void delete(Lecturer lecturer) {
-        sessionFactory.getCurrentSession().delete(lecturer);
+        Lecturer deletedLecturer = entityManager.merge(lecturer);
+        entityManager.remove(deletedLecturer);
     }
 }

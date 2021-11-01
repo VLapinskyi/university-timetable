@@ -2,7 +2,8 @@ package ua.com.foxminded.repositories;
 
 import java.util.List;
 
-import org.hibernate.SessionFactory;
+import javax.persistence.EntityManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,36 +13,37 @@ import ua.com.foxminded.domain.LessonTime;
 @Repository
 @Transactional
 public class LessonTimeRepository implements GenericRepository<LessonTime> {
-    private SessionFactory sessionFactory;
+    private EntityManager entityManager;
 
     @Autowired
-    public LessonTimeRepository(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public LessonTimeRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
     public void create(LessonTime lessonTime) {
-        sessionFactory.getCurrentSession().persist(lessonTime);
+        entityManager.persist(lessonTime);
     }
 
     @Override
     public List<LessonTime> findAll() {
-        return sessionFactory.getCurrentSession().createQuery("from LessonTime", LessonTime.class).getResultList();
+        return entityManager.createQuery("from LessonTime", LessonTime.class).getResultList();
     }
 
     @Override
     public LessonTime findById(int id) {
-        return sessionFactory.getCurrentSession().get(LessonTime.class, id);
+        return entityManager.find(LessonTime.class, id);
 
     }
 
     @Override
     public void update(LessonTime lessonTime) {
-        sessionFactory.getCurrentSession().update(lessonTime);
+        entityManager.merge(lessonTime);
     }
 
     @Override
     public void delete(LessonTime lessonTime) {
-        sessionFactory.getCurrentSession().delete(lessonTime);
+        LessonTime deletedLessonTime = entityManager.merge(lessonTime);
+        entityManager.remove(deletedLessonTime);
     }
 }

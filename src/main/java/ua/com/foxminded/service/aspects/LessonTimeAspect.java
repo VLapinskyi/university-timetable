@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
@@ -23,7 +23,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 @Configuration
 @Order(10)
 public class LessonTimeAspect {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LessonTimeAspect.class);
+    private final Logger logger = LoggerFactory.getLogger(LessonTimeAspect.class);
 
     private Validator validator;
 
@@ -44,15 +44,15 @@ public class LessonTimeAspect {
     void beforeCreateAdvice(JoinPoint joinPoint) {
         LessonTime lessonTime = (LessonTime) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to create a lessonTime: {}.", lessonTime);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to create a lessonTime: {}.", lessonTime);
         }
 
         try {
             if (lessonTime == null) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A lessonTime can't be null when create.");
-                LOGGER.error("A lessonTime {} can't be null when create.", lessonTime, exception);
+                logger.error("A lessonTime {} can't be null when create.", lessonTime, exception);
                 throw exception;
             }
 
@@ -67,7 +67,7 @@ public class LessonTimeAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When create a lessonTime is not valid: " + errorMessages, violations);
-                LOGGER.error("The lessonTime {} is not valid when create. There are errors: {}.", lessonTime,
+                logger.error("The lessonTime {} is not valid when create. There are errors: {}.", lessonTime,
                         errorMessages, exception);
                 throw exception;
             }
@@ -77,7 +77,7 @@ public class LessonTimeAspect {
             if (lessonTimeId != 0) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A LessonTime id isn't 0 when create.");
-                LOGGER.error("The lessonTime {} has wrong id {} which is not zero when create.", lessonTime,
+                logger.error("The lessonTime {} has wrong id {} which is not zero when create.", lessonTime,
                         lessonTimeId, exception);
                 throw exception;
             }
@@ -92,14 +92,14 @@ public class LessonTimeAspect {
     void beforeUpdateAdvice(JoinPoint joinPoint) {
         LessonTime lessonTime = (LessonTime) joinPoint.getArgs()[0];
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to update a lessonTime: {}.", lessonTime);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to update a lessonTime: {}.", lessonTime);
         }
 
         try {
             if (lessonTime == null) {
                 IllegalArgumentException exception = new IllegalArgumentException("An updated lessonTime is null.");
-                LOGGER.error("An updated lessonTime {} is null.", lessonTime, exception);
+                logger.error("An updated lessonTime {} is null.", lessonTime, exception);
                 throw exception;
             }
 
@@ -114,7 +114,7 @@ public class LessonTimeAspect {
 
                 ConstraintViolationException exception = new ConstraintViolationException(
                         "When update the lessonTime is not valid: " + errorMessages, violations);
-                LOGGER.error("The lessonTime {} is not valid when update. There are errors: {}.", lessonTime,
+                logger.error("The lessonTime {} is not valid when update. There are errors: {}.", lessonTime,
                         errorMessages, exception);
                 throw exception;
             }
@@ -124,7 +124,7 @@ public class LessonTimeAspect {
             if (lessonTimeId < 1) {
                 IllegalArgumentException exception = new IllegalArgumentException(
                         "A lessonTime id isn't positive for existing object.");
-                LOGGER.error("An updated lessonTime {} has wrong id {} which is not positive.", lessonTime,
+                logger.error("An updated lessonTime {} has wrong id {} which is not positive.", lessonTime,
                         lessonTimeId, exception);
                 throw exception;
             }

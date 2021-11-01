@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.validation.ConstraintViolationException;
+import javax.validation.ConstraintViolationException;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
@@ -158,9 +158,9 @@ public class GeneralControllerAspect {
     @Around("deleteObjectMethods()")
     public String aroundDeleteObjectAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         int id = (int) proceedingJoinPoint.getArgs()[0];
-
+        
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Try to delete object with id {}.", id);
+            LOGGER.debug("Try to delete object with id {}.", id);            
         }
 
         try {

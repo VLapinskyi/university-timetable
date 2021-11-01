@@ -14,10 +14,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.PositiveOrZero;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "groups")
@@ -34,13 +34,13 @@ public class Group {
     @Pattern(regexp = "\\S{2,}.*", message = "Group name must have at least two symbols and start with non-white space")
     private String name;
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne (cascade = CascadeType.ALL)
     @JoinColumn(name = "faculty_id")
     @NotNull(message = "Group faculty can't be null")
     @Valid
     private Faculty faculty;
     
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH},
+    @OneToMany(cascade = CascadeType.ALL,
             mappedBy = "group")
     private List<Student> students;
     

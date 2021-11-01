@@ -6,36 +6,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import ua.com.foxminded.settings.SpringConfiguration;
-import ua.com.foxminded.settings.SpringTestConfiguration;
-
-@ContextConfiguration(classes = { SpringConfiguration.class, SpringTestConfiguration.class})
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
+@WebMvcTest(IndexController.class)
 class IndexControllerTest {
-    @Autowired
-    private WebApplicationContext webApplicationContext;
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-    }
-
     @Test
-    void shoulёёdReturnIndexViewWithCorrectModel() throws Exception {
+    void shouldReturnIndexViewWithCorrectModel() throws Exception {
         mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(view().name("index"))
                 .andExpect(model().attribute("pageTitle", equalTo("University")));
     }

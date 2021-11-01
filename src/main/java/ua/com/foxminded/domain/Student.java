@@ -9,8 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+import javax.validation.Valid;
 
 @Entity
 @Table(name = "people")
@@ -20,9 +19,8 @@ public class Student extends Person {
     @Column(name = "role")
     private final Role role = Role.STUDENT;
     
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "student_group_id")
-    @NotNull(message = "Student must be in some group")
     @Valid
     private Group group;
     

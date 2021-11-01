@@ -2,45 +2,48 @@ package ua.com.foxminded.repositories;
 
 import java.util.List;
 
-import org.hibernate.SessionFactory;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import ua.com.foxminded.domain.Faculty;
 
 @Repository
 @Transactional
 public class FacultyRepository implements GenericRepository<Faculty> {
-    private SessionFactory sessionFactory;
-
+   
+   private EntityManager entityManager;
+    
     @Autowired
-    public FacultyRepository(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public FacultyRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
     public void create(Faculty faculty) {
-        sessionFactory.getCurrentSession().persist(faculty);
+        entityManager.persist(faculty);
     }
 
     @Override
     public List<Faculty> findAll() {
-        return sessionFactory.getCurrentSession().createQuery("FROM Faculty", Faculty.class).getResultList();
+        return entityManager.createQuery("FROM Faculty", Faculty.class).getResultList();
     }
 
     @Override
     public Faculty findById(int id) {
-        return sessionFactory.getCurrentSession().get(Faculty.class, id);
+        return entityManager.find(Faculty.class, id);
     }
 
     @Override
     public void update(Faculty faculty) {
-        sessionFactory.getCurrentSession().update(faculty);
+        entityManager.merge(faculty);;
     }
 
     @Override
     public void delete(Faculty faculty) {
-        sessionFactory.getCurrentSession().delete(faculty);
+        Faculty deletedFaculty = entityManager.merge(faculty);
+        entityManager.remove(deletedFaculty);
     }
 }

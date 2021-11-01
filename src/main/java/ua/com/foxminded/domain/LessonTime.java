@@ -9,8 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import ua.com.foxminded.domain.validation.CheckLessonTime;
 
 @CheckLessonTime

@@ -12,9 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "faculties")
@@ -31,7 +31,7 @@ public class Faculty {
     @Pattern(regexp = "\\S{2,}.*", message = "Faculty name must have at least two symbols and start with non-white space")
     private String name;
     
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH},
+    @OneToMany(cascade = CascadeType.ALL,
             mappedBy = "faculty")
     private List<Group> groups;
 

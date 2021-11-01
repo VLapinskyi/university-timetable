@@ -2,7 +2,8 @@ package ua.com.foxminded.repositories;
 
 import java.util.List;
 
-import org.hibernate.SessionFactory;
+import javax.persistence.EntityManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,35 +13,36 @@ import ua.com.foxminded.domain.Group;
 @Repository
 @Transactional
 public class GroupRepository implements GenericRepository<Group> {
-    private SessionFactory sessionFactory;
+    private EntityManager entityManager;
 
     @Autowired
-    public GroupRepository(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public GroupRepository(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
     public void create(Group group) {
-        sessionFactory.getCurrentSession().persist(group);
+        entityManager.persist(group);
     }
 
     @Override
     public List<Group> findAll() {
-        return sessionFactory.getCurrentSession().createQuery("FROM Group", Group.class).getResultList();
+        return entityManager.createQuery("FROM Group", Group.class).getResultList();
     }
 
     @Override
     public Group findById(int id) {
-        return sessionFactory.getCurrentSession().get(Group.class, id);
+        return entityManager.find(Group.class, id);
     }
 
     @Override
     public void update(Group group) {
-        sessionFactory.getCurrentSession().update(group);
+        entityManager.merge(group);
     }
 
     @Override
     public void delete(Group group) {
-        sessionFactory.getCurrentSession().delete(group);
+        Group deletedGroup = entityManager.merge(group);
+        entityManager.remove(deletedGroup);
     }
 }
