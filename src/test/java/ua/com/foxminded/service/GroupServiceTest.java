@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,8 +30,8 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
-import ua.com.foxminded.repositories.GroupRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.GroupRepository;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
 import ua.com.foxminded.service.aspects.GroupAspect;
 import ua.com.foxminded.service.exceptions.ServiceException;
@@ -84,7 +85,7 @@ class GroupServiceTest {
         testGroup.setFaculty(faculty);
 
         groupService.create(testGroup);
-        verify(groupRepository).create(testGroup);
+        verify(groupRepository).save(testGroup);
     }
 
     @Test
@@ -96,6 +97,16 @@ class GroupServiceTest {
     @Test
     void shouldGetGroupById() {
         int testGroupId = 1;
+        Faculty faculty = new Faculty();
+        faculty.setId(1);
+        faculty.setName("Faculty");
+        Group group = new Group();
+        group.setId(testGroupId);
+        group.setName("Group");
+        group.setFaculty(faculty);
+        
+        when(groupRepository.findById(testGroupId)).thenReturn(Optional.of(group));
+        
         groupService.getById(testGroupId);
         verify(groupRepository).findById(testGroupId);
     }
@@ -114,7 +125,7 @@ class GroupServiceTest {
         group.setFaculty(faculty);
 
         groupService.update(group);
-        verify(groupRepository).update(group);
+        verify(groupRepository).save(group);
     }
 
     @Test
@@ -123,10 +134,8 @@ class GroupServiceTest {
         Group group = new Group();
         group.setId(groupId);
         group.setName("Test");
-        when(groupRepository.findById(groupId)).thenReturn(group);
         groupService.deleteById(groupId);
-        verify(groupRepository).findById(groupId);
-        verify(groupRepository).delete(group);
+        verify(groupRepository).deleteById(groupId);
     }
 
     
@@ -191,7 +200,7 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        doThrow(RepositoryException.class).when(groupRepository).create(group);
+        doThrow(RepositoryException.class).when(groupRepository).save(group);
         assertThrows(ServiceException.class, () -> groupService.create(group));
     }
 
@@ -241,7 +250,7 @@ class GroupServiceTest {
         Faculty faculty = new Faculty();
         faculty.setId(8);
         faculty.setName("Faculty");
-        doThrow(RepositoryException.class).when(groupRepository).update(group);
+        doThrow(RepositoryException.class).when(groupRepository).save(group);
         assertThrows(ServiceException.class, () -> groupService.update(group));
     }
 
@@ -254,7 +263,7 @@ class GroupServiceTest {
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(RepositoryException.class).when(groupRepository).findById(testId);
+        doThrow(RepositoryException.class).when(groupRepository).deleteById(testId);
         assertThrows(ServiceException.class, () -> groupService.deleteById(testId));
     }
 
@@ -413,7 +422,7 @@ class GroupServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(RepositoryException.class).when(groupRepository).create(group);
+        doThrow(RepositoryException.class).when(groupRepository).save(group);
 
         try {
             groupService.create(group);
@@ -664,7 +673,7 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        when(groupRepository.findById(testId)).thenReturn(group);
+        when(groupRepository.findById(testId)).thenReturn(Optional.of(group));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -796,7 +805,7 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        doThrow(RepositoryException.class).when(groupRepository).update(group);
+        doThrow(RepositoryException.class).when(groupRepository).save(group);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -887,7 +896,7 @@ class GroupServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(RepositoryException.class).when(groupRepository).findById(testId);
+        doThrow(RepositoryException.class).when(groupRepository).deleteById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));

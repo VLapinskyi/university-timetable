@@ -3,8 +3,6 @@ package ua.com.foxminded.repositories.aspects;
 import java.time.DayOfWeek;
 import java.util.List;
 
-import javax.persistence.PersistenceException;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,31 +11,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 
-import ua.com.foxminded.repositories.exceptions.RepositoryException;
-
 @Aspect
 @Configuration
 public class LessonRepositoryAspect {
     private final Logger logger = LoggerFactory.getLogger(LessonRepositoryAspect.class);
 
-    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.LessonRepository.getGroupDayLessons(int, java.time.DayOfWeek))")
-    private void getGroupDayLessonsMethod() {
+    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.interfaces.LessonRepository.findByGroupIdAndDay(Integer, java.time.DayOfWeek))")
+    private void findByGroupIdAndDayMethod() {
     }
 
-    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.LessonRepository.getLecturerDayLessons(int, java.time.DayOfWeek))")
-    private void getLecturerDayLessonsMethod() {
+    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.interfaces.LessonRepository.findByLecturerIdAndDay(Integer, java.time.DayOfWeek))")
+    private void findByLecturerIdAndDayMethod() {
     }
 
-    @Around("getGroupDayLessonsMethod()")
-    Object aroundGetGroupDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        int groupId = (int) proceedingJoinPoint.getArgs()[0];
+    @Around("findByGroupIdAndDayMethod()")
+    Object aroundFindByGroupIdAndDayAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        Integer groupId = (Integer) proceedingJoinPoint.getArgs()[0];
         DayOfWeek weekDay = (DayOfWeek) proceedingJoinPoint.getArgs()[1];
 
         if (logger.isDebugEnabled()) {
             logger.debug("Try to get all lessons for a group with id {} which is on a day {}.", groupId, weekDay);
         }
 
-        try {
             Object targetMethod = proceedingJoinPoint.proceed();
 
             if (targetMethod instanceof List<?>) {
@@ -52,24 +47,17 @@ public class LessonRepositoryAspect {
             }
 
             return targetMethod;
-
-        } catch (PersistenceException persistenceException) {
-            logger.error("Can't get lessons for a group with id {} on a day {}.", groupId, weekDay,
-                    persistenceException);
-            throw new RepositoryException("Can't get day lessons for a group.", persistenceException);
-        }
     }
 
-    @Around("getLecturerDayLessonsMethod()")
-    Object aroundGetLecturerDayLessonsAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        int lecturerId = (int) proceedingJoinPoint.getArgs()[0];
+    @Around("findByLecturerIdAndDayMethod()")
+    Object aroundFindByLecturerIdAndDayAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        Integer lecturerId = (Integer) proceedingJoinPoint.getArgs()[0];
         DayOfWeek weekDay = (DayOfWeek) proceedingJoinPoint.getArgs()[1];
 
         if (logger.isDebugEnabled()) {
             logger.debug("Try to get all lessons for a lecturer with id {} on a day {}.", lecturerId, weekDay);
         }
 
-        try {
             Object targetMethod = proceedingJoinPoint.proceed();
 
             if (targetMethod instanceof List<?>) {
@@ -86,10 +74,5 @@ public class LessonRepositoryAspect {
             }
 
             return targetMethod;
-        } catch (PersistenceException persistenceException) {
-            logger.error("Can't get lessons for a lecturer with id {} on a day {}.", lecturerId, weekDay,
-                    persistenceException);
-            throw new RepositoryException("Can't get day lessons for a lecturer.", persistenceException);
-        }
     }
 }

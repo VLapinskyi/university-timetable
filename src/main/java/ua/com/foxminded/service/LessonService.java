@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ua.com.foxminded.domain.Lesson;
-import ua.com.foxminded.repositories.LessonRepository;
+import ua.com.foxminded.repositories.interfaces.LessonRepository;
 
 @Service
 public class LessonService {
@@ -23,7 +23,7 @@ public class LessonService {
     }
 
     public void create(Lesson lesson) {
-        lessonRepository.create(lesson);
+        lessonRepository.save(lesson);
     }
 
     public List<Lesson> getAll() {
@@ -31,22 +31,21 @@ public class LessonService {
     }
 
     public Lesson getById(int lessonId) {
-        return lessonRepository.findById(lessonId);
+        return lessonRepository.findById(lessonId).get();
     }
 
     public void update(Lesson updatedLesson) {
-        lessonRepository.update(updatedLesson);
+        lessonRepository.save(updatedLesson);
     }
 
     public void deleteById(int lessonId) {
-        Lesson lesson = lessonRepository.findById(lessonId);
-        lessonRepository.delete(lesson);
+        lessonRepository.deleteById(lessonId);
     }
 
     public Map<DayOfWeek, List<Lesson>> getGroupWeekLessons(int groupId) {
         Map<DayOfWeek, List<Lesson>> weekLessons = new TreeMap<>();
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            List<Lesson> dayLessons = lessonRepository.getGroupDayLessons(groupId, DayOfWeek.of(i));
+            List<Lesson> dayLessons = lessonRepository.findByGroupIdAndDay(groupId, DayOfWeek.of(i));
             weekLessons.put(DayOfWeek.of(i), dayLessons);
         }
         return weekLessons;
@@ -56,7 +55,7 @@ public class LessonService {
         Map<LocalDate, List<Lesson>> dailyLessons = new TreeMap<>();
         for (int i = 1; i <= month.lengthOfMonth(); i++) {
             LocalDate day = month.atDay(i);
-            List<Lesson> lessons = lessonRepository.getGroupDayLessons(groupId, day.getDayOfWeek());
+            List<Lesson> lessons = lessonRepository.findByGroupIdAndDay(groupId, day.getDayOfWeek());
             dailyLessons.put(day, lessons);
         }
         return dailyLessons;
@@ -65,7 +64,7 @@ public class LessonService {
     public Map<DayOfWeek, List<Lesson>> getLecturerWeekLessons(int lecturerId) {
         Map<DayOfWeek, List<Lesson>> weekLessons = new TreeMap<>();
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            List<Lesson> dayLessons = lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
+            List<Lesson> dayLessons = lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.of(i));
             weekLessons.put(DayOfWeek.of(i), dayLessons);
         }
         return weekLessons;
@@ -75,7 +74,7 @@ public class LessonService {
         Map<LocalDate, List<Lesson>> dailyLessons = new TreeMap<>();
         for (int i = 1; i <= month.lengthOfMonth(); i++) {
             LocalDate day = month.atDay(i);
-            List<Lesson> lessons = lessonRepository.getLecturerDayLessons(lecturerId, day.getDayOfWeek());
+            List<Lesson> lessons = lessonRepository.findByLecturerIdAndDay(lecturerId, day.getDayOfWeek());
             dailyLessons.put(day, lessons);
         }
         return dailyLessons;

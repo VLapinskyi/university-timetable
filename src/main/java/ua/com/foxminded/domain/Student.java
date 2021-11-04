@@ -1,25 +1,18 @@
 package ua.com.foxminded.domain;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 import javax.validation.Valid;
 
 @Entity
-@Table(name = "people")
+@DiscriminatorValue("Student")
 public class Student extends Person {
     
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private final Role role = Role.STUDENT;
-    
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "student_group_id")
     @Valid
     private Group group;

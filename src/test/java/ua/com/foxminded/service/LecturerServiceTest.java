@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +31,8 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
-import ua.com.foxminded.repositories.LecturerRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.LecturerRepository;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
 import ua.com.foxminded.service.aspects.LecturerAspect;
 import ua.com.foxminded.service.aspects.PersonAspect;
@@ -90,7 +91,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380671234567");
         lecturer.setEmail("valentinlapinskiy@gmail.com");
         lecturerService.create(lecturer);
-        verify(lecturerRepository).create(lecturer);
+        verify(lecturerRepository).save(lecturer);
     }
 
     @Test
@@ -102,7 +103,17 @@ class LecturerServiceTest {
     @Test
     void shouldGetLecturerById() {
         int lecturerId = 2;
+        
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(lecturerId);
+        lecturer.setFirstName("Lecturer");
+        lecturer.setLastName("Lecturer");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380123654789");
+        lecturer.setEmail("lecturer@test.com");
 
+        when(lecturerRepository.findById(lecturerId)).thenReturn(Optional.of(lecturer));
+        
         lecturerService.getById(lecturerId);
         verify(lecturerRepository).findById(lecturerId);
     }
@@ -117,18 +128,14 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380671234567");
         lecturer.setEmail("valentinlapiskiy@gmail.com");
         lecturerService.update(lecturer);
-        verify(lecturerRepository).update(lecturer);
+        verify(lecturerRepository).save(lecturer);
     }
 
     @Test
     void shouldDeleteLecturerById() {
         int testLecturerId = 5;
-        Lecturer testLecturer = new Lecturer();
-        testLecturer.setId(testLecturerId);
-        when(lecturerRepository.findById(testLecturerId)).thenReturn(testLecturer);
         lecturerService.deleteById(testLecturerId);
-        verify(lecturerRepository).findById(testLecturerId);
-        verify(lecturerRepository).delete(testLecturer);
+        verify(lecturerRepository).deleteById(testLecturerId);
     }
 
     @Test
@@ -286,7 +293,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380961234567");
         lecturer.setEmail("VIaremenko@gmail.com");
 
-        doThrow(RepositoryException.class).when(lecturerRepository).create(lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).save(lecturer);
 
         assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
     }
@@ -339,7 +346,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380981234567");
         lecturer.setEmail("izakharchuk@gmail.com");
 
-        doThrow(RepositoryException.class).when(lecturerRepository).update(lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).save(lecturer);
 
         assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
     }
@@ -353,7 +360,7 @@ class LecturerServiceTest {
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(RepositoryException.class).when(lecturerRepository).findById(testId);
+        doThrow(RepositoryException.class).when(lecturerRepository).deleteById(testId);
         assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
     }
 
@@ -476,7 +483,7 @@ class LecturerServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(RepositoryException.class).when(lecturerRepository).create(lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).save(lecturer);
 
         try {
             lecturerService.create(lecturer);
@@ -723,7 +730,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380453982147");
         lecturer.setEmail("irak@test.com");
 
-        when(lecturerRepository.findById(testId)).thenReturn(lecturer);
+        when(lecturerRepository.findById(testId)).thenReturn(Optional.of(lecturer));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -856,7 +863,7 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380459621567");
         lecturer.setEmail("khodorkovska@test.com");
 
-        doThrow(RepositoryException.class).when(lecturerRepository).update(lecturer);
+        doThrow(RepositoryException.class).when(lecturerRepository).save(lecturer);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -947,7 +954,7 @@ class LecturerServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(RepositoryException.class).when(lecturerRepository).findById(testId);
+        doThrow(RepositoryException.class).when(lecturerRepository).deleteById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));

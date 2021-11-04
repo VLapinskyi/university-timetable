@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ua.com.foxminded.domain.LessonTime;
-import ua.com.foxminded.repositories.LessonTimeRepository;
+import ua.com.foxminded.repositories.interfaces.LessonTimeRepository;
 
 @Service
 public class LessonTimeService {
@@ -18,7 +18,7 @@ public class LessonTimeService {
     }
 
     public void create(LessonTime lessonTime) {
-        lessonTimeRepository.create(lessonTime);
+        lessonTimeRepository.save(lessonTime);
     }
 
     public List<LessonTime> getAll() {
@@ -26,15 +26,14 @@ public class LessonTimeService {
     }
 
     public LessonTime getById(int lessonTimeId) {
-        return lessonTimeRepository.findById(lessonTimeId);
+        return lessonTimeRepository.findById(lessonTimeId).get();
     }
 
     public void update(LessonTime updatedLessonTime) {
-        lessonTimeRepository.update(updatedLessonTime);
+        lessonTimeRepository.save(updatedLessonTime);
     }
 
     public void deleteById(int lessonTimeId) {
-        LessonTime lessonTime = lessonTimeRepository.findById(lessonTimeId);
-        lessonTimeRepository.delete(lessonTime);
+        lessonTimeRepository.deleteById(lessonTimeId);
     }
 }

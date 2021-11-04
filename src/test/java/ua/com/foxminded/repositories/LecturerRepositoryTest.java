@@ -2,15 +2,11 @@ package ua.com.foxminded.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
@@ -28,7 +23,6 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -38,9 +32,9 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Lecturer;
-import ua.com.foxminded.domain.Role;
 import ua.com.foxminded.repositories.aspects.GeneralRepositoryAspect;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.LecturerRepository;
 
 @DataJpaTest(showSql = true)
 @Import({AopAutoConfiguration.class, GeneralRepositoryAspect.class})
@@ -56,9 +50,6 @@ private final String testData = "/Test data.sql";
     
     @Autowired
     private TestEntityManager testEntityManager;
-    
-    @MockBean
-    private EntityManager mockedEntityManager;
     
     @Autowired
     @SpyBean
@@ -91,8 +82,6 @@ private final String testData = "/Test data.sql";
             expectedLecturers.get(i).setPhoneNumber(phoneNumbers.get(i));
             expectedLecturers.get(i).setEmail(emails.get(i));
         }
-        
-        ReflectionTestUtils.setField(lecturerRepository, "entityManager", testEntityManager.getEntityManager());
     }
 
     @AfterEach
@@ -102,8 +91,9 @@ private final String testData = "/Test data.sql";
 
     @Test
     void shouldCreateLecturer() {
+        int expectedId = 1;
         Lecturer expectedLecturer = new Lecturer();
-        expectedLecturer.setId(1);
+        expectedLecturer.setId(expectedId);
         expectedLecturer.setFirstName("First-name");
         expectedLecturer.setLastName("Last-name");
         expectedLecturer.setGender(Gender.MALE);
@@ -117,8 +107,8 @@ private final String testData = "/Test data.sql";
         testLecturer.setPhoneNumber("+380457896321");
         testLecturer.setEmail("test@email.com");
         
-        lecturerRepository.create(testLecturer);
-        Lecturer actualLecturer = lecturerRepository.findAll().stream().findFirst().get();
+        lecturerRepository.save(testLecturer);
+        Lecturer actualLecturer = testEntityManager.find(Lecturer.class, expectedId);
         assertEquals(expectedLecturer, actualLecturer);
     }
 
@@ -133,29 +123,28 @@ private final String testData = "/Test data.sql";
     @Sql(testData)
     void shouldFindLecturerById() {
         int testId = 5;
-        Lecturer expectedLecturer = expectedLecturers.stream().filter(lecturer -> lecturer.getId() == testId).findAny().get();
+        Optional<Lecturer> expectedLecturer = expectedLecturers.stream().filter(lecturer -> lecturer.getId() == testId).findAny();
         assertEquals(expectedLecturer, lecturerRepository.findById(testId));
     }
 
     @Test
     @Sql(testData)
     void shouldUpdateLecturer() {
-        int testId = 2;
+        int testId = 6;
 
-        Lecturer testLecturer = lecturerRepository.findById(testId);
+        Lecturer testLecturer = testEntityManager.find(Lecturer.class, testId);
         testLecturer.setFirstName("Viacheslav");
         
-        lecturerRepository.update(testLecturer);
-        assertEquals(testLecturer, lecturerRepository.findById(testId));
+        lecturerRepository.save(testLecturer);
+        assertEquals(testLecturer, testEntityManager.find(Lecturer.class, testId));
     }
 
     @Test
     @Sql(testData)
-    void shouldDeleteLecturer() {
-        int deletedId = 2;
-        Lecturer deletedLecturer = testEntityManager.find(Lecturer.class, deletedId);
+    void shouldDeleteById() {
+        int deletedId = 4;
         
-        lecturerRepository.delete(deletedLecturer);
+        lecturerRepository.deleteById(deletedId);
         
         Lecturer afterDeletingLecturer = testEntityManager.find(Lecturer.class, deletedId);
         
@@ -163,18 +152,9 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
-        int wrongId = 8;
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(wrongId);
-        lecturer.setGender(Gender.MALE);
-        assertThrows(RepositoryException.class, () -> lecturerRepository.create(lecturer));
-    }
-
-    @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
-        when(lecturerRepository.findAll()).thenThrow(PersistenceException.class);
-        assertThrows(RepositoryException.class, () -> lecturerRepository.findAll());
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileSave() {
+        Lecturer lecturer = null;
+        assertThrows(RepositoryException.class, () -> lecturerRepository.save(lecturer));
     }
 
     @Test
@@ -185,40 +165,19 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldThrowRepositoryExcpetionWhenPersistenceExceptionWhileFindById() {
-        int testId = 6;
-        when(lecturerRepository.findById(testId)).thenThrow(PersistenceException.class);
+    void shouldThrowRepositoryExcpetionWhenDataAccessExceptionWhileFindById() {
+        Integer testId = null;
         assertThrows(RepositoryException.class, () -> lecturerRepository.findById(testId));
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(5);
-        lecturer.setFirstName("Alla");
-        lecturer.setLastName("Matviichuk");
-        lecturer.setGender(Gender.FEMALE);
-        lecturer.setPhoneNumber("+380657485963");
-        lecturer.setEmail("test@test.com");
-        doThrow(PersistenceException.class).when(lecturerRepository).update(lecturer);
-        assertThrows(RepositoryException.class, () -> lecturerRepository.update(lecturer));
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileDeleteById() {
+        int testId = 232;
+        assertThrows(RepositoryException.class, () -> lecturerRepository.deleteById(testId));
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(1);
-        lecturer.setFirstName("Petro");
-        lecturer.setLastName("Petrov");
-        lecturer.setGender(Gender.MALE);
-        lecturer.setPhoneNumber("+380125478963");
-        lecturer.setEmail("test@test.com");
-        doThrow(PersistenceException.class).when(lecturerRepository).delete(lecturer);
-        assertThrows(RepositoryException.class, () -> lecturerRepository.delete(lecturer));
-    }
-
-    @Test
-    void shouldGenerateLogsWhenCreateLecturer() {
+    void shouldGenerateLogsWhenSaveLecturer() {
         Lecturer testLecturer = new Lecturer();
         testLecturer.setFirstName("Roman");
         testLecturer.setLastName("Dudchenko");
@@ -237,13 +196,13 @@ private final String testData = "/Test data.sql";
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testLecturer + ".", "The object " + expectedLecturer + " was inserted."));
+                "Try to save/update an object: " + testLecturer + ".", "The object " + expectedLecturer + " was saved/updated."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lecturerRepository.create(testLecturer);
+        lecturerRepository.save(testLecturer);
         List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
@@ -254,23 +213,20 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileCreate() {
-        int wrongId = 5;
-        Lecturer testLecturer = new Lecturer();
-        testLecturer.setGender(Gender.MALE);
-        testLecturer.setId(wrongId);
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileSave() {
+        Lecturer testLecturer = null;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to insert a new object: " + testLecturer + ".", "Can't insert the object: " + testLecturer + "."));
+                "Try to save/update an object: " + testLecturer + ".", "Can't save/update the object: " + testLecturer + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
         try {
-            lecturerRepository.create(testLecturer);
+            lecturerRepository.save(testLecturer);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }
@@ -329,39 +285,11 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lecturerRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("FROM Lecturer where role = '" + Role.LECTURER + "'", Lecturer.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to find all objects.", "Can't find all objects."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            lecturerRepository.findAll();
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-        List<ILoggingEvent> actualLogs = testAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
     @Sql(testData)
     void shouldGenerateLogsWhenFindById() {
         int testId = 4;
-        Lecturer expectedLecturer = expectedLecturers.stream().filter(lecturer -> lecturer.getId() == testId)
-                .findFirst().get();
+        Optional<Lecturer> expectedLecturer = expectedLecturers.stream().filter(lecturer -> lecturer.getId() == testId)
+                .findFirst();
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
@@ -411,11 +339,8 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
-        int testId = 2;
-
-        ReflectionTestUtils.setField(lecturerRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.find(Lecturer.class, testId)).thenThrow(PersistenceException.class);
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileFindById() {
+        Integer testId = null;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -443,24 +368,19 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenUpdate() {
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(1);
-        lecturer.setFirstName("Roman");
-        lecturer.setLastName("Dudchenko");
-        lecturer.setGender(Gender.MALE);
+    void shouldGenerateLogsWhenDeleteById() {
+        int testId = 5;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + lecturer + ".",
-                        "The object " + lecturer + " was updated."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
+                "The object with id " + testId + " was deleted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lecturerRepository.update(lecturer);
+        lecturerRepository.deleteById(testId);
         List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
@@ -471,85 +391,19 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    @Transactional
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileUpdate() {
-        Lecturer lecturer = new Lecturer();
-        lecturer.setId(2);
-        lecturer.setFirstName("Roman");
-        lecturer.setLastName("Dudchenko");
-        lecturer.setGender(Gender.MALE);
-
-        ReflectionTestUtils.setField(lecturerRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(lecturer)).thenThrow(PersistenceException.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + lecturer + ".",
-                        "Can't update an object " + lecturer + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            lecturerRepository.update(lecturer);
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    @Sql(testData)
-    void shouldGenerateLogsWhenDelete() {
-        int testId = 3;
-        Lecturer deletedLecturer = testEntityManager.find(Lecturer.class, testId);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedLecturer + ".",
-                "The object " + deletedLecturer + " was deleted."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        lecturerRepository.delete(deletedLecturer);
-        List<ILoggingEvent> actualLogs = testAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileDelete() {
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
         int testId = 6;
-        Lecturer deletedLecturer = expectedLecturers.stream().filter(lecturer -> lecturer.getId() == testId).findAny().get();
-
-        ReflectionTestUtils.setField(lecturerRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(deletedLecturer)).thenThrow(PersistenceException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedLecturer + ".",
-                "Can't delete an object " + deletedLecturer + "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
+                "Can't delete an object by id " + testId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
         try {
-            lecturerRepository.delete(deletedLecturer);
+            lecturerRepository.deleteById(testId);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.AfterEach;
@@ -47,8 +48,8 @@ import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
 import ua.com.foxminded.domain.LessonTime;
-import ua.com.foxminded.repositories.LessonRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.LessonRepository;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
 import ua.com.foxminded.service.aspects.LessonAspect;
 import ua.com.foxminded.service.exceptions.ServiceException;
@@ -153,7 +154,7 @@ class LessonServiceTest {
         creatingLesson.setLessonTime(lessonTime2);
 
         lessonService.create(creatingLesson);
-        verify(lessonRepository).create(creatingLesson);
+        verify(lessonRepository).save(creatingLesson);
     }
 
     @Test
@@ -173,7 +174,7 @@ class LessonServiceTest {
         lesson.setGroup(group1);
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime1);
-        when(lessonRepository.findById(lessonId)).thenReturn(lesson);
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
         lessonService.getById(lessonId);
         verify(lessonRepository).findById(lessonId);
     }
@@ -192,18 +193,14 @@ class LessonServiceTest {
 
         lessonService.update(lesson);
 
-        verify(lessonRepository).update(lesson);
+        verify(lessonRepository).save(lesson);
     }
 
     @Test
     void shouldDeleteLessonById() {
         int lessonId = 456;
-        Lesson lesson = new Lesson();
-        lesson.setId(lessonId);
-        when(lessonRepository.findById(lessonId)).thenReturn(lesson);
         lessonService.deleteById(lessonId);
-        verify(lessonRepository).findById(lessonId);
-        verify(lessonRepository).delete(lesson);
+        verify(lessonRepository).deleteById(lessonId);
     }
 
     @Test
@@ -211,7 +208,7 @@ class LessonServiceTest {
         int groupId = 2;
         lessonService.getGroupWeekLessons(groupId);
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            verify(lessonRepository).getGroupDayLessons(groupId, DayOfWeek.of(i));
+            verify(lessonRepository).findByGroupIdAndDay(groupId, DayOfWeek.of(i));
         }
     }
 
@@ -226,7 +223,7 @@ class LessonServiceTest {
         expectedDays.addAll(Arrays.asList(DayOfWeek.values()));
         expectedDays.addAll(Arrays.asList(DayOfWeek.values()));
         lessonService.getGroupMonthLessons(groupId, month);
-        verify(lessonRepository, times(monthLength)).getGroupDayLessons(numberCaptor.capture(), dayCaptor.capture());
+        verify(lessonRepository, times(monthLength)).findByGroupIdAndDay(numberCaptor.capture(), dayCaptor.capture());
 
         List<DayOfWeek> actualDays = dayCaptor.getAllValues();
         List<Integer> actualGroupIndexes = numberCaptor.getAllValues();
@@ -244,11 +241,11 @@ class LessonServiceTest {
         lesson1.setId(1);
         Lesson lesson2 = new Lesson();
         lesson2.setId(2);
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY))
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.FRIDAY))
                 .thenReturn(new ArrayList<Lesson>(Arrays.asList(lesson1, lesson2)));
         lessonService.getLecturerWeekLessons(lecturerId);
         for (int i = 1; i <= DayOfWeek.values().length; i++) {
-            verify(lessonRepository).getLecturerDayLessons(lecturerId, DayOfWeek.of(i));
+            verify(lessonRepository).findByLecturerIdAndDay(lecturerId, DayOfWeek.of(i));
         }
     }
 
@@ -265,7 +262,7 @@ class LessonServiceTest {
         expectedDays.addAll(Arrays.asList(DayOfWeek.values()));
         expectedDays.addAll(Arrays.asList(DayOfWeek.of(1), DayOfWeek.of(2), DayOfWeek.of(3), DayOfWeek.of(4)));
         lessonService.getLecturerMonthLessons(lecturerId, month);
-        verify(lessonRepository, times(monthLength)).getLecturerDayLessons(numberCaptor.capture(), dayCaptor.capture());
+        verify(lessonRepository, times(monthLength)).findByLecturerIdAndDay(numberCaptor.capture(), dayCaptor.capture());
 
         List<DayOfWeek> actualDays = dayCaptor.getAllValues();
         List<Integer> actualLecturerIndexes = numberCaptor.getAllValues();
@@ -475,7 +472,7 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.THURSDAY);
         lesson.setLessonTime(lessonTime2);
 
-        doThrow(RepositoryException.class).when(lessonRepository).create(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).save(lesson);
 
         assertThrows(ServiceException.class, () -> lessonService.create(lesson));
     }
@@ -530,7 +527,7 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime2);
 
-        doThrow(RepositoryException.class).when(lessonRepository).update(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).save(lesson);
 
         assertThrows(ServiceException.class, () -> lessonService.update(lesson));
     }
@@ -544,7 +541,7 @@ class LessonServiceTest {
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 74;
-        doThrow(RepositoryException.class).when(lessonRepository).findById(testId);
+        doThrow(RepositoryException.class).when(lessonRepository).deleteById(testId);
         assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
     }
 
@@ -558,7 +555,7 @@ class LessonServiceTest {
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileGetGroupWeekLessons() {
         int testId = 74;
         DayOfWeek testDay = DayOfWeek.MONDAY;
-        when(lessonRepository.getGroupDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByGroupIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
     }
 
@@ -574,7 +571,7 @@ class LessonServiceTest {
         int testId = 14;
         YearMonth testMonth = YearMonth.of(2021, 4);
         DayOfWeek testDay = DayOfWeek.THURSDAY;
-        when(lessonRepository.getGroupDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByGroupIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
     }
 
@@ -588,7 +585,7 @@ class LessonServiceTest {
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileGetLecturerWeekLessons() {
         int testId = 12;
         DayOfWeek testDay = DayOfWeek.THURSDAY;
-        when(lessonRepository.getLecturerDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByLecturerIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
     }
 
@@ -604,7 +601,7 @@ class LessonServiceTest {
         int testId = 19;
         YearMonth testMonth = YearMonth.of(2021, 2);
         DayOfWeek testDay = DayOfWeek.FRIDAY;
-        when(lessonRepository.getLecturerDayLessons(testId, testDay)).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByLecturerIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
         assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
     }
 
@@ -731,7 +728,7 @@ class LessonServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(RepositoryException.class).when(lessonRepository).create(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).save(lesson);
 
         try {
             lessonService.create(lesson);
@@ -981,7 +978,7 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.TUESDAY);
         lesson.setLessonTime(lessonTime1);
 
-        when(lessonRepository.findById(testId)).thenReturn(lesson);
+        when(lessonRepository.findById(testId)).thenReturn(Optional.of(lesson));
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -1087,7 +1084,7 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime1);
 
-        doThrow(RepositoryException.class).when(lessonRepository).update(lesson);
+        doThrow(RepositoryException.class).when(lessonRepository).save(lesson);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1179,7 +1176,7 @@ class LessonServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
 
-        doThrow(RepositoryException.class).when(lessonRepository).findById(testId);
+        doThrow(RepositoryException.class).when(lessonRepository).deleteById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1290,7 +1287,7 @@ class LessonServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileGetGroupWeekLessons() {
         int testId = 4;
 
-        when(lessonRepository.getGroupDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByGroupIdAndDay(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1340,8 +1337,8 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.findByGroupIdAndDay(groupId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.findByGroupIdAndDay(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<DayOfWeek, List<Lesson>> expectedLessons = new TreeMap<>();
         expectedLessons.put(DayOfWeek.SUNDAY, new ArrayList<>());
@@ -1440,7 +1437,7 @@ class LessonServiceTest {
         int testId = 1;
         YearMonth testMonth = YearMonth.of(2020, 12);
 
-        when(lessonRepository.getGroupDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByGroupIdAndDay(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1494,9 +1491,9 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
-        when(lessonRepository.getGroupDayLessons(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.findByGroupIdAndDay(groupId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.findByGroupIdAndDay(groupId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonRepository.findByGroupIdAndDay(groupId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<LocalDate, List<Lesson>> expectedLessons = new TreeMap<>();
 
@@ -1597,7 +1594,7 @@ class LessonServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileGetLecturerWeekLessons() {
         int testId = 10;
 
-        when(lessonRepository.getLecturerDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByLecturerIdAndDay(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1647,9 +1644,9 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.TUESDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.TUESDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.WEDNESDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<DayOfWeek, List<Lesson>> expectedLessons = new TreeMap<>();
         expectedLessons.put(DayOfWeek.SUNDAY, new ArrayList<>());
@@ -1749,7 +1746,7 @@ class LessonServiceTest {
         int testId = 6;
         YearMonth testMonth = YearMonth.of(2020, 9);
 
-        when(lessonRepository.getLecturerDayLessons(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
+        when(lessonRepository.findByLecturerIdAndDay(anyInt(), any(DayOfWeek.class))).thenThrow(RepositoryException.class);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -1802,9 +1799,9 @@ class LessonServiceTest {
             lessons.get(i).setLessonTime(lessonTimes.get(i));
         }
 
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
-        when(lessonRepository.getLecturerDayLessons(lecturerId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(2, 3));
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.THURSDAY)).thenReturn(lessons.subList(0, 1));
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.MONDAY)).thenReturn(lessons.subList(1, 2));
+        when(lessonRepository.findByLecturerIdAndDay(lecturerId, DayOfWeek.FRIDAY)).thenReturn(lessons.subList(2, 3));
 
         Map<LocalDate, List<Lesson>> expectedLessons = new TreeMap<>();
 
