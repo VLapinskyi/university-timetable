@@ -19,6 +19,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
 
+import ua.com.foxminded.domain.validation.NotDayOff;
+
 @Entity
 @Table(name = "lessons")
 public class Lesson {
@@ -54,6 +56,7 @@ public class Lesson {
     @Enumerated(EnumType.STRING)
     @Column(name = "week_day")
     @NotNull(message = "Lesson day can't be null")
+    @NotDayOff
     private DayOfWeek day;
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})

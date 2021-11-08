@@ -434,6 +434,19 @@ class LessonServiceTest {
 
         assertThrows(ServiceException.class, () -> lessonService.create(lesson));
     }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLessonDayIsSundayWhileCreate() {
+        Lesson lesson = new Lesson();
+        lesson.setName("Test lesson");
+        lesson.setAudience("666");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group1);
+        lesson.setLessonTime(lessonTime1);
+        lesson.setDay(DayOfWeek.SUNDAY);
+        
+        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIsNullWhileCreate() {

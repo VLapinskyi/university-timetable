@@ -10,7 +10,7 @@ import javax.validation.Payload;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = { LessonTimeValidator.class })
+@Constraint(validatedBy = LessonTimeValidator.class)
 public @interface CheckLessonTime {
     public String message() default "LessonTime's startTime must be before endTime";
 
