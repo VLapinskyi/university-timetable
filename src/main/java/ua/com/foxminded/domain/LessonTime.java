@@ -31,6 +31,10 @@ public class LessonTime {
     @Column(name = "end_time")
     @NotNull(message = "LessonTime's endTime can't be null")
     private LocalTime endTime;
+    
+    public LessonTime() {
+
+    }
 
     public LocalTime getStartTime() {
         return startTime;

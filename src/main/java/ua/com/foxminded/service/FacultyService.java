@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ua.com.foxminded.domain.Faculty;
-import ua.com.foxminded.repositories.FacultyRepository;
+import ua.com.foxminded.repositories.interfaces.FacultyRepository;
 
 @Service
 public class FacultyService {
@@ -18,7 +18,7 @@ public class FacultyService {
     }
 
     public void create(Faculty faculty) {
-        facultyRepository.create(faculty);
+        facultyRepository.save(faculty);
     }
 
     public List<Faculty> getAll() {
@@ -26,15 +26,14 @@ public class FacultyService {
     }
 
     public Faculty getById(int facultyId) {
-        return facultyRepository.findById(facultyId);
+        return facultyRepository.findById(facultyId).get();
     }
 
     public void update(Faculty updatedFaculty) {
-        facultyRepository.update(updatedFaculty);
+        facultyRepository.save(updatedFaculty);
     }
 
     public void deleteById(int facultyId) {
-        Faculty faculty = facultyRepository.findById(facultyId);
-        facultyRepository.delete(faculty);
+        facultyRepository.deleteById(facultyId);
     }
 }

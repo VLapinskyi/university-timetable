@@ -2,18 +2,14 @@ package ua.com.foxminded.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
@@ -31,7 +26,6 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -48,6 +42,7 @@ import ua.com.foxminded.domain.LessonTime;
 import ua.com.foxminded.repositories.aspects.GeneralRepositoryAspect;
 import ua.com.foxminded.repositories.aspects.LessonRepositoryAspect;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.LessonRepository;
 
 @DataJpaTest(showSql = true)
 @Import({AopAutoConfiguration.class, GeneralRepositoryAspect.class, LessonRepositoryAspect.class})
@@ -56,8 +51,7 @@ import ua.com.foxminded.repositories.exceptions.RepositoryException;
 class LessonRepositoryTest {
 private final String testData = "/Test data.sql";
     
-    private ListAppender<ILoggingEvent> testGeneralAppender;
-    private ListAppender<ILoggingEvent> testLessonAppender;
+    private ListAppender<ILoggingEvent> testAppender;
     
     @Autowired
     private GeneralRepositoryAspect generalRepositoryAspect;
@@ -68,9 +62,6 @@ private final String testData = "/Test data.sql";
     @Autowired
     private TestEntityManager testEntityManager;
     
-    @MockBean
-    private EntityManager mockedEntityManager;   
-    
     @Autowired
     @SpyBean
     private LessonRepository lessonRepository;
@@ -80,18 +71,13 @@ private final String testData = "/Test data.sql";
     @BeforeEach
     void setUp() throws Exception {
         Logger generalLogger = (Logger) ReflectionTestUtils.getField(generalRepositoryAspect, "logger");
-        testGeneralAppender = new ListAppender<>();
-        LoggerContext generalLoggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        testGeneralAppender.setContext(generalLoggerContext);
-        testGeneralAppender.start();
-        generalLogger.addAppender(testGeneralAppender);
-        
         Logger lessonLogger = (Logger) ReflectionTestUtils.getField(lessonRepositoryAspect, "logger");
-        testLessonAppender = new ListAppender<>();
-        LoggerContext lessonLoggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        testLessonAppender.setContext(lessonLoggerContext);
-        testLessonAppender.start();
-        lessonLogger.addAppender(testLessonAppender);
+        testAppender = new ListAppender<>();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        testAppender.setContext(loggerContext);
+        testAppender.start();
+        generalLogger.addAppender(testAppender);
+        lessonLogger.addAppender(testAppender);
         
         expectedLessons = new ArrayList<>(Arrays.asList(new Lesson(), new Lesson(), new Lesson(), new Lesson()));
         List<Integer> lessonIndexes = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
@@ -178,15 +164,11 @@ private final String testData = "/Test data.sql";
             expectedLessons.get(i).setLecturer(lecturers.get(i));
             expectedLessons.get(i).setLessonTime(lessonTimes.get(i));
         }
-        
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", testEntityManager.getEntityManager());
-        
     }
 
     @AfterEach
     void tearDown() throws Exception {
-        testGeneralAppender.stop();
-        testLessonAppender.stop();
+        testAppender.stop();
     }
 
     @Test
@@ -217,7 +199,7 @@ private final String testData = "/Test data.sql";
         expectedLesson.setLecturer(lecturer);
         expectedLesson.setLessonTime(lessonTime);
 
-        lessonRepository.create(testLesson);
+        lessonRepository.save(testLesson);
         
         Lesson actualLesson = testEntityManager.find(Lesson.class, nextLessonId);
         assertEquals(expectedLesson, actualLesson);
@@ -234,7 +216,7 @@ private final String testData = "/Test data.sql";
     @Sql(testData)
     void shouldFindLessonById() {
         int testId = 2;
-        Lesson expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
+        Optional<Lesson> expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny();
 
         assertEquals(expectedLesson, lessonRepository.findById(testId));
     }
@@ -247,18 +229,16 @@ private final String testData = "/Test data.sql";
         Lesson testLesson = testEntityManager.find(Lesson.class, testId);
         testLesson.setAudience("999");
 
-        lessonRepository.update(testLesson);
-        assertEquals(testLesson, lessonRepository.findById(testId));
+        lessonRepository.save(testLesson);
+        assertEquals(testLesson, testEntityManager.find(Lesson.class, testId));
 
     }
 
     @Test
     @Sql(testData)
-    void shouldDeleteLesson() {
-        int deletedId = 3;
-        Lesson deletedLesson = testEntityManager.find(Lesson.class, deletedId);
-        
-        lessonRepository.delete(deletedLesson);
+    void shouldDeleteById() {
+        int deletedId = 3;        
+        lessonRepository.deleteById(deletedId);
         
         Lesson afterDeletingLesson = testEntityManager.find(Lesson.class, deletedId);
         assertThat(afterDeletingLesson).isNull();
@@ -266,29 +246,29 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldGetDayLessonsForGroup() {
+    void shouldFindDayLessonsForGroup() {
         int groupId = 1;
         DayOfWeek testDay = DayOfWeek.SUNDAY;
         Lesson expectedLesson = expectedLessons.get(0);
-        List<Lesson> actualLessons = lessonRepository.getGroupDayLessons(groupId, testDay);
+        List<Lesson> actualLessons = lessonRepository.findByGroupIdAndDay(groupId, testDay);
         assertTrue(actualLessons.contains(expectedLesson) && actualLessons.size() == 1);
     }
 
     @Test
     @Sql(testData)
-    void shouldGetDayLessonsForLecturer() {
+    void shouldFindDayLessonsForLecturer() {
         int lecturerId = 6;
         DayOfWeek testDay = DayOfWeek.WEDNESDAY;
         expectedLessons = new ArrayList<>(Arrays.asList(expectedLessons.get(2), expectedLessons.get(3)));
 
-        List<Lesson> actualLessons = lessonRepository.getLecturerDayLessons(lecturerId, testDay);
+        List<Lesson> actualLessons = lessonRepository.findByLecturerIdAndDay(lecturerId, testDay);
 
         assertTrue(expectedLessons.containsAll(actualLessons) && actualLessons.containsAll(expectedLessons));
     }
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenCreate() {
+    void shouldGenerateLogsWhenSave() {
         Group group = testEntityManager.find(Group.class, 2);
         Lecturer lecturer = testEntityManager.find(Lecturer.class, 5);
         LessonTime lessonTime = testEntityManager.find(LessonTime.class, 3);
@@ -317,16 +297,16 @@ private final String testData = "/Test data.sql";
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to insert a new object: " + testLesson + ".",
-                "The object " + loggingResultLesson + " was inserted."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to save/update an object: " + testLesson + ".",
+                "The object " + loggingResultLesson + " was saved/updated."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonRepository.create(testLesson);
+        lessonRepository.save(testLesson);
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -336,20 +316,9 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
-        Lesson lesson = new Lesson();
-        lesson.setDay(DayOfWeek.MONDAY);
-        lesson.setId(2);
-        doThrow(PersistenceException.class).when(lessonRepository).create(lesson);
-        assertThrows(RepositoryException.class, () -> lessonRepository.create(lesson));
-    }
-
-    @Test
-    @Sql(testData)
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("FROM Lesson", Lesson.class);
-        assertThrows(RepositoryException.class, () -> lessonRepository.findAll());
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileSave() {
+        Lesson lesson = null;
+        assertThrows(RepositoryException.class, () -> lessonRepository.save(lesson));
     }
 
     @Test
@@ -360,85 +329,38 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
-        int testId = 1;
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.find(Lesson.class, testId)).thenThrow(PersistenceException.class);
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileFindById() {
+        Integer testId = null;
         assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
-        Lesson testLesson = new Lesson();
-        testLesson.setDay(DayOfWeek.FRIDAY);
-        testLesson.setId(5);
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).merge(testLesson);
-        assertThrows(RepositoryException.class, () -> lessonRepository.update(testLesson));
+    @Sql(testData)
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileDeleteById() {
+        Integer testId = null;
+        assertThrows(RepositoryException.class, () -> lessonRepository.deleteById(testId));
     }
 
     @Test
     @Sql(testData)
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
-        int testId = 1;
-        Lesson deletedLesson = testEntityManager.find(Lesson.class, testId);
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(deletedLesson)).thenThrow(PersistenceException.class);
-        assertThrows(RepositoryException.class, () -> lessonRepository.delete(deletedLesson));
-    }
-
-    @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileGetGroupDayLessons() {
-        int groupId = 2;
-        DayOfWeek weekDay = DayOfWeek.SATURDAY;
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("from Lesson where group_id = :groupId" +
-                " and week_day = :weekDay", Lesson.class);
-        assertThrows(RepositoryException.class, () -> lessonRepository.getGroupDayLessons(groupId, weekDay));
-    }
-
-    @Test
-    @Sql(testData)
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileGetLecturerDayLessons() {
-        int lecturerId = 1;
-        DayOfWeek weekDay = DayOfWeek.MONDAY;
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("from Lesson where lecturer_id = :lecturerId" +
-                " and week_day = :weekDay", Lesson.class);
-        assertThrows(RepositoryException.class, () -> lessonRepository.getLecturerDayLessons(lecturerId, weekDay));
-    }
-
-    @Test
-    @Sql(testData)
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileCreate() {
-        Group group = testEntityManager.find(Group.class, 1);
-        Lecturer lecturer = testEntityManager.find(Lecturer.class, 5);
-        LessonTime lessonTime = testEntityManager.find(LessonTime.class, 2);
-        
-        Lesson testLesson = new Lesson();
-        testLesson.setName("Test lesson");
-        testLesson.setGroup(group);
-        testLesson.setLecturer(lecturer);
-        testLesson.setLessonTime(lessonTime);
-        testLesson.setDay(DayOfWeek.FRIDAY);
-        testLesson.setId(8);
-        testLesson.setAudience("102");
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileSave() {        
+        Lesson testLesson = null;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to insert a new object: " + testLesson + ".",
-                "Can't insert the object: " + testLesson + "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to save/update an object: " + testLesson + ".",
+                "Can't save/update the object: " + testLesson + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
         try {
-            lessonRepository.create(testLesson);
+            lessonRepository.save(testLesson);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -448,7 +370,6 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    @Transactional
     void shouldGenerateLogsWhenFindAllIsEmpty() {
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.WARN));
@@ -461,7 +382,7 @@ private final String testData = "/Test data.sql";
 
         lessonRepository.findAll();
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -484,35 +405,7 @@ private final String testData = "/Test data.sql";
 
         lessonRepository.findAll();
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("FROM Lesson", Lesson.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to find all objects.", "Can't find all objects."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-        try {
-            lessonRepository.findAll();
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -525,7 +418,7 @@ private final String testData = "/Test data.sql";
     @Sql(testData)
     void shouldGenerateLogsWhenFindById() {
         int testId = 2;
-        Lesson expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findFirst().get();
+        Optional<Lesson> expectedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findFirst();
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
@@ -537,7 +430,7 @@ private final String testData = "/Test data.sql";
 
         lessonRepository.findById(testId);
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -564,7 +457,7 @@ private final String testData = "/Test data.sql";
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -574,11 +467,8 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindById() {
-        int testId = 2;
-
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.find(Lesson.class, testId)).thenThrow(PersistenceException.class);
+    void shouldGenerateLogsWhenThrowDataAccesExceptionWhileFindById() {
+        Integer testId = null;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -595,7 +485,7 @@ private final String testData = "/Test data.sql";
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -604,26 +494,24 @@ private final String testData = "/Test data.sql";
         }
     }
 
+    
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenUpdate() {
-        int testId = 1;
-        Lesson testLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
-        testLesson.setAudience("6585");
+    void shouldGenerateLogsWhenDeleteById() {
+        int testId = 3;
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + testLesson + ".",
-                        "The object " + testLesson + " was updated."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
+                "The object with id " + testId + " was deleted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonRepository.update(testLesson);
+        lessonRepository.deleteById(testId);
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -633,32 +521,25 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    @Sql(testData)
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileUpdate() {
-        int testId = 4;
-        Lesson testLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
-        testLesson.setName("Wrong lesson");
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
+        Integer testId = null;
         
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(testLesson)).thenThrow(PersistenceException.class);
-
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + testLesson + ".",
-                        "Can't update an object " + testLesson + "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
+                "Can't delete an object by id " + testId + "."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
         try {
-            lessonRepository.update(testLesson);
+            lessonRepository.deleteById(testId);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }
 
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -669,65 +550,7 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenDelete() {
-        int testId = 3;
-        Lesson deletedLesson = testEntityManager.find(Lesson.class, testId);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedLesson+ ".",
-                "The object " + deletedLesson + " was deleted."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        lessonRepository.delete(deletedLesson);
-
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileDelete() {
-        int testId = 3;
-        Lesson deletedLesson = expectedLessons.stream().filter(lesson -> lesson.getId() == testId).findAny().get();
-
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(deletedLesson)).thenThrow(PersistenceException.class);
-        
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedLesson + ".",
-                "Can't delete an object " + deletedLesson + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            lessonRepository.delete(deletedLesson);
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testGeneralAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    @Sql(testData)
-    void shouldGenerateLogsWhenGetGroupDayLessonsIsEmpty() {
+    void shouldGenerateLogsWhenFindGroupDayLessonsIsEmpty() {
         int groupId = 2;
         DayOfWeek weekDay = DayOfWeek.SATURDAY;
 
@@ -741,9 +564,9 @@ private final String testData = "/Test data.sql";
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonRepository.getGroupDayLessons(groupId, weekDay);
+        lessonRepository.findByGroupIdAndDay(groupId, weekDay);
 
-        List<ILoggingEvent> actualLogs = testLessonAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -754,13 +577,14 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenGetGroupDayLessonsHasResult() {
+    void shouldGenerateLogsWhenFindGroupDayLessonsHasResult() {
         int groupId = 2;
         DayOfWeek weekDay = DayOfWeek.WEDNESDAY;
+        
         int expectedLessonId = 4;
-
-        List<Lesson> expectedGroupLessons = expectedLessons.stream()
-                .filter(lesson -> lesson.getId() == expectedLessonId).collect(Collectors.toList());
+        Lesson expectedLesson = testEntityManager.find(Lesson.class, expectedLessonId);        
+        
+        List<Lesson> expectedGroupLessons = new ArrayList<>(Arrays.asList(expectedLesson));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -773,43 +597,9 @@ private final String testData = "/Test data.sql";
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonRepository.getGroupDayLessons(groupId, weekDay);
+        lessonRepository.findByGroupIdAndDay(groupId, weekDay);
 
-        List<ILoggingEvent> actualLogs = testLessonAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileGetGroupDayLessons() {
-        int groupId = 2;
-        DayOfWeek weekDay = DayOfWeek.SATURDAY;
-        
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("from Lesson where group_id = :groupId" +
-                " and week_day = :weekDay", Lesson.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all lessons for a group with id " + groupId + " which is on a day " + weekDay + ".",
-                "Can't get lessons for a group with id " + groupId + " on a day " + weekDay + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            lessonRepository.getGroupDayLessons(groupId, weekDay);
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testLessonAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -819,8 +609,7 @@ private final String testData = "/Test data.sql";
     }
 
     @Test
-    @Sql(testData)
-    void shouldGenerateLogsWhenGetLecturerDayLessonsIsEmpty() {
+    void shouldGenerateLogsWhenFindLecturerDayLessonsIsEmpty() {
         int lecturerId = 2;
         DayOfWeek weekDay = DayOfWeek.SATURDAY;
 
@@ -834,9 +623,9 @@ private final String testData = "/Test data.sql";
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonRepository.getLecturerDayLessons(lecturerId, weekDay);
+        lessonRepository.findByLecturerIdAndDay(lecturerId, weekDay);
 
-        List<ILoggingEvent> actualLogs = testLessonAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
@@ -847,7 +636,7 @@ private final String testData = "/Test data.sql";
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenGetLecturerDayLessonsHasResult() {
+    void shouldGenerateLogsWhenFindLecturerDayLessonsHasResult() {
         int lecturerId = 6;
         DayOfWeek weekDay = DayOfWeek.WEDNESDAY;
         List<Integer> expectedLessonIdList = new ArrayList<>(Arrays.asList(3, 4));
@@ -866,43 +655,9 @@ private final String testData = "/Test data.sql";
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        lessonRepository.getLecturerDayLessons(lecturerId, weekDay);
+        lessonRepository.findByLecturerIdAndDay(lecturerId, weekDay);
 
-        List<ILoggingEvent> actualLogs = testLessonAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileGetLecturerDayLessonsHasResult() {
-        int lecturerId = 3;
-        DayOfWeek weekDay = DayOfWeek.THURSDAY;
-        
-        ReflectionTestUtils.setField(lessonRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("from Lesson where lecturer_id = :lecturerId" +
-                " and week_day = :weekDay", Lesson.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList(
-                "Try to get all lessons for a lecturer with id " + lecturerId + " on a day " + weekDay + ".",
-                "Can't get lessons for a lecturer with id " + lecturerId + " on a day " + weekDay + "."));
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            lessonRepository.getLecturerDayLessons(lecturerId, weekDay);
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testLessonAppender.list;
+        List<ILoggingEvent> actualLogs = testAppender.list;
 
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {

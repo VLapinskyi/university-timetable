@@ -34,13 +34,13 @@ public class Lesson {
     @Pattern(regexp = "\\S{2,}.*", message = "Lesson name must have at least two symbols and start with non-white space")
     private String name;
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "lecturer_id")
     @NotNull(message = "Lesson lecturer can't be null")
     @Valid
     private Lecturer lecturer;
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "group_id")
     @NotNull(message = "Lesson group can't be null")
     @Valid
@@ -56,7 +56,7 @@ public class Lesson {
     @NotNull(message = "Lesson day can't be null")
     private DayOfWeek day;
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "lesson_time_id")
     @NotNull(message = "Lesson time can't be null")
     @Valid

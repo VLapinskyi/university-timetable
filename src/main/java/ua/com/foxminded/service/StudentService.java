@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ua.com.foxminded.domain.Student;
-import ua.com.foxminded.repositories.StudentRepository;
+import ua.com.foxminded.repositories.interfaces.StudentRepository;
 
 @Service
 public class StudentService {
@@ -18,7 +18,7 @@ public class StudentService {
     }
 
     public void create(Student student) {
-        studentRepository.create(student);
+        studentRepository.save(student);
     }
 
     public List<Student> getAll() {
@@ -26,15 +26,14 @@ public class StudentService {
     }
 
     public Student getById(int studentId) {
-        return studentRepository.findById(studentId);
+        return studentRepository.findById(studentId).get();
     }
 
     public void update(Student updatedStudent) {
-        studentRepository.update(updatedStudent);
+        studentRepository.save(updatedStudent);
     }
 
     public void deleteById(int studentId) {
-        Student student = studentRepository.findById(studentId);
-        studentRepository.delete(student);
+        studentRepository.deleteById(studentId);
     }
 }

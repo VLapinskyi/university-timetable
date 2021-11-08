@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doThrow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,8 +30,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Faculty;
-import ua.com.foxminded.repositories.FacultyRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.FacultyRepository;
 import ua.com.foxminded.service.aspects.FacultyAspect;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
 import ua.com.foxminded.service.exceptions.ServiceException;
@@ -80,7 +81,7 @@ class FacultyServiceTest {
         Faculty faculty = new Faculty();
         faculty.setName(facultyName);
         facultyService.create(faculty);
-        verify(facultyRepository).create(faculty);
+        verify(facultyRepository).save(faculty);
     }
 
     @Test
@@ -92,6 +93,11 @@ class FacultyServiceTest {
     @Test
     void shouldGetFacultyById() {
         int facultyId = 5;
+        Faculty faculty = new Faculty();
+        faculty.setName("Faculty");
+        faculty.setId(facultyId);
+        when(facultyRepository.findById(facultyId)).thenReturn(Optional.of(faculty));
+        
         facultyService.getById(facultyId);
         verify(facultyRepository).findById(facultyId);
     }
@@ -104,17 +110,14 @@ class FacultyServiceTest {
         faculty.setName(testName);
         faculty.setId(facultyId);
         facultyService.update(faculty);
-        verify(facultyRepository).update(faculty);
+        verify(facultyRepository).save(faculty);
     }
 
     @Test
     void shouldDeleteFacultyById() {
         int facultyId = 1;
-        Faculty faculty = new Faculty();
-        faculty.setId(facultyId);
-        when(facultyRepository.findById(facultyId)).thenReturn(faculty);
         facultyService.deleteById(facultyId);
-        verify(facultyRepository).delete(faculty);
+        verify(facultyRepository).deleteById(facultyId);
     }
 
     @Test
@@ -155,7 +158,7 @@ class FacultyServiceTest {
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileCreate() {
         Faculty faculty = new Faculty();
         faculty.setName("Test faculty");
-        doThrow(RepositoryException.class).when(facultyRepository).create(faculty);
+        doThrow(RepositoryException.class).when(facultyRepository).save(faculty);
         assertThrows(ServiceException.class, () -> facultyService.create(faculty));
     }
 
@@ -197,7 +200,7 @@ class FacultyServiceTest {
         Faculty faculty = new Faculty();
         faculty.setId(12);
         faculty.setName("Test faculty");
-        doThrow(RepositoryException.class).when(facultyRepository).update(faculty);
+        doThrow(RepositoryException.class).when(facultyRepository).save(faculty);
         assertThrows(ServiceException.class, () -> facultyService.update(faculty));
     }
 
@@ -210,7 +213,7 @@ class FacultyServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
-        doThrow(RepositoryException.class).when(facultyRepository).findById(testId);
+        doThrow(RepositoryException.class).when(facultyRepository).deleteById(testId);
         assertThrows(ServiceException.class, () -> facultyService.deleteById(testId));
     }
 
@@ -345,7 +348,7 @@ class FacultyServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(RepositoryException.class).when(facultyRepository).create(faculty);
+        doThrow(RepositoryException.class).when(facultyRepository).save(faculty);
 
         try {
             facultyService.create(faculty);
@@ -571,7 +574,7 @@ class FacultyServiceTest {
         expectedFaculty.setId(testId);
         expectedFaculty.setName("Test name");
 
-        when(facultyRepository.findById(testId)).thenReturn(expectedFaculty);
+        when(facultyRepository.findById(testId)).thenReturn(Optional.of(expectedFaculty));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -726,7 +729,7 @@ class FacultyServiceTest {
         testFaculty.setId(9);
         testFaculty.setName("Test name");
 
-        doThrow(RepositoryException.class).when(facultyRepository).update(testFaculty);
+        doThrow(RepositoryException.class).when(facultyRepository).save(testFaculty);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -813,7 +816,7 @@ class FacultyServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 7;
 
-        doThrow(RepositoryException.class).when(facultyRepository).findById(testId);
+        doThrow(RepositoryException.class).when(facultyRepository).deleteById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -832,7 +835,7 @@ class FacultyServiceTest {
         }
 
         List<ILoggingEvent> actualLogs = testAppender.list;
-
+        
         assertEquals(expectedLogs.size(), actualLogs.size());
         for (int i = 0; i < actualLogs.size(); i++) {
             assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());

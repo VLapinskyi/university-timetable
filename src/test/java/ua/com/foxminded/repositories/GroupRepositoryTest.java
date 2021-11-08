@@ -2,15 +2,11 @@ package ua.com.foxminded.repositories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
@@ -39,6 +34,7 @@ import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.repositories.aspects.GeneralRepositoryAspect;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.GroupRepository;
 
 @DataJpaTest(showSql = true)
 @Import({AopAutoConfiguration.class, GeneralRepositoryAspect.class})
@@ -54,9 +50,6 @@ class GroupRepositoryTest {
     
     @Autowired
     private TestEntityManager testEntityManager;
-    
-    @MockBean
-    private EntityManager mockedEntityManager;
     
     @Autowired
     @SpyBean
@@ -91,8 +84,6 @@ class GroupRepositoryTest {
             expectedGroups.get(i).setName(groupNames.get(i));
             expectedGroups.get(i).setFaculty(expectedFaculties.get(i));
         }
-        
-        ReflectionTestUtils.setField(groupRepository, "entityManager", testEntityManager.getEntityManager());
     }
 
     @AfterEach
@@ -118,7 +109,7 @@ class GroupRepositoryTest {
         expectedGroup.setId(nextGroupId);
         expectedGroup.setName("TestGroup");
         expectedGroup.setFaculty(faculty);
-        groupRepository.create(testGroup);
+        groupRepository.save(testGroup);
         Group actualGroup = testEntityManager.find(Group.class, nextGroupId);
         assertEquals(expectedGroup, actualGroup);
     }
@@ -134,26 +125,26 @@ class GroupRepositoryTest {
     @Sql(testData)
     void shouldFindGroupById() {
         int testId = 2;
-        Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == testId).findFirst().get();
-        assertEquals(expectedGroup, groupRepository.findById(testId));
+        Group expectedGroup = testEntityManager.find(Group.class, testId);
+        Optional<Group> expectedResult = Optional.of(expectedGroup);
+        assertEquals(expectedResult, groupRepository.findById(testId));
     }
 
     @Test
     @Sql(testData)
     void shouldUpdateGroup() {
         int testGroupId = 2;
-        Group testGroup = groupRepository.findById(testGroupId);
+        Group testGroup = groupRepository.findById(testGroupId).get();
         testGroup.setName("TestGroupUpdated");
-        groupRepository.update(testGroup);
-        assertEquals(testGroup, groupRepository.findById(testGroupId));
+        groupRepository.save(testGroup);
+        assertEquals(testGroup, testEntityManager.find(Group.class, testGroupId));
     }
 
     @Test
     @Sql(testData)
     void shouldDeleteGroupById() {
         int deletedGroupId = 2;
-        Group deletedGroup = testEntityManager.find(Group.class, deletedGroupId);
-        groupRepository.delete(deletedGroup);
+        groupRepository.deleteById(deletedGroupId);
         
         Group afterDeletingGroup = testEntityManager.find(Group.class, deletedGroupId);
         
@@ -161,17 +152,9 @@ class GroupRepositoryTest {
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileCreate() {
-        Group group = new Group();
-        group.setName("Test");
-        doThrow(PersistenceException.class).when(groupRepository).create(group);
-        assertThrows(RepositoryException.class, () -> groupRepository.create(group));
-    }
-
-    @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindAll() {
-        when(groupRepository.findAll()).thenThrow(PersistenceException.class);
-        assertThrows(RepositoryException.class, () -> groupRepository.findAll());
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileSave() {
+        Group group = null;
+        assertThrows(RepositoryException.class, () -> groupRepository.save(group));
     }
 
     @Test
@@ -182,33 +165,20 @@ class GroupRepositoryTest {
 
     @Test
     @Sql(testData)
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileFindById() {
-        int testId = 1;
-        when(groupRepository.findById(testId)).thenThrow(PersistenceException.class);
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileFindById() {
+        Integer testId = null;
         assertThrows(RepositoryException.class, () -> groupRepository.findById(testId));
     }
 
     @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileUpdate() {
-        Group testGroup = new Group();
-        testGroup.setId(1);
-        testGroup.setName("Test");
-        doThrow(PersistenceException.class).when(groupRepository).update(testGroup);
-        assertThrows(RepositoryException.class, () -> groupRepository.update(testGroup));
-    }
-
-    @Test
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDelete() {
-        Group group = new Group();
-        group.setId(2);
-        group.setName("Test");
-        doThrow(PersistenceException.class).when(groupRepository).delete(group);;
-        assertThrows(RepositoryException.class, () -> groupRepository.delete(group));
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileDeleteById() {
+        Integer testId = null;
+        assertThrows(RepositoryException.class, () -> groupRepository.deleteById(testId));
     }
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenCreateGroup() {
+    void shouldGenerateLogsWhenSaveGroup() {
         Group testGroup = new Group();
         testGroup.setName("Test Group");
         
@@ -227,14 +197,14 @@ class GroupRepositoryTest {
         
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to insert a new object: " + testGroup + ".",
-                "The object " + loggingResultGroup + " was inserted."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to save/update an object: " + testGroup + ".",
+                "The object " + loggingResultGroup + " was saved/updated."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupRepository.create(testGroup);
+        groupRepository.save(testGroup);
 
         List<ILoggingEvent> actualLogs = testAppender.list;
 
@@ -246,22 +216,19 @@ class GroupRepositoryTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileCreate() {
-        int wrongId = 5;
-        Group testGroup = new Group();
-        testGroup.setId(wrongId);
-        testGroup.setName("Test");
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileSave() {
+        Group testGroup = null;
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to insert a new object: " + testGroup + ".",
-                "Can't insert the object: " + testGroup + "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to save/update an object: " + testGroup + ".",
+                "Can't save/update the object: " + testGroup + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
         try {
-            groupRepository.create(testGroup);
+            groupRepository.save(testGroup);
         } catch (RepositoryException exception) {
             // do nothing
         }
@@ -320,38 +287,10 @@ class GroupRepositoryTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileFindAll() {
-        ReflectionTestUtils.setField(groupRepository, "entityManager", mockedEntityManager);
-        doThrow(PersistenceException.class).when(mockedEntityManager).createQuery("FROM Group", Group.class);
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to find all objects.", "Can't find all objects."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            groupRepository.findAll();
-        } catch (RepositoryException repositoryException) {
-            // do nothing
-        }
-        List<ILoggingEvent> actualLogs = testAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getMessage(), actualLogs.get(i).getMessage());
-        }
-    }
-
-    @Test
     @Sql(testData)
     void shouldGenerateLogsWhenFindById() {
         int testId = 2;
-        Group expectedGroup = expectedGroups.stream().filter(group -> group.getId() == testId).findFirst().get();
+        Optional<Group> expectedGroup = expectedGroups.stream().filter(group -> group.getId() == testId).findFirst();
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
@@ -402,11 +341,9 @@ class GroupRepositoryTest {
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenPersistenceExceptionWhileFindById() {
-        int testId = 1;
+    void shouldGenerateLogsWhenDataAccessExceptionWhileFindById() {
+        Integer testId = null;
 
-        ReflectionTestUtils.setField(groupRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.find(Group.class, testId)).thenThrow(PersistenceException.class);
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
         List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to find an object by id: " + testId + ".",
@@ -434,84 +371,19 @@ class GroupRepositoryTest {
 
     @Test
     @Sql(testData)
-    void shouldGenerateLogsWhenUpdate() {
-        Group testGroup = new Group();
-        testGroup.setName("Test Group");
-        testGroup.setId(1);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + testGroup + ".",
-                        "The object " + testGroup + " was updated."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        groupRepository.update(testGroup);
-
-        List<ILoggingEvent> actualLogs = testAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileUpdate() {
-        Group testGroup = new Group();
-        testGroup.setName("TestGroup");
-        testGroup.setId(1);
-
-        ReflectionTestUtils.setField(groupRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(testGroup)).thenThrow(PersistenceException.class);
-
-        List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
-        List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(
-                Arrays.asList("Try to update an object " + testGroup + ".",
-                        "Can't update an object " + testGroup + "."));
-
-        for (int i = 0; i < expectedLogs.size(); i++) {
-            expectedLogs.get(i).setLevel(expectedLevels.get(i));
-            expectedLogs.get(i).setMessage(expectedMessages.get(i));
-        }
-
-        try {
-            groupRepository.update(testGroup);
-        } catch (RepositoryException repositoryEcxeption) {
-            // do nothing
-        }
-
-        List<ILoggingEvent> actualLogs = testAppender.list;
-
-        assertEquals(expectedLogs.size(), actualLogs.size());
-        for (int i = 0; i < actualLogs.size(); i++) {
-            assertEquals(expectedLogs.get(i).getLevel(), actualLogs.get(i).getLevel());
-            assertEquals(expectedLogs.get(i).getFormattedMessage(), actualLogs.get(i).getFormattedMessage());
-        }
-    }
-
-    @Test
-    @Sql(testData)
-    void shouldGenerateLogsWhenDelete() {
+    void shouldGenerateLogsWhenDeleteById() {
         int testId = 3;
-        Group deletedGroup = testEntityManager.find(Group.class, testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + deletedGroup + ".",
-                "The object " + deletedGroup + " was deleted."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId+ ".",
+                "The object with id " + testId + " was deleted."));
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        groupRepository.delete(deletedGroup);
+        groupRepository.deleteById(testId);
 
         List<ILoggingEvent> actualLogs = testAppender.list;
 
@@ -523,18 +395,13 @@ class GroupRepositoryTest {
     }
 
     @Test
-    void shouldGenerateLogsWhenThrowPersistenceExceptionWhileDeleteById() {
-        Group testGroup = new Group();
-        testGroup.setId(1);
-        testGroup.setName("Test");
-
-        ReflectionTestUtils.setField(groupRepository, "entityManager", mockedEntityManager);
-        when(mockedEntityManager.merge(testGroup)).thenThrow(PersistenceException.class);
-
+    void shouldGenerateLogsWhenThrowDataAccessExceptionWhileDeleteById() {
+        Integer testId = null;
+        
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
-        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object " + testGroup + ".",
-                "Can't delete an object " + testGroup+ "."));
+        List<String> expectedMessages = new ArrayList<>(Arrays.asList("Try to delete an object by id " + testId + ".",
+                "Can't delete an object by id " + testId + "."));
 
         for (int i = 0; i < expectedLogs.size(); i++) {
             expectedLogs.get(i).setLevel(expectedLevels.get(i));
@@ -542,7 +409,7 @@ class GroupRepositoryTest {
         }
 
         try {
-            groupRepository.delete(testGroup);
+            groupRepository.deleteById(testId);
         } catch (RepositoryException repositoryException) {
             // do nothing
         }

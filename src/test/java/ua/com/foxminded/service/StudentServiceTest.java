@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doThrow;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,8 +33,8 @@ import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Student;
-import ua.com.foxminded.repositories.StudentRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.StudentRepository;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
 import ua.com.foxminded.service.aspects.PersonAspect;
 import ua.com.foxminded.service.aspects.StudentAspect;
@@ -111,7 +112,7 @@ class StudentServiceTest {
         creatingStudent.setGroup(group2);
 
         studentService.create(creatingStudent);
-        verify(studentRepository).create(creatingStudent);
+        verify(studentRepository).save(creatingStudent);
     }
 
     @Test
@@ -123,6 +124,26 @@ class StudentServiceTest {
     @Test
     void shouldGetStudentById() {
         int studentId = 1;
+        
+        Faculty faculty = new Faculty();
+        faculty.setId(studentId);
+        faculty.setName("Faculty");
+        
+        Group group = new Group();
+        group.setId(1);
+        group.setName("Group");
+        group.setFaculty(faculty);
+        
+        Student student = new Student();
+        student.setId(studentId);
+        student.setFirstName("Student");
+        student.setLastName("Student");
+        student.setGender(Gender.MALE);
+        student.setEmail("test@test.com");
+        student.setPhoneNumber("+380111111111");
+        student.setGroup(group);
+        
+        when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
         studentService.getById(studentId);
         verify(studentRepository).findById(studentId);
     }
@@ -138,19 +159,14 @@ class StudentServiceTest {
         student.setEmail("kozhumiaka@test.com");
         student.setGroup(group2);
         studentService.update(student);
-        verify(studentRepository).update(student);
+        verify(studentRepository).save(student);
     }
 
     @Test
     void shouldDeleteStudentById() {
         int testId = 1;
-        Student student = new Student();
-        student.setId(testId);
-        
-        when(studentRepository.findById(testId)).thenReturn(student);
         studentService.deleteById(testId);
-        verify(studentRepository).findById(testId);
-        verify(studentRepository).delete(student);
+        verify(studentRepository).deleteById(testId);
     }
 
     @Test
@@ -347,7 +363,7 @@ class StudentServiceTest {
         student.setEmail("VIaremenko@gmail.com");
         student.setGroup(group1);
 
-        doThrow(RepositoryException.class).when(studentRepository).create(student);
+        doThrow(RepositoryException.class).when(studentRepository).save(student);
 
         assertThrows(ServiceException.class, () -> studentService.create(student));
     }
@@ -402,7 +418,7 @@ class StudentServiceTest {
         student.setEmail("izakharchuk@gmail.com");
         student.setGroup(group1);
 
-        doThrow(RepositoryException.class).when(studentRepository).update(student);
+        doThrow(RepositoryException.class).when(studentRepository).save(student);
 
         assertThrows(ServiceException.class, () -> studentService.update(student));
     }
@@ -416,7 +432,7 @@ class StudentServiceTest {
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
-        doThrow(RepositoryException.class).when(studentRepository).findById(testId);
+        doThrow(RepositoryException.class).when(studentRepository).deleteById(testId);
         assertThrows(ServiceException.class, () -> studentService.deleteById(testId));
     }
 
@@ -542,7 +558,7 @@ class StudentServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(RepositoryException.class).when(studentRepository).create(student);
+        doThrow(RepositoryException.class).when(studentRepository).save(student);
 
         try {
             studentService.create(student);
@@ -792,7 +808,7 @@ class StudentServiceTest {
         student.setEmail("krasnoshtan@test.com");
         student.setGroup(group1);
 
-        when(studentRepository.findById(testId)).thenReturn(student);
+        when(studentRepository.findById(testId)).thenReturn(Optional.of(student));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -899,7 +915,7 @@ class StudentServiceTest {
         student.setEmail("vatsiak@test.com");
         student.setGroup(group2);
 
-        doThrow(RepositoryException.class).when(studentRepository).update(student);
+        doThrow(RepositoryException.class).when(studentRepository).save(student);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -991,7 +1007,7 @@ class StudentServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 10;
 
-        doThrow(RepositoryException.class).when(studentRepository).findById(testId);
+        doThrow(RepositoryException.class).when(studentRepository).deleteById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));

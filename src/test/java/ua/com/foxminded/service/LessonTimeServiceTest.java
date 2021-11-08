@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +31,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.LessonTime;
-import ua.com.foxminded.repositories.LessonTimeRepository;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
+import ua.com.foxminded.repositories.interfaces.LessonTimeRepository;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
 import ua.com.foxminded.service.aspects.LessonTimeAspect;
 import ua.com.foxminded.service.exceptions.ServiceException;
@@ -85,7 +86,7 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(endTime);
 
         lessonTimeService.create(lessonTime);
-        verify(lessonTimeRepository).create(lessonTime);
+        verify(lessonTimeRepository).save(lessonTime);
     }
 
     @Test
@@ -97,6 +98,11 @@ class LessonTimeServiceTest {
     @Test
     void shouldGetLessonTimeById() {
         int lessonTimeId = 2;
+        LessonTime lessonTime = new LessonTime();
+        lessonTime.setId(lessonTimeId);
+        lessonTime.setStartTime(LocalTime.of(9, 0));
+        lessonTime.setEndTime(LocalTime.of(10, 0));
+        when(lessonTimeRepository.findById(lessonTimeId)).thenReturn(Optional.of(lessonTime));
         lessonTimeService.getById(lessonTimeId);
         verify(lessonTimeRepository).findById(lessonTimeId);
     }
@@ -111,18 +117,14 @@ class LessonTimeServiceTest {
         lessonTime.setEndTime(endTime);
 
         lessonTimeService.update(lessonTime);
-        verify(lessonTimeRepository).update(lessonTime);
+        verify(lessonTimeRepository).save(lessonTime);
     }
 
     @Test
     void shouldDeleteLessonTimeById() {
         int lessonTimeId = 4;
-        LessonTime lessonTime = new LessonTime();
-        lessonTime.setId(lessonTimeId);
-        when(lessonTimeRepository.findById(lessonTimeId)).thenReturn(lessonTime);
         lessonTimeService.deleteById(lessonTimeId);
-        verify(lessonTimeRepository).findById(lessonTimeId);
-        verify(lessonTimeRepository).delete(lessonTime);
+        verify(lessonTimeRepository).deleteById(lessonTimeId);
     }
 
     @Test
@@ -167,7 +169,7 @@ class LessonTimeServiceTest {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(1, 0));
-        doThrow(RepositoryException.class).when(lessonTimeRepository).create(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).save(lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
     }
 
@@ -211,7 +213,7 @@ class LessonTimeServiceTest {
         lessonTime.setId(5);
         lessonTime.setStartTime(LocalTime.of(15, 30));
         lessonTime.setEndTime(LocalTime.of(17, 30));
-        doThrow(RepositoryException.class).when(lessonTimeRepository).update(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).save(lessonTime);
         assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
     }
 
@@ -224,7 +226,7 @@ class LessonTimeServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
-        doThrow(RepositoryException.class).when(lessonTimeRepository).findById(testId);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).deleteById(testId);
         assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
     }
 
@@ -397,7 +399,7 @@ class LessonTimeServiceTest {
             expectedLogs.get(i).setMessage(expectedMessages.get(i));
         }
 
-        doThrow(RepositoryException.class).when(lessonTimeRepository).create(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).save(lessonTime);
 
         try {
             lessonTimeService.create(lessonTime);
@@ -630,7 +632,7 @@ class LessonTimeServiceTest {
         expectedLessonTime.setStartTime(LocalTime.of(12, 0));
         expectedLessonTime.setEndTime(LocalTime.of(14, 0));
 
-        when(lessonTimeRepository.findById(testId)).thenReturn(expectedLessonTime);
+        when(lessonTimeRepository.findById(testId)).thenReturn(Optional.of(expectedLessonTime));
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.DEBUG));
@@ -724,7 +726,7 @@ class LessonTimeServiceTest {
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
 
-        doThrow(RepositoryException.class).when(lessonTimeRepository).update(lessonTime);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).save(lessonTime);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
@@ -816,7 +818,7 @@ class LessonTimeServiceTest {
     void shouldGenerateLogsWhenRepositoryExceptionWhileDeleteById() {
         int testId = 4;
 
-        doThrow(RepositoryException.class).when(lessonTimeRepository).findById(testId);
+        doThrow(RepositoryException.class).when(lessonTimeRepository).deleteById(testId);
 
         List<LoggingEvent> expectedLogs = new ArrayList<>(Arrays.asList(new LoggingEvent(), new LoggingEvent()));
         List<Level> expectedLevels = new ArrayList<>(Arrays.asList(Level.DEBUG, Level.ERROR));
