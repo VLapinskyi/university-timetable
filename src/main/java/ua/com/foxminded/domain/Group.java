@@ -18,6 +18,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "groups")
@@ -42,6 +43,7 @@ public class Group {
     
     @OneToMany(cascade = CascadeType.ALL,
             mappedBy = "group")
+    @Size(max = 32, message = "Group can have no more than 32 students")
     private List<Student> students;
     
     public Group() {

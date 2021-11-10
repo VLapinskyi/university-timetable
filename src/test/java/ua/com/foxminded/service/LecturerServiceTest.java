@@ -141,7 +141,10 @@ class LecturerServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenLecturerIsNullWhileCreate() {
         Lecturer lecturer = null;
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+
+        String message = "A given person isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -154,7 +157,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380963852741");
         lecturer.setEmail("ivan@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given person isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -165,7 +171,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380741852963");
         lecturer.setEmail("smith@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -177,7 +186,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("English@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -189,7 +201,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("jonson@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -200,7 +215,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380741852963");
         lecturer.setEmail("smith@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -212,7 +230,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("English@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -224,7 +245,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("jonson@test.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -235,7 +259,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380987654321");
         lecturer.setEmail("olhaskladenko@gmail.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -246,7 +273,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.FEMALE);
         lecturer.setEmail("NSyrhiienko@gmail.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -258,7 +288,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+380475");
         lecturer.setEmail("NSyrhiienko@gmail.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -269,7 +302,10 @@ class LecturerServiceTest {
         lecturer.setGender(Gender.MALE);
         lecturer.setPhoneNumber("+301234567846");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -281,7 +317,10 @@ class LecturerServiceTest {
         lecturer.setPhoneNumber("+301234567846");
         lecturer.setEmail("matviichuk");
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "A given lecturer isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -295,45 +334,63 @@ class LecturerServiceTest {
 
         doThrow(RepositoryException.class).when(lecturerRepository).save(lecturer);
 
-        assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.create(lecturer));
+    
+        String message = "There is some error in repositories layer when create object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
         when(lecturerRepository.findAll()).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lecturerService.getAll());
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.getAll());
+    
+        String message = "There is some error in repositories layer when getAll.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileGetById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
+    
+        String message = "A given id is incorrect when getById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 3;
         when(lecturerRepository.findById(testId)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.getById(testId));
+    
+        String message = "There is some error in repositories layer when get object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLecturerIsNullWhileUpdate() {
         Lecturer lecturer = null;
-        assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
+    
+        String message = "A given person isn't legal when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLecturerIsInvalidWhileUpdate() {
         Lecturer lecturer = new Lecturer();
-        lecturer.setId(-40);
+        lecturer.setId(40);
         lecturer.setFirstName("Olha");
-        lecturer.setLastName("Skladenko");
+        lecturer.setLastName(" Skladenko");
         lecturer.setGender(Gender.FEMALE);
         lecturer.setPhoneNumber("+380123456789");
         lecturer.setEmail("olhaskladenko@gmail.com");
 
-        assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
+        
+        String message = "A given lecturer isn't valid when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -348,20 +405,29 @@ class LecturerServiceTest {
 
         doThrow(RepositoryException.class).when(lecturerRepository).save(lecturer);
 
-        assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.update(lecturer));
+    
+        String message = "Can't update an object because of repositoryException.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileDeleteById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
+    
+        String message = "A given id is less than 1 when deleteById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
         doThrow(RepositoryException.class).when(lecturerRepository).deleteById(testId);
-        assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lecturerService.deleteById(testId));
+    
+        String message = "There is some error in repositories layer when delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test

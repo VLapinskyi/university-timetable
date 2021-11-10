@@ -130,7 +130,10 @@ class LessonTimeServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIsNullWhileCreate() {
         LessonTime lessonTime = null;
-        assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+    
+        String message = "A given lessonTime isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -138,22 +141,31 @@ class LessonTimeServiceTest {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setId(5);
         lessonTime.setStartTime(LocalTime.of(9, 0));
-        lessonTime.setEndTime(LocalTime.of(1, 0));
-        assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+        lessonTime.setEndTime(LocalTime.of(10, 0));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+    
+        String message = "A given lessonTime isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonStartTimeIsNullWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setEndTime(LocalTime.of(11, 0));
-        assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+    
+        String message = "A given lessonTime isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonEndTimeIsNullWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
-        assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+    
+        String message = "A given lessonTime isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -161,41 +173,59 @@ class LessonTimeServiceTest {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(11, 0));
         lessonTime.setEndTime(LocalTime.of(9, 0));
-        assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+    
+        String message = "A given lessonTime isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileCreate() {
         LessonTime lessonTime = new LessonTime();
         lessonTime.setStartTime(LocalTime.of(9, 0));
-        lessonTime.setEndTime(LocalTime.of(1, 0));
+        lessonTime.setEndTime(LocalTime.of(11, 0));
         doThrow(RepositoryException.class).when(lessonTimeRepository).save(lessonTime);
-        assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.create(lessonTime));
+    
+        String message = "There is some error in repositories layer when create object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
         when(lessonTimeRepository.findAll()).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonTimeService.getAll());
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.getAll());
+    
+        String message = "There is some error in repositories layer when getAll.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIdIsZeroWhileGetById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
+    
+        String message = "A given id is incorrect when getById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 2;
         when(lessonTimeRepository.findById(testId)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.getById(testId));
+    
+        String message = "There is some error in repositories layer when get object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIsNullWhileUpdate() {
         LessonTime lessonTime = null;
-        assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
+    
+        String message = "A given lessonTime isn't legal when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -204,7 +234,10 @@ class LessonTimeServiceTest {
         lessonTime.setId(-22);
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
-        assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
+    
+        String message = "A given lessonTime isn't valid when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -214,20 +247,29 @@ class LessonTimeServiceTest {
         lessonTime.setStartTime(LocalTime.of(15, 30));
         lessonTime.setEndTime(LocalTime.of(17, 30));
         doThrow(RepositoryException.class).when(lessonTimeRepository).save(lessonTime);
-        assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.update(lessonTime));
+    
+        String message = "Can't update an object because of repositoryException.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonTimeIdIsZeroWhileDeleteById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
+    
+        String message = "A given id is less than 1 when deleteById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
         doThrow(RepositoryException.class).when(lessonTimeRepository).deleteById(testId);
-        assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonTimeService.deleteById(testId));
+    
+        String message = "There is some error in repositories layer when delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test

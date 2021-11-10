@@ -153,28 +153,40 @@ private final String testData = "/Test data.sql";
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileSave() {
         LessonTime lessonTime = null;
         
-        assertThrows(RepositoryException.class, () -> lessonTimeRepository.save(lessonTime));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonTimeRepository.save(lessonTime));
+    
+        String message = "Can't save/update the object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(RepositoryException.class, () -> lessonTimeRepository.findById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonTimeRepository.findById(testId));
+    
+        String message = "There is no object with specified id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     @Sql(testData)
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileFindById() {
         Integer testId = null;
-        assertThrows(RepositoryException.class, () -> lessonTimeRepository.findById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonTimeRepository.findById(testId));
+    
+        String message = "Can't find an object by id.";
+        assertEquals(message, exception.getMessage());
     }
     
     @Test
     @Sql(testData)
-    void shouldThrowRepositoryExceptionWhenPersistenceExceptionWhileDeleteById() {
+    void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileDeleteById() {
         Integer testId =  null;
         
-        assertThrows(RepositoryException.class, () -> lessonTimeRepository.deleteById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonTimeRepository.deleteById(testId));
+    
+        String message = "Can't delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test

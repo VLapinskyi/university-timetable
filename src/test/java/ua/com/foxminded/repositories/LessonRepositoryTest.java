@@ -318,27 +318,39 @@ private final String testData = "/Test data.sql";
     @Test
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileSave() {
         Lesson lesson = null;
-        assertThrows(RepositoryException.class, () -> lessonRepository.save(lesson));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonRepository.save(lesson));
+    
+        String message = "Can't save/update the object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
+    
+        String message = "There is no object with specified id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     @Sql(testData)
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileFindById() {
         Integer testId = null;
-        assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonRepository.findById(testId));
+    
+        String message = "Can't find an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     @Sql(testData)
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileDeleteById() {
         Integer testId = null;
-        assertThrows(RepositoryException.class, () -> lessonRepository.deleteById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> lessonRepository.deleteById(testId));
+    
+        String message = "Can't delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -494,7 +506,6 @@ private final String testData = "/Test data.sql";
         }
     }
 
-    
     @Test
     @Sql(testData)
     void shouldGenerateLogsWhenDeleteById() {
