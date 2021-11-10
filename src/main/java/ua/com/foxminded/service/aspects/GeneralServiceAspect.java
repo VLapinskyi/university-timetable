@@ -135,7 +135,7 @@ public class GeneralServiceAspect {
             }
         } catch (RepositoryException repositoryException) {
             logger.error("There is some error in repositories layer when update an object {}.", updatedObject, repositoryException);
-            throw new ServiceException("Can't update an object.", repositoryException);
+            throw new ServiceException("Can't update an object because of repositoryException.", repositoryException);
         }
     }
 

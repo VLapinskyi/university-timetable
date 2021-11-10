@@ -60,10 +60,10 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get all objects.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get all objects.", serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }
@@ -83,14 +83,14 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get an object with id{}.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("The given id {} is wrong when get an object with this id.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get an object with id {}.", serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }
@@ -110,17 +110,17 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when create an object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof ConstraintViolationException 
                     || serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when create object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when create an object {}.", object,
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             }
         }
     }
@@ -140,17 +140,17 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when update an object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof ConstraintViolationException 
                     || serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when update object {}.", object, serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when update an object {}.", object,
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             }
         }
     }
@@ -170,16 +170,16 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when delete object with id {}.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("There are errors with given data when delete object with id {}.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when delete object with id {}.", id,
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             }
         }
     }
@@ -198,12 +198,12 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get a page for creating a new object.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get a page for creating a new object.",
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             }
         }
     }
@@ -222,12 +222,12 @@ public class GeneralControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when get a page for editing a new object.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get a page for editing a new object.",
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             }
         }
     }

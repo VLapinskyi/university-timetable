@@ -50,7 +50,7 @@ public class GeneralRepositoryAspect {
             }
         } catch (DataAccessException dataAccessException) {
             logger.error("Can't save/update the object: {}.", object, dataAccessException);
-            throw new RepositoryException("Can't save/update the object", dataAccessException);
+            throw new RepositoryException("Can't save/update the object.", dataAccessException);
         }
     }
 
@@ -98,7 +98,7 @@ public class GeneralRepositoryAspect {
 
         } catch (NullPointerException nullPointerException) {
             logger.error("There is no result when find an object by id {}.", id, nullPointerException);
-            throw new RepositoryException("Can't find an object by id.", nullPointerException);
+            throw new RepositoryException("There is no object with specified id.", nullPointerException);
         } catch (DataAccessException dataAccessException) {
             logger.error("Can't find an object by id {}.", id, dataAccessException);
             throw new RepositoryException("Can't find an object by id.", dataAccessException);

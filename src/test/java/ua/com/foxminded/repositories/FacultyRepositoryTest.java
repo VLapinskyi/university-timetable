@@ -132,25 +132,38 @@ class FacultyRepositoryTest {
     @Test
     void shouldThrowRepositoryExceptionWhenDataAccesExceptionWhileSave() {
         Faculty testFaculty = null;
-        assertThrows(RepositoryException.class, () -> facultyRepository.save(testFaculty));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> facultyRepository.save(testFaculty));
+    
+        String message = "Can't save/update the object.";
+        assertEquals(message, exception.getMessage());
     }
+    
     @Test
     void shouldThrowRepositoryExceptionWhenResultIsNullPointerExceptionWhileFindById() {
         int testId = 1;
-        assertThrows(RepositoryException.class, () -> facultyRepository.findById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> facultyRepository.findById(testId));
+    
+        String message = "There is no object with specified id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     @Sql(testData)
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileFindById() {
         Integer testId = null;
-        assertThrows(RepositoryException.class, () -> facultyRepository.findById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> facultyRepository.findById(testId));
+    
+        String message = "Can't find an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowRepositoryExceptionWhenDataAccessExceptionWhileDeleteById() {
         int testId = 23;
-        assertThrows(RepositoryException.class, () -> facultyRepository.deleteById(testId));
+        RuntimeException exception = assertThrows(RepositoryException.class, () -> facultyRepository.deleteById(testId));
+    
+        String message = "Can't delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test

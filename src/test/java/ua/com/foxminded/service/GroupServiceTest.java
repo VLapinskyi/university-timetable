@@ -29,7 +29,9 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import ua.com.foxminded.domain.Faculty;
+import ua.com.foxminded.domain.Gender;
 import ua.com.foxminded.domain.Group;
+import ua.com.foxminded.domain.Student;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
 import ua.com.foxminded.repositories.interfaces.GroupRepository;
 import ua.com.foxminded.service.aspects.GeneralServiceAspect;
@@ -137,12 +139,14 @@ class GroupServiceTest {
         groupService.deleteById(groupId);
         verify(groupRepository).deleteById(groupId);
     }
-
     
     @Test
     void shouldThrowServiceExceptionWhenGroupIsNullWhileCreate() {
         Group group = null;
-        assertThrows(ServiceException.class, () -> groupService.create(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.create(group));
+        
+        String message = "A given group isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -155,7 +159,10 @@ class GroupServiceTest {
         faculty.setName("Faculty 01");
         group.setFaculty(faculty);
 
-        assertThrows(ServiceException.class, () -> groupService.create(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.create(group));
+        
+        String message = "A given group isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -166,7 +173,10 @@ class GroupServiceTest {
         faculty.setName("Faculty name");
         group.setFaculty(faculty);
 
-        assertThrows(ServiceException.class, () -> groupService.create(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.create(group));
+        
+        String message = "A given group isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -177,7 +187,10 @@ class GroupServiceTest {
         faculty.setId(5);
         faculty.setName("Faculty name");
 
-        assertThrows(ServiceException.class, () -> groupService.create(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.create(group));
+        
+        String message = "A given group isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -188,7 +201,45 @@ class GroupServiceTest {
         faculty.setId(7);
         faculty.setName("Faculty");
 
-        assertThrows(ServiceException.class, () -> groupService.create(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.create(group));
+        
+        String message = "A given group isn't valid when create.";
+        assertEquals(message, exception.getMessage());
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenGroupHas33StudentsWhileCreate() {
+        Faculty faculty = new Faculty();
+        faculty.setName("Faculty");
+        
+        Group group = new Group();
+        group.setName("Group");
+        group.setFaculty(faculty);
+        
+        String studentFirstName = "First name";
+        String studentLastName = "Last name";
+        long phoneNumber = 380670000000L;
+        String email = "test@test.com";
+        
+        List<Student> groupStudents = new ArrayList<>();
+        
+        for (int i = 0; i < 33; i++) {
+            Student student = new Student();
+            student.setFirstName(studentFirstName + i);
+            student.setLastName(studentLastName + i);
+            student.setGender(Gender.MALE);
+            student.setPhoneNumber("+" + (phoneNumber + i));
+            student.setEmail(i + email);
+            student.setGroup(group);
+            groupStudents.add(student);
+        }
+        group.setStudents(groupStudents);
+        
+        RuntimeException exception = assertThrows(ServiceException.class,
+                () -> groupService.create(group));
+        
+        String exceptionMessage = "A given group isn't valid when create.";
+        assertEquals(exceptionMessage, exception.getMessage());
     }
 
     @Test
@@ -201,32 +252,48 @@ class GroupServiceTest {
         group.setFaculty(faculty);
 
         doThrow(RepositoryException.class).when(groupRepository).save(group);
-        assertThrows(ServiceException.class, () -> groupService.create(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.create(group));
+        
+        String message = "There is some error in repositories layer when create object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
         when(groupRepository.findAll()).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> groupService.getAll());
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.getAll());
+        
+        String message = "There is some error in repositories layer when getAll.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyIdIsZeroWhileGetById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> groupService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.getById(testId));
+        
+        String message = "A given id is incorrect when getById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 2;
         when(groupRepository.findById(testId)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> groupService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.getById(testId));
+        
+        String message = "There is some error in repositories layer when get object by id.";
+        
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenGroupIsNullWhileUpdate() {
         Group group = null;
-        assertThrows(ServiceException.class, () -> groupService.update(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.update(group));
+        
+        String message = "A given group isn't legal when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -239,7 +306,10 @@ class GroupServiceTest {
         faculty.setName("Faculty");
         group.setFaculty(faculty);
 
-        assertThrows(ServiceException.class, () -> groupService.update(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.update(group));
+        
+        String message = "A given group isn't valid when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -250,23 +320,32 @@ class GroupServiceTest {
         Faculty faculty = new Faculty();
         faculty.setId(8);
         faculty.setName("Faculty");
+        group.setFaculty(faculty);
         doThrow(RepositoryException.class).when(groupRepository).save(group);
-        assertThrows(ServiceException.class, () -> groupService.update(group));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.update(group));
+        
+        String message = "Can't update an object because of repositoryException.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenGroupIdIsZeroWhileDeleteById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> groupService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.deleteById(testId));
+        
+        String message = "A given id is less than 1 when deleteById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 5;
         doThrow(RepositoryException.class).when(groupRepository).deleteById(testId);
-        assertThrows(ServiceException.class, () -> groupService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> groupService.deleteById(testId));
+        
+        String message = "There is some error in repositories layer when delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
-
 
     @Test
     void shouldGenerateLogsWhenGroupIsNullWhileCreate() {

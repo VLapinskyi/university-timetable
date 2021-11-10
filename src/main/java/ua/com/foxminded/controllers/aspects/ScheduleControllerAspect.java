@@ -51,11 +51,11 @@ public class ScheduleControllerAspect {
             if (serviceException.getException() instanceof RepositoryException) {
                 LOGGER.error("There are some errors in dao layer when prepare search schedule form.", serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when prepare search schedule form.",
                         serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }
@@ -82,16 +82,16 @@ public class ScheduleControllerAspect {
                 LOGGER.error("There are some errors in dao layer when get week schedule for a lecturer with id {}.",
                         lecturerId, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("The given lecturerId {} is wrong when get week schedule for a lecturer.", lecturerId,
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get week schedule for a lecturer with id {}.",
                         lecturerId, serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }
@@ -120,18 +120,18 @@ public class ScheduleControllerAspect {
                         "There are some errors in dao layer when get schedule of a month {} for a lecturer with id {}.",
                         monthValue, lecturerId, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error(
                         "The given parameters lecturerId = {} and monthValue = {} are wrong when get month schedule for a lecturer.",
                         lecturerId, monthValue, serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error(
                         "There is some error in service layer when get schedule of a month {} for a lecturer with id {}.",
                         monthValue, lecturerId, serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }
@@ -158,16 +158,16 @@ public class ScheduleControllerAspect {
                 LOGGER.error("There are some errors in dao layer when get week schedule for a group with id {}.",
                         groupId, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error("The given groupId {} is wrong when get week schedule for a group.", groupId,
                         serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error("There is some error in service layer when get week schedule for a group with id {}.",
                         groupId, serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }
@@ -196,18 +196,18 @@ public class ScheduleControllerAspect {
                         "There are some errors in dao layer when get schedule of a month {} for a group with id {}.",
                         monthValue, groupId, serviceException);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else if (serviceException.getException() instanceof IllegalArgumentException) {
                 LOGGER.error(
                         "The given parameters groupId = {} and monthValue = {} are wrong when get month schedule for a lecturer.",
                         groupId, monthValue, serviceException);
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        serviceException.getServiceExceptionMessage());
+                        serviceException.getMessage());
             } else {
                 LOGGER.error(
                         "There is some error in service layer when get schedule of a month {} for a group with id {}.",
                         monthValue, groupId, serviceException);
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getServiceExceptionMessage());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }
     }

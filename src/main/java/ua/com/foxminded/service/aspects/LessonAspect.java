@@ -309,7 +309,7 @@ public class LessonAspect {
         } catch (RepositoryException repositoryException) {
             logger.error("There is some error in repositories layer when get week lessons for a lecturer with id {}.",
                     lecturerId, repositoryException);
-            throw new ServiceException("There is some error in repositories layer when get week lessons for a group.",
+            throw new ServiceException("There is some error in repositories layer when get week lessons for a lecturer.",
                     repositoryException);
         }
     }

@@ -123,7 +123,10 @@ class FacultyServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenFacultyIsNullWhileCreate() {
         Faculty faculty = null;
-        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        RuntimeException  exception = assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+    
+        String message = "A given faculty isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -131,27 +134,39 @@ class FacultyServiceTest {
         Faculty faculty = new Faculty();
         faculty.setId(5);
         faculty.setName("Test name");
-        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        RuntimeException  exception = assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        
+        String message = "A given faculty isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyNameIsNullWhileCreate() {
         Faculty faculty = new Faculty();
-        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        
+        String message = "A given faculty isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyNameIsShortWhileCreate() {
         Faculty faculty = new Faculty();
         faculty.setName("q   ");
-        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        
+        String message = "A given faculty isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyNameStartsWithWhiteSpaceWhileCreate() {
         Faculty faculty = new Faculty();
         faculty.setName(" Test name");
-        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        
+        String message = "A given faculty isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -159,32 +174,48 @@ class FacultyServiceTest {
         Faculty faculty = new Faculty();
         faculty.setName("Test faculty");
         doThrow(RepositoryException.class).when(facultyRepository).save(faculty);
-        assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.create(faculty));
+        
+        String message = "There is some error in repositories layer when create object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
         when(facultyRepository.findAll()).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> facultyService.getAll());
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.getAll());
+        
+        String message = "There is some error in repositories layer when getAll.";
+        
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyIdIsZeroWhileGetById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> facultyService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.getById(testId));
+        
+        String message = "A given id is incorrect when getById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 2;
         when(facultyRepository.findById(testId)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> facultyService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.getById(testId));
+        
+        String message = "There is some error in repositories layer when get object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyIsNullWhileUpdate() {
         Faculty faculty = null;
-        assertThrows(ServiceException.class, () -> facultyService.update(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.update(faculty));
+        
+        String message = "A given faculty isn't legal when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -192,7 +223,10 @@ class FacultyServiceTest {
         Faculty faculty = new Faculty();
         faculty.setId(-22);
         faculty.setName(" Test name");
-        assertThrows(ServiceException.class, () -> facultyService.update(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.update(faculty));
+        
+        String message = "A given faculty isn't valid when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -201,20 +235,29 @@ class FacultyServiceTest {
         faculty.setId(12);
         faculty.setName("Test faculty");
         doThrow(RepositoryException.class).when(facultyRepository).save(faculty);
-        assertThrows(ServiceException.class, () -> facultyService.update(faculty));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.update(faculty));
+        
+        String message = "Can't update an object because of repositoryException.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenFacultyIdIsZeroWhileDeleteById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> facultyService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.deleteById(testId));
+        
+        String message = "A given id is less than 1 when deleteById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileDeleteById() {
         int testId = 2;
         doThrow(RepositoryException.class).when(facultyRepository).deleteById(testId);
-        assertThrows(ServiceException.class, () -> facultyService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> facultyService.deleteById(testId));
+        
+        String message = "There is some error in repositories layer when delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test

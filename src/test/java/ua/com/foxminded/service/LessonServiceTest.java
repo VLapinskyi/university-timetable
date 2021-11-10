@@ -276,7 +276,10 @@ class LessonServiceTest {
     @Test
     void shouldThrowServiceExceptionWhenLessonIsNullWhileCreate() {
         Lesson lesson = null;
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -290,7 +293,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.THURSDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't legal when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -302,7 +308,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.WEDNESDAY);
         lesson.setLessonTime(lessonTime2);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -315,7 +324,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -328,7 +340,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.TUESDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -340,7 +355,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.THURSDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -352,10 +370,13 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.THURSDAY);
         lesson.setLessonTime(lessonTime1);
 
-        lecturer1.setId(-4);
+        lecturer1.setFirstName(" ");
         lesson.setLecturer(lecturer1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -367,7 +388,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.WEDNESDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -382,7 +406,10 @@ class LessonServiceTest {
         group2.setId(-1);
         lesson.setGroup(group2);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -394,7 +421,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -407,7 +437,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.TUESDAY);
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -420,7 +453,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.FRIDAY);
         lesson.setLessonTime(lessonTime2);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -432,7 +468,26 @@ class LessonServiceTest {
         lesson.setGroup(group1);
         lesson.setLessonTime(lessonTime2);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
+    }
+    
+    @Test
+    void shouldThrowServiceExceptionWhenLessonDayIsSundayWhileCreate() {
+        Lesson lesson = new Lesson();
+        lesson.setName("Test lesson");
+        lesson.setAudience("666");
+        lesson.setLecturer(lecturer1);
+        lesson.setGroup(group1);
+        lesson.setLessonTime(lessonTime1);
+        lesson.setDay(DayOfWeek.SUNDAY);
+        
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage()); 
     }
 
     @Test
@@ -444,7 +499,10 @@ class LessonServiceTest {
         lesson.setGroup(group2);
         lesson.setDay(DayOfWeek.WEDNESDAY);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -459,7 +517,10 @@ class LessonServiceTest {
         lessonTime1.setEndTime(LocalTime.of(8, 0));
         lesson.setLessonTime(lessonTime1);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "A given lesson isn't valid when create.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -474,32 +535,47 @@ class LessonServiceTest {
 
         doThrow(RepositoryException.class).when(lessonRepository).save(lesson);
 
-        assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.create(lesson));
+    
+        String message = "There is some error in repositories layer when create object.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetAll() {
         when(lessonRepository.findAll()).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonService.getAll());
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getAll());
+    
+        String message = "There is some error in repositories layer when getAll.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonIdIsZeroWhileGetById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lessonService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getById(testId));
+    
+        String message = "A given id is incorrect when getById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenRepositoryExceptionWhileGetById() {
         int testId = 4;
         when(lessonRepository.findById(testId)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonService.getById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getById(testId));
+    
+        String message = "There is some error in repositories layer when get object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonIsNullWhileUpdate() {
         Lesson lesson = null;
-        assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+    
+        String message = "A given lesson isn't legal when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -513,7 +589,10 @@ class LessonServiceTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setLessonTime(lessonTime2);
 
-        assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+    
+        String message = "A given lesson isn't valid when update.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -521,7 +600,7 @@ class LessonServiceTest {
         Lesson lesson = new Lesson();
         lesson.setId(45);
         lesson.setName("Lesson-1");
-        lesson.setAudience(" 114");
+        lesson.setAudience("114");
         lesson.setLecturer(lecturer2);
         lesson.setGroup(group1);
         lesson.setDay(DayOfWeek.MONDAY);
@@ -529,26 +608,38 @@ class LessonServiceTest {
 
         doThrow(RepositoryException.class).when(lessonRepository).save(lesson);
 
-        assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.update(lesson));
+    
+        String message = "Can't update an object because of repositoryException.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLessonIdIsZeroWhileDeleteById() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
+    
+        String message = "A given id is less than 1 when deleteById.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptioinWhenRepositoryExceptionWhileDeleteById() {
         int testId = 74;
         doThrow(RepositoryException.class).when(lessonRepository).deleteById(testId);
-        assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.deleteById(testId));
+    
+        String message = "There is some error in repositories layer when delete an object by id.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenGroupIdIsZeroWhileGetGroupWeekLessons() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
+    
+        String message = "There is an error with given number when get week lessons for a group.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -556,14 +647,20 @@ class LessonServiceTest {
         int testId = 74;
         DayOfWeek testDay = DayOfWeek.MONDAY;
         when(lessonRepository.findByGroupIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getGroupWeekLessons(testId));
+    
+        String message = "There is some error in repositories layer when get week lessons for a group.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenGroupIdIsZeroWhileGetGroupMonthLessons() {
         int testId = 0;
         YearMonth testMonth = YearMonth.of(2021, 5);
-        assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
+    
+        String message = "There is an error with given number when get month lessons for a group.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -572,13 +669,19 @@ class LessonServiceTest {
         YearMonth testMonth = YearMonth.of(2021, 4);
         DayOfWeek testDay = DayOfWeek.THURSDAY;
         when(lessonRepository.findByGroupIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getGroupMonthLessons(testId, testMonth));
+    
+        String message = "There is some error in repositories layer when get month lessons for a group.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileGetLecturerWeekLessons() {
         int testId = 0;
-        assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
+    
+        String message = "There is an error with given number when get week lessons for a lecturer.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -586,14 +689,20 @@ class LessonServiceTest {
         int testId = 12;
         DayOfWeek testDay = DayOfWeek.THURSDAY;
         when(lessonRepository.findByLecturerIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getLecturerWeekLessons(testId));
+    
+        String message = "There is some error in repositories layer when get week lessons for a lecturer.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
     void shouldThrowServiceExceptionWhenLecturerIdIsZeroWhileGetLecturerMonthLessons() {
         int testId = 0;
         YearMonth testMonth = YearMonth.of(2021, 3);
-        assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
+    
+        String message = "There is an error with given number when getting month lessons for a lecturer.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
@@ -602,7 +711,10 @@ class LessonServiceTest {
         YearMonth testMonth = YearMonth.of(2021, 2);
         DayOfWeek testDay = DayOfWeek.FRIDAY;
         when(lessonRepository.findByLecturerIdAndDay(testId, testDay)).thenThrow(RepositoryException.class);
-        assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
+        RuntimeException exception = assertThrows(ServiceException.class, () -> lessonService.getLecturerMonthLessons(testId, testMonth));
+    
+        String message = "There is some error in repositories layer when get month lessons for a group.";
+        assertEquals(message, exception.getMessage());
     }
 
     @Test
