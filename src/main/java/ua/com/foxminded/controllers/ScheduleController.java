@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ua.com.foxminded.domain.Group;
@@ -30,6 +31,7 @@ import ua.com.foxminded.service.LessonService;
 import ua.com.foxminded.service.LessonTimeService;
 
 @Controller
+@RequestMapping(produces = "text/html")
 public class ScheduleController {
 
     private LessonService lessonService;
@@ -195,7 +197,7 @@ public class ScheduleController {
         return "redirect:/search-schedule";
     }
 
-    @PostMapping("/search-schedule")
+    @PostMapping("/lessons")
     public String createLesson(@ModelAttribute("lesson") Lesson lesson, @RequestParam Map<String, String> allParams) {
         LessonTime lessonTime = lessonTimeService.getById(Integer.parseInt(allParams.get("lesson-time-value")));
         DayOfWeek day = DayOfWeek.valueOf(allParams.get("day-value"));

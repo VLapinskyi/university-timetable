@@ -23,7 +23,7 @@ import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.StudentService;
 
 @Controller
-@RequestMapping("/students")
+@RequestMapping(value = "/students", produces = "text/html")
 public class StudentsController {
     private StudentService studentService;
     private GroupService groupService;

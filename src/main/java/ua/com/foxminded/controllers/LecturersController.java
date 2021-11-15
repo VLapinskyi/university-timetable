@@ -21,7 +21,7 @@ import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.service.LecturerService;
 
 @Controller
-@RequestMapping("/lecturers")
+@RequestMapping(value = "/lecturers", produces = "text/html")
 public class LecturersController {
 
     private LecturerService lecturerService;

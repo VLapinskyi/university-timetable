@@ -644,7 +644,7 @@ class ScheduleControllerTest {
         when(groupService.getById(group.getId())).thenReturn(group);
         when(lecturerService.getById(lecturer.getId())).thenReturn(lecturer);
         
-        mockMvc.perform(post("/search-schedule")
+        mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", testLesson)
                 .param("day-value", DayOfWeek.WEDNESDAY.toString())
                 .param("lesson-time-value", Integer.toString(lessonTime.getId()))
@@ -1034,7 +1034,7 @@ class ScheduleControllerTest {
         
         doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
         
-        mockMvc.perform(post("/search-schedule")
+        mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
                 .param("day-value", DayOfWeek.MONDAY.toString())
                 .param("lesson-time-value", Integer.toString(lessonTime.getId()))
@@ -1057,7 +1057,7 @@ class ScheduleControllerTest {
         
         doThrow(serviceWithConstraintViolationException).when(lessonService).create(lesson);
         
-        mockMvc.perform(post("/search-schedule")
+        mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
                 .param("day-value", DayOfWeek.TUESDAY.toString())
                 .param("lesson-time-value", Integer.toString(lessonTime.getId()))
@@ -1084,7 +1084,7 @@ class ScheduleControllerTest {
         
         doThrow(serviceWithIllegalArgumentException).when(lessonService).create(lesson);
         
-        mockMvc.perform(post("/search-schedule")
+        mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
                 .param("day-value", DayOfWeek.TUESDAY.toString())
                 .param("lesson-time-value", Integer.toString(lessonTime.getId()))
@@ -1110,7 +1110,7 @@ class ScheduleControllerTest {
         
         doThrow(ServiceException.class).when(lessonTimeService).getById(lessonTime.getId());
         
-        mockMvc.perform(post("/search-schedule")
+        mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
                 .param("day-value", DayOfWeek.MONDAY.toString())
                 .param("lesson-time-value", Integer.toString(lessonTime.getId()))

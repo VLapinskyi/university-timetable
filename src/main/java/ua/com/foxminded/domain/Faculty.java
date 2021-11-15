@@ -16,6 +16,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "faculties")
 public class Faculty {
@@ -55,6 +57,7 @@ public class Faculty {
         this.name = name;
     }
     
+    @JsonIgnore
     public List<Group> getGroups() {
         return groups;
     }
