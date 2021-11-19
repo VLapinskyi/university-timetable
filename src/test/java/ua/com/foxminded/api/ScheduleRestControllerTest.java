@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.QueryTimeoutException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,15 +81,6 @@ class ScheduleRestControllerTest {
     
     @Autowired
     private ObjectMapper objectMapper;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
 
     @BeforeEach
     void init() throws Exception {
@@ -610,7 +599,7 @@ class ScheduleRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetLecturerWeekLessons() throws Exception {
         int lecturerId = 4;
 
-        when(lessonService.getLecturerWeekLessons(lecturerId)).thenThrow(serviceWithRepositoryException);
+        when(lessonService.getLecturerWeekLessons(lecturerId)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/lessons")
                 .param("lecturer-id", Integer.toString(lecturerId))
@@ -624,7 +613,7 @@ class ScheduleRestControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetGroupWeekLessons() throws Exception {
         int groupId = 3;
-        when(lessonService.getGroupWeekLessons(groupId)).thenThrow(serviceWithIllegalArgumentException);
+        when(lessonService.getGroupWeekLessons(groupId)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
 
         mockMvc.perform(get("/lessons")
                 .param("group-id", Integer.toString(groupId))
@@ -663,7 +652,7 @@ class ScheduleRestControllerTest {
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(10, 0));
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).create(lessonTime);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).create(lessonTime);
         
         String testJson = objectMapper.writeValueAsString(lessonTime);
         
@@ -681,7 +670,7 @@ class ScheduleRestControllerTest {
         lessonTime.setStartTime(LocalTime.of(10, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
         
-        doThrow(serviceWithConstraintViolationException).when(lessonTimeService).create(lessonTime);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonTimeService).create(lessonTime);
         
         String testJson = objectMapper.writeValueAsString(lessonTime);
         
@@ -699,7 +688,7 @@ class ScheduleRestControllerTest {
         lessonTime.setStartTime(LocalTime.of(11, 0));
         lessonTime.setEndTime(LocalTime.of(12, 0));
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonTimeService).create(lessonTime);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonTimeService).create(lessonTime);
         
         String testJson = objectMapper.writeValueAsString(lessonTime);
         
@@ -737,7 +726,7 @@ class ScheduleRestControllerTest {
         lessonTime.setStartTime(LocalTime.of(14, 0));
         lessonTime.setEndTime(LocalTime.of(15, 0));
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).update(lessonTime);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).update(lessonTime);
         
         String testJson = objectMapper.writeValueAsString(lessonTime);
         
@@ -757,7 +746,7 @@ class ScheduleRestControllerTest {
         lessonTime.setStartTime(LocalTime.of(15, 0));
         lessonTime.setEndTime(LocalTime.of(16, 0));
         
-        doThrow(serviceWithConstraintViolationException).when(lessonTimeService).update(lessonTime);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonTimeService).update(lessonTime);
         
         String testJson = objectMapper.writeValueAsString(lessonTime);
         
@@ -777,7 +766,7 @@ class ScheduleRestControllerTest {
         lessonTime.setStartTime(LocalTime.of(16, 0));
         lessonTime.setEndTime(LocalTime.of(17, 0));
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonTimeService).update(lessonTime);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonTimeService).update(lessonTime);
         
         String testJson = objectMapper.writeValueAsString(lessonTime);
         
@@ -813,7 +802,7 @@ class ScheduleRestControllerTest {
     void shouldReturn500WhenRepositoryExceptionWhileDeleteLessonTime() throws Exception {
         int testId = 741;
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).deleteById(testId);
         
         mockMvc.perform(delete("/lesson-time-parameters/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -826,7 +815,7 @@ class ScheduleRestControllerTest {
     void shouldReturn400WhenIllegalArgumentExceptionWhileDeleteLessonTime() throws Exception {
         int testId = 123;
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonTimeService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonTimeService).deleteById(testId);
         
         mockMvc.perform(delete("/lesson-time-parameters/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -858,7 +847,7 @@ class ScheduleRestControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).getById(lessonTime.getId());
         
         String testJson = objectMapper.writeValueAsString(lesson);
         
@@ -887,7 +876,7 @@ class ScheduleRestControllerTest {
         when(lecturerService.getById(lecturer.getId())).thenReturn(lecturer);
         when(lessonTimeService.getById(lessonTime.getId())).thenReturn(lessonTime);
         
-        doThrow(serviceWithConstraintViolationException).when(lessonService).create(lesson);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonService).create(lesson);
         
         String testJson = objectMapper.writeValueAsString(lesson);
         
@@ -920,7 +909,7 @@ class ScheduleRestControllerTest {
         when(lecturerService.getById(lecturer.getId())).thenReturn(lecturer);
         when(lessonTimeService.getById(lessonTime.getId())).thenReturn(lessonTime);
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonService).create(lesson);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonService).create(lesson);
         
         String testJson = objectMapper.writeValueAsString(lesson);
         
@@ -975,7 +964,7 @@ class ScheduleRestControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).getById(lessonTime.getId());
         
         String testJson = objectMapper.writeValueAsString(lesson);
         
@@ -1006,7 +995,7 @@ class ScheduleRestControllerTest {
         when(lecturerService.getById(lecturer.getId())).thenReturn(lecturer);
         when(lessonTimeService.getById(lessonTime.getId())).thenReturn(lessonTime);
         
-        doThrow(serviceWithConstraintViolationException).when(lessonService).update(lesson);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonService).update(lesson);
         
         String testJson = objectMapper.writeValueAsString(lesson);
         
@@ -1040,7 +1029,7 @@ class ScheduleRestControllerTest {
         when(lecturerService.getById(lecturer.getId())).thenReturn(lecturer);
         when(groupService.getById(group.getId())).thenReturn(group);
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonService).update(lesson);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonService).update(lesson);
         
         String testJson = objectMapper.writeValueAsString(lesson);
         
@@ -1089,7 +1078,7 @@ class ScheduleRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteLesson() throws Exception {
         int testId = 2;
         
-        doThrow(serviceWithRepositoryException).when(lessonService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonService).deleteById(testId);
         
         mockMvc.perform(delete("/lessons/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -1102,7 +1091,7 @@ class ScheduleRestControllerTest {
     void shouldReturnError400WhenIllegalExceptionWhileDeleteLesson() throws Exception {
         int testId = 41;
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonService).deleteById(testId);
         
         mockMvc.perform(delete("/lessons/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))

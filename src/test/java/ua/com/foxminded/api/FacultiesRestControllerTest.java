@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.QueryTimeoutException;
 import javax.validation.ConstraintViolationException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -51,16 +50,6 @@ class FacultiesRestControllerTest {
     
     @Autowired
     private ObjectMapper objectMapper;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
 
     @BeforeEach
     void init() {
@@ -164,7 +153,7 @@ class FacultiesRestControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileGetFaculties() throws Exception {
-        when(facultyService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(facultyService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/faculties")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -188,7 +177,7 @@ class FacultiesRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetFaculty() throws Exception {
         int id = 2;
 
-        when(facultyService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(facultyService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/faculties/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -201,7 +190,7 @@ class FacultiesRestControllerTest {
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetFaculty() throws Exception {
         int id = 5;
 
-        when(facultyService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(facultyService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
         
         mockMvc.perform(get("/faculties/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -229,7 +218,7 @@ class FacultiesRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(testFaculty);
 
-        doThrow(serviceWithRepositoryException).when(facultyService).create(testFaculty);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties")
                 .content(testJson).contentType(MediaType.APPLICATION_JSON))
@@ -245,7 +234,7 @@ class FacultiesRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(testFaculty);
 
-        doThrow(serviceWithConstraintViolationException).when(facultyService).create(testFaculty);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties")
                 .content(testJson).contentType(MediaType.APPLICATION_JSON))
@@ -261,7 +250,7 @@ class FacultiesRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(testFaculty);
 
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).create(testFaculty);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties")
                 .content(testJson).contentType(MediaType.APPLICATION_JSON))
@@ -295,7 +284,7 @@ class FacultiesRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(testFaculty);
 
-        doThrow(serviceWithRepositoryException).when(facultyService).update(testFaculty);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId)
                 .content(testJson).contentType(MediaType.APPLICATION_JSON))
@@ -313,7 +302,7 @@ class FacultiesRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(testFaculty);
 
-        doThrow(serviceWithConstraintViolationException).when(facultyService).update(testFaculty);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId)
                 .content(testJson).contentType(MediaType.APPLICATION_JSON))
@@ -331,7 +320,7 @@ class FacultiesRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(testFaculty);
 
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).update(testFaculty);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId)
                 .content(testJson).contentType(MediaType.APPLICATION_JSON))
@@ -362,7 +351,7 @@ class FacultiesRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteFaculty() throws Exception {
         int testId = 75;
 
-        doThrow(serviceWithRepositoryException).when(facultyService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).deleteById(testId);
 
         mockMvc.perform(delete("/faculties/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -375,7 +364,7 @@ class FacultiesRestControllerTest {
     void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteFaculty() throws Exception {
         int testId = 14;
 
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(facultyService).deleteById(testId);
 
         mockMvc.perform(delete("/faculties/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))

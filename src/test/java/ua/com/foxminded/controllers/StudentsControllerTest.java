@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.QueryTimeoutException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -61,16 +59,6 @@ class StudentsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-    
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
 
     private Group group;
     private Group anotherGroup;
@@ -285,7 +273,7 @@ class StudentsControllerTest {
 
     @Test
     void sholdReturnError500WhenRepositoryExceptionWhileGetStudents() throws Exception {
-        when(studentService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(studentService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/students")).andExpect(status().isInternalServerError());
         verify(studentService).getAll();
@@ -303,7 +291,7 @@ class StudentsControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetStudent() throws Exception {
         int id = 7;
 
-        when(studentService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(studentService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/students/{id}", id)).andExpect(status().isInternalServerError());
         verify(studentService).getById(id);
@@ -312,7 +300,7 @@ class StudentsControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetStudent() throws Exception {
         int id = 12;
-        when(studentService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(studentService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
         mockMvc.perform(get("/students/{id}", id)).andExpect(status().isBadRequest());
         verify(studentService).getById(id);
     }
@@ -328,7 +316,7 @@ class StudentsControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileNewStudent() throws Exception {
-        doThrow(serviceWithRepositoryException).when(groupService).getAll();
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).getAll();
 
         mockMvc.perform(get("/students/new"))
         .andExpect(status().isInternalServerError());
@@ -355,7 +343,7 @@ class StudentsControllerTest {
         student.setPhoneNumber("+380986574123");
         student.setEmail("MUkrainets@test.com");
         
-        doThrow(serviceWithRepositoryException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(post("/students").flashAttr("student", student)
                 .param("group-value", Integer.toString(group.getId()))
@@ -374,7 +362,7 @@ class StudentsControllerTest {
         student.setPhoneNumber("+380967452412");
         student.setEmail("KLytvynenko@test.com");
         
-        doThrow(serviceWithConstraintViolationException).when(groupService).getById(anotherGroup.getId());
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).getById(anotherGroup.getId());
         
         mockMvc.perform(post("/students").flashAttr("student", student)
                 .param("group-value", Integer.toString(anotherGroup.getId()))
@@ -395,7 +383,7 @@ class StudentsControllerTest {
         student.setPhoneNumber("+380447845123");
         student.setEmail("KBiliak@test.com");
         
-        doThrow(serviceWithIllegalArgumentException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(post("/students").flashAttr("student", student)
                 .param("group-value", Integer.toString(group.getId()))
@@ -437,7 +425,7 @@ class StudentsControllerTest {
         student.setGroup(group);
         
         when(studentService.getById(studentId)).thenReturn(student);
-        when(groupService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(groupService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
         
         mockMvc.perform(get("/students/{id}/edit", studentId))
         .andExpect(status().isInternalServerError());
@@ -480,7 +468,7 @@ class StudentsControllerTest {
         student.setEmail("OShlenchak@test.com");
         student.setGroup(group);
         
-        doThrow(serviceWithRepositoryException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(patch("/students/{id}", studentId)
                 .flashAttr("student", student)
@@ -503,7 +491,7 @@ class StudentsControllerTest {
         student.setEmail("INastenko@test.com");
         student.setGroup(group);
         
-        doThrow(serviceWithConstraintViolationException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).getById(group.getId());
         
         mockMvc.perform(patch("/students/{id}", studentId)
                 .flashAttr("student", student)
@@ -526,7 +514,7 @@ class StudentsControllerTest {
         student.setEmail("AMatviichuk@test.com");
         student.setGroup(group);
         
-        doThrow(serviceWithIllegalArgumentException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(patch("/students/{id}", studentId)
                 .flashAttr("student", student)
@@ -563,7 +551,7 @@ class StudentsControllerTest {
     @Test
     void shouldReturn500ErrorWhenRepositoryXExceptionWhileDeleteStudent() throws Exception {
         int studentId = 36;
-        doThrow(serviceWithRepositoryException).when(studentService).deleteById(studentId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(studentService).deleteById(studentId);
         
         mockMvc.perform(delete("/students/{id}", studentId))
         .andExpect(status().isInternalServerError());
@@ -574,7 +562,7 @@ class StudentsControllerTest {
     @Test
     void shouldReturn400ErrorWhenIllegalArgumentExceptionWhileDeleteStudent() throws Exception {
         int studentId = 212;
-        doThrow(serviceWithIllegalArgumentException).when(studentService).deleteById(studentId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(studentService).deleteById(studentId);
         
         mockMvc.perform(delete("/students/{id}", studentId))
         .andExpect(status().isBadRequest());
@@ -585,7 +573,7 @@ class StudentsControllerTest {
     @Test
     void shouldReturn400ErrorWhenConExceptionWhileDeleteStudent() throws Exception {
         int studentId = 212;
-        doThrow(serviceWithIllegalArgumentException).when(studentService).deleteById(studentId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(studentService).deleteById(studentId);
         
         mockMvc.perform(delete("/students/{id}", studentId))
         .andExpect(status().isBadRequest());

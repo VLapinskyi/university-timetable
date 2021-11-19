@@ -20,8 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.QueryTimeoutException;
-
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -59,16 +57,6 @@ class GroupsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
 
     private Faculty faculty = new Faculty();
     private Faculty anotherFaculty = new Faculty();
@@ -228,7 +216,7 @@ class GroupsControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileGetGroups() throws Exception {
-        when(groupService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(groupService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/groups")).andExpect(status().isInternalServerError());
         verify(groupService).getAll();
@@ -246,7 +234,7 @@ class GroupsControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetGroup() throws Exception {
         int id = 4;
 
-        when(groupService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(groupService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isInternalServerError());
         verify(groupService).getById(id);
@@ -255,7 +243,7 @@ class GroupsControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetGroup() throws Exception {
         int id = 1;
-        when(groupService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(groupService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
         mockMvc.perform(get("/groups/{id}", id)).andExpect(status().isBadRequest());
         verify(groupService).getById(id);
     }
@@ -271,7 +259,8 @@ class GroupsControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileNewGroup() throws Exception {
-        doThrow(serviceWithRepositoryException).when(facultyService).getAll();
+        doThrow(new ServiceException("Service exception", new RepositoryException()))
+            .when(facultyService).getAll();
 
         mockMvc.perform(get("/groups/new"))
         .andExpect(status().isInternalServerError());
@@ -295,7 +284,8 @@ class GroupsControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithRepositoryException).when(facultyService).getById(faculty.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException()))
+            .when(facultyService).getById(faculty.getId());
 
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(faculty.getId())))
@@ -309,7 +299,7 @@ class GroupsControllerTest {
         testGroup.setName(" Wrong name");
         testGroup.setFaculty(anotherFaculty);
 
-        doThrow(serviceWithConstraintViolationException).when(groupService).create(testGroup);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).create(testGroup);
 
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(anotherFaculty.getId())))
@@ -327,7 +317,7 @@ class GroupsControllerTest {
         testGroup.setFaculty(faculty);
         testGroup.setId(wrongId);
 
-        doThrow(serviceWithIllegalArgumentException).when(groupService).create(testGroup);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).create(testGroup);
 
         mockMvc.perform(post("/groups").flashAttr("group", testGroup)
                 .param("faculty-value", Integer.toString(faculty.getId())))
@@ -356,7 +346,8 @@ class GroupsControllerTest {
         testGroup.setFaculty(faculty);
 
         when(groupService.getById(groupId)).thenReturn(testGroup);
-        doThrow(serviceWithRepositoryException).when(facultyService).getAll();
+        doThrow(new ServiceException("Service exception", new RepositoryException()))
+            .when(facultyService).getAll();
 
         mockMvc.perform(get("/groups/{id}/edit", groupId))
         .andExpect(status().isInternalServerError());
@@ -392,7 +383,8 @@ class GroupsControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithRepositoryException).when(facultyService).getById(facultyId);
+        doThrow(new ServiceException("Service exception", new RepositoryException()))
+            .when(facultyService).getById(facultyId);
 
         mockMvc.perform(patch("/groups/{id}", groupId)
                 .flashAttr("group", testGroup)
@@ -411,7 +403,7 @@ class GroupsControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(anotherFaculty);
 
-        doThrow(serviceWithConstraintViolationException).when(facultyService).getById(facultyId);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(facultyService).getById(facultyId);
 
         mockMvc.perform(patch("/groups/{id}", groupId)
                 .flashAttr("group", testGroup)
@@ -430,7 +422,7 @@ class GroupsControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).getById(facultyId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(facultyService).getById(facultyId);
 
         mockMvc.perform(patch("/groups/{id}", groupId)
                 .flashAttr("group", testGroup)
@@ -463,7 +455,8 @@ class GroupsControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteGroup() throws Exception {
         int testId = 2;
         
-        doThrow(serviceWithRepositoryException).when(groupService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException()))
+            .when(groupService).deleteById(testId);
         
         mockMvc.perform(delete("/groups/{id}", testId))
         .andExpect(status().isInternalServerError());
@@ -475,7 +468,7 @@ class GroupsControllerTest {
     void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteGroup() throws Exception {
         int testId = 7;
         
-        doThrow(serviceWithIllegalArgumentException).when(groupService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).deleteById(testId);
         
         mockMvc.perform(delete("/groups/{id}", testId))
         .andExpect(status().isBadRequest());

@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.persistence.QueryTimeoutException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,16 +84,7 @@ class ScheduleControllerTest {
     private LessonTime anotherLessonTime;
 
     @Autowired
-    private MockMvc mockMvc;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
+    private MockMvc mockMvc;;
 
     @BeforeEach
     void init() throws Exception {
@@ -752,7 +741,7 @@ class ScheduleControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileSearchSchedule() throws Exception {
-        when(groupService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(groupService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/search-schedule")).andExpect(status().isInternalServerError());
         verify(lecturerService).getAll();
@@ -772,7 +761,7 @@ class ScheduleControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileResultSchedule() throws Exception {
         int lecturerId = 4;
 
-        when(lecturerService.getById(lecturerId)).thenThrow(serviceWithRepositoryException);
+        when(lecturerService.getById(lecturerId)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/lessons").param("people-role-radio", "lecturer")
                 .param("lecturer-value", Integer.toString(lecturerId)).param("period-radio", "week"))
@@ -783,7 +772,7 @@ class ScheduleControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileResultSchedule() throws Exception {
         int groupId = 3;
-        when(groupService.getById(groupId)).thenThrow(serviceWithIllegalArgumentException);
+        when(groupService.getById(groupId)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
 
         mockMvc.perform(get("/lessons").param("people-role-radio", "group")
                 .param("group-value", Integer.toString(groupId)).param("period-radio", "week"))
@@ -819,7 +808,7 @@ class ScheduleControllerTest {
         lessonTime.setStartTime(LocalTime.of(9, 0));
         lessonTime.setEndTime(LocalTime.of(10, 0));
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).create(lessonTime);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).create(lessonTime);
         
         mockMvc.perform(post("/lesson-time-parameters")
                 .flashAttr("lessonTime", lessonTime))
@@ -834,7 +823,7 @@ class ScheduleControllerTest {
         lessonTime.setStartTime(LocalTime.of(10, 0));
         lessonTime.setEndTime(LocalTime.of(11, 0));
         
-        doThrow(serviceWithConstraintViolationException).when(lessonTimeService).create(lessonTime);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonTimeService).create(lessonTime);
         
         mockMvc.perform(post("/lesson-time-parameters")
                 .flashAttr("lessonTime", lessonTime))
@@ -849,7 +838,7 @@ class ScheduleControllerTest {
         lessonTime.setStartTime(LocalTime.of(11, 0));
         lessonTime.setEndTime(LocalTime.of(12, 0));
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonTimeService).create(lessonTime);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonTimeService).create(lessonTime);
         
         mockMvc.perform(post("/lesson-time-parameters")
                 .flashAttr("lessonTime", lessonTime))
@@ -877,7 +866,7 @@ class ScheduleControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileEditLessonTime() throws Exception {
         int testId = 12;
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).getById(testId);
         
         mockMvc.perform(get("/lesson-time-parameters/{id}/edit", testId))
         .andExpect(status().isInternalServerError());
@@ -905,7 +894,7 @@ class ScheduleControllerTest {
         lessonTime.setStartTime(LocalTime.of(14, 0));
         lessonTime.setEndTime(LocalTime.of(15, 0));
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).update(lessonTime);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).update(lessonTime);
         
         mockMvc.perform(patch("/lesson-time-parameters/{id}", testId)
                 .flashAttr("lessonTime", lessonTime))
@@ -922,7 +911,7 @@ class ScheduleControllerTest {
         lessonTime.setStartTime(LocalTime.of(15, 0));
         lessonTime.setEndTime(LocalTime.of(16, 0));
         
-        doThrow(serviceWithConstraintViolationException).when(lessonTimeService).update(lessonTime);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonTimeService).update(lessonTime);
         
         mockMvc.perform(patch("/lesson-time-parameters/{id}", testId)
                 .flashAttr("lessonTime", lessonTime))
@@ -939,7 +928,7 @@ class ScheduleControllerTest {
         lessonTime.setStartTime(LocalTime.of(16, 0));
         lessonTime.setEndTime(LocalTime.of(17, 0));
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonTimeService).update(lessonTime);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonTimeService).update(lessonTime);
         
         mockMvc.perform(patch("/lesson-time-parameters/{id}", testId)
                 .flashAttr("lessonTime", lessonTime))
@@ -969,7 +958,7 @@ class ScheduleControllerTest {
     void shouldReturn500WhenRepositoryExceptionWhileDeleteLessonTime() throws Exception {
         int testId = 741;
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).deleteById(testId);
         
         mockMvc.perform(delete("/lesson-time-parameters/{id}", testId))
         .andExpect(status().isInternalServerError());
@@ -981,7 +970,7 @@ class ScheduleControllerTest {
     void shouldReturn400WhenIllegalArgumentExceptionWhileDeleteLessonTime() throws Exception {
         int testId = 123;
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonTimeService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonTimeService).deleteById(testId);
         
         mockMvc.perform(delete("/lesson-time-parameters/{id}", testId))
         .andExpect(status().isBadRequest());
@@ -1003,7 +992,7 @@ class ScheduleControllerTest {
     
     @Test
     void shouldReturn500WhenRepositoryExceptionWhileNewLesson() throws Exception {
-        doThrow(serviceWithRepositoryException).when(groupService).getAll();
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).getAll();
         
         mockMvc.perform(get("/lessons-new"))
         .andExpect(status().isInternalServerError());
@@ -1032,7 +1021,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).getById(lessonTime.getId());
         
         mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
@@ -1055,7 +1044,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithConstraintViolationException).when(lessonService).create(lesson);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonService).create(lesson);
         
         mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
@@ -1082,7 +1071,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonService).create(lesson);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonService).create(lesson);
         
         mockMvc.perform(post("/lessons")
                 .flashAttr("lesson", lesson)
@@ -1133,7 +1122,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithRepositoryException).when(lessonService).getById(lessonId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonService).getById(lessonId);
         
         mockMvc.perform(get("/lessons/{id}/edit", lessonId)
                 .flashAttr("lesson", lesson)
@@ -1183,7 +1172,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithRepositoryException).when(lessonTimeService).getById(lessonTime.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonTimeService).getById(lessonTime.getId());
         
         mockMvc.perform(patch("/lessons/{id}", lessonId)
                 .flashAttr("lesson", lesson)
@@ -1208,7 +1197,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithConstraintViolationException).when(lessonService).update(lesson);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lessonService).update(lesson);
         
         mockMvc.perform(patch("/lessons/{id}", lessonId)
                 .flashAttr("lesson", lesson)
@@ -1236,7 +1225,7 @@ class ScheduleControllerTest {
         lesson.setLecturer(lecturer);
         lesson.setLessonTime(lessonTime);
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonService).update(lesson);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonService).update(lesson);
         
         mockMvc.perform(patch("/lessons/{id}", lessonId)
                 .flashAttr("lesson", lesson)
@@ -1281,7 +1270,7 @@ class ScheduleControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteLesson() throws Exception {
         int testId = 2;
         
-        doThrow(serviceWithRepositoryException).when(lessonService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lessonService).deleteById(testId);
         
         mockMvc.perform(delete("/lessons/{id}", testId))
         .andExpect(status().isInternalServerError());
@@ -1293,7 +1282,7 @@ class ScheduleControllerTest {
     void shouldReturnError400WhenIllegalExceptionWhileDeleteLesson() throws Exception {
         int testId = 41;
         
-        doThrow(serviceWithIllegalArgumentException).when(lessonService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lessonService).deleteById(testId);
         
         mockMvc.perform(delete("/lessons/{id}", testId))
         .andExpect(status().isBadRequest());

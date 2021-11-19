@@ -13,8 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.QueryTimeoutException;
-
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -58,16 +56,6 @@ class GroupsRestControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
 
     private Faculty faculty = new Faculty();
     private Faculty anotherFaculty = new Faculty();
@@ -210,7 +198,7 @@ class GroupsRestControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileGetGroups() throws Exception {
-        when(groupService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(groupService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/groups")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -234,7 +222,7 @@ class GroupsRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetGroup() throws Exception {
         int id = 4;
 
-        when(groupService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(groupService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/groups/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -246,7 +234,7 @@ class GroupsRestControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetGroup() throws Exception {
         int id = 1;
-        when(groupService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(groupService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
         
         mockMvc.perform(get("/groups/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -275,7 +263,7 @@ class GroupsRestControllerTest {
         testGroup.setFaculty(faculty);
         
         when(facultyService.getById(faculty.getId())).thenReturn(faculty);
-        doThrow(serviceWithRepositoryException).when(facultyService).getById(faculty.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).getById(faculty.getId());
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -294,7 +282,7 @@ class GroupsRestControllerTest {
         testGroup.setFaculty(anotherFaculty);
 
         when(facultyService.getById(anotherFaculty.getId())).thenReturn(anotherFaculty);
-        doThrow(serviceWithConstraintViolationException).when(groupService).create(testGroup);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).create(testGroup);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -316,7 +304,7 @@ class GroupsRestControllerTest {
         testGroup.setId(wrongId);
 
         when(facultyService.getById(faculty.getId())).thenReturn(faculty);
-        doThrow(serviceWithIllegalArgumentException).when(groupService).create(testGroup);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).create(testGroup);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -352,7 +340,7 @@ class GroupsRestControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithRepositoryException).when(facultyService).getById(facultyId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).getById(facultyId);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -373,7 +361,7 @@ class GroupsRestControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(anotherFaculty);
 
-        doThrow(serviceWithConstraintViolationException).when(facultyService).getById(facultyId);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(facultyService).getById(facultyId);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -394,7 +382,7 @@ class GroupsRestControllerTest {
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
 
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).getById(facultyId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(facultyService).getById(facultyId);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -431,7 +419,7 @@ class GroupsRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteGroup() throws Exception {
         int testId = 2;
         
-        doThrow(serviceWithRepositoryException).when(groupService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).deleteById(testId);
         
         mockMvc.perform(delete("/groups/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -444,7 +432,7 @@ class GroupsRestControllerTest {
     void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteGroup() throws Exception {
         int testId = 7;
         
-        doThrow(serviceWithIllegalArgumentException).when(groupService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).deleteById(testId);
         
         mockMvc.perform(delete("/groups/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))

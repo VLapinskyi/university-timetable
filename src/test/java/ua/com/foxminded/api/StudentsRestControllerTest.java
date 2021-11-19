@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.QueryTimeoutException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,16 +58,6 @@ class StudentsRestControllerTest {
     
     @Autowired
     private ObjectMapper objectMapper;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-    
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
 
     private Group group;
     private Group anotherGroup;
@@ -227,7 +215,7 @@ class StudentsRestControllerTest {
 
     @Test
     void sholdReturnError500WhenRepositoryExceptionWhileGetStudents() throws Exception {
-        when(studentService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(studentService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/students")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -249,7 +237,7 @@ class StudentsRestControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetStudent() throws Exception {
         int id = 7;
 
-        when(studentService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(studentService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/students/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -260,7 +248,7 @@ class StudentsRestControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetStudent() throws Exception {
         int id = 12;
-        when(studentService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(studentService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
         mockMvc.perform(get("/students/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
@@ -289,7 +277,7 @@ class StudentsRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(student);
         
-        doThrow(serviceWithRepositoryException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(post("/students")
                 .content(testJson)
@@ -311,7 +299,7 @@ class StudentsRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(student);
         
-        doThrow(serviceWithConstraintViolationException).when(groupService).getById(anotherGroup.getId());
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).getById(anotherGroup.getId());
         
         mockMvc.perform(post("/students")
                 .content(testJson)
@@ -335,7 +323,7 @@ class StudentsRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(student);
         
-        doThrow(serviceWithIllegalArgumentException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(post("/students")
                 .content(testJson)
@@ -382,7 +370,7 @@ class StudentsRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(student);
         
-        doThrow(serviceWithRepositoryException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(patch("/students/{id}", studentId)
                 .content(testJson)
@@ -407,7 +395,7 @@ class StudentsRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(student);
         
-        doThrow(serviceWithConstraintViolationException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).getById(group.getId());
         
         mockMvc.perform(patch("/students/{id}", studentId)
                 .content(testJson)
@@ -430,7 +418,7 @@ class StudentsRestControllerTest {
         
         String testJson = objectMapper.writeValueAsString(student);
         
-        doThrow(serviceWithIllegalArgumentException).when(groupService).getById(group.getId());
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).getById(group.getId());
         
         mockMvc.perform(patch("/students/{id}", studentId)
                 .content(testJson)
@@ -469,7 +457,7 @@ class StudentsRestControllerTest {
     @Test
     void shouldReturn500ErrorWhenRepositoryXExceptionWhileDeleteStudent() throws Exception {
         int studentId = 36;
-        doThrow(serviceWithRepositoryException).when(studentService).deleteById(studentId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(studentService).deleteById(studentId);
         
         mockMvc.perform(delete("/students/{id}", studentId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -481,7 +469,7 @@ class StudentsRestControllerTest {
     @Test
     void shouldReturn400ErrorWhenIllegalArgumentExceptionWhileDeleteStudent() throws Exception {
         int studentId = 212;
-        doThrow(serviceWithIllegalArgumentException).when(studentService).deleteById(studentId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(studentService).deleteById(studentId);
         
         mockMvc.perform(delete("/students/{id}", studentId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -493,7 +481,7 @@ class StudentsRestControllerTest {
     @Test
     void shouldReturn400ErrorWhenConExceptionWhileDeleteStudent() throws Exception {
         int studentId = 212;
-        doThrow(serviceWithIllegalArgumentException).when(studentService).deleteById(studentId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(studentService).deleteById(studentId);
         
         mockMvc.perform(delete("/students/{id}", studentId)
                 .contentType(MediaType.APPLICATION_JSON))

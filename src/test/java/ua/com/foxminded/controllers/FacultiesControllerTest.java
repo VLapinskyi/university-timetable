@@ -12,8 +12,6 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.Arrays;
 
-import javax.persistence.QueryTimeoutException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +42,6 @@ class FacultiesControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-    
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
 
     @BeforeEach
     void init() {
@@ -159,7 +147,7 @@ class FacultiesControllerTest {
 
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileGetFaculties() throws Exception {
-        when(facultyService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(facultyService.getAll()).thenThrow(new ServiceException("message", new RepositoryException()));
 
         mockMvc.perform(get("/faculties")).andExpect(status().isInternalServerError());
         verify(facultyService).getAll();
@@ -177,7 +165,7 @@ class FacultiesControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetFaculty() throws Exception {
         int id = 2;
 
-        when(facultyService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(facultyService.getById(id)).thenThrow(new ServiceException("message", new RepositoryException()));
 
         mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isInternalServerError());
         verify(facultyService).getById(id);
@@ -187,7 +175,8 @@ class FacultiesControllerTest {
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetFaculty() throws Exception {
         int id = 5;
 
-        when(facultyService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(facultyService.getById(id)).thenThrow(new ServiceException("Service exception",
+                new IllegalArgumentException()));
         mockMvc.perform(get("/faculties/{id}", id)).andExpect(status().isBadRequest());
 
         verify(facultyService).getById(id);
@@ -206,7 +195,7 @@ class FacultiesControllerTest {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithRepositoryException).when(facultyService).create(testFaculty);
+        doThrow(new ServiceException("message", new RepositoryException())).when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
             .andExpect(status().isInternalServerError());
@@ -219,7 +208,8 @@ class FacultiesControllerTest {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithConstraintViolationException).when(facultyService).create(testFaculty);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null)))
+            .when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
             .andExpect(status().isBadRequest());
@@ -232,7 +222,8 @@ class FacultiesControllerTest {
         Faculty testFaculty = new Faculty();
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).create(testFaculty);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException()))
+            .when(facultyService).create(testFaculty);
 
         mockMvc.perform(post("/faculties").flashAttr("faculty", testFaculty))
             .andExpect(status().isBadRequest());
@@ -257,7 +248,7 @@ class FacultiesControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileEditFaculty() throws Exception {
         int testId = 9;
         
-        doThrow(serviceWithRepositoryException).when(facultyService).getById(testId);
+        doThrow(new ServiceException("message", new RepositoryException())).when(facultyService).getById(testId);
         
         mockMvc.perform(get("/faculties/{id}/edit", testId))
         .andExpect(status().isInternalServerError());
@@ -285,7 +276,7 @@ class FacultiesControllerTest {
         testFaculty.setId(testId);
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithRepositoryException).when(facultyService).update(testFaculty);
+        doThrow(new ServiceException("message", new RepositoryException())).when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
             .andExpect(status().isInternalServerError());
@@ -300,7 +291,8 @@ class FacultiesControllerTest {
         testFaculty.setId(testId);
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithConstraintViolationException).when(facultyService).update(testFaculty);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null)))
+            .when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
             .andExpect(status().isBadRequest());
@@ -315,7 +307,8 @@ class FacultiesControllerTest {
         testFaculty.setId(testId);
         testFaculty.setName("Test faculty");
         
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).update(testFaculty);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException()))
+            .when(facultyService).update(testFaculty);
 
         mockMvc.perform(patch("/faculties/{id}", testId).flashAttr("faculty", testFaculty))
             .andExpect(status().isBadRequest());
@@ -342,7 +335,7 @@ class FacultiesControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteFaculty() throws Exception {
         int testId = 75;
         
-        doThrow(serviceWithRepositoryException).when(facultyService).deleteById(testId);
+        doThrow(new ServiceException("message", new RepositoryException())).when(facultyService).deleteById(testId);
 
         mockMvc.perform(delete("/faculties/{id}", testId))
             .andExpect(status().isInternalServerError());
@@ -354,7 +347,8 @@ class FacultiesControllerTest {
     void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteFaculty() throws Exception {
         int testId = 14;
         
-        doThrow(serviceWithIllegalArgumentException).when(facultyService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException()))
+            .when(facultyService).deleteById(testId);
 
         mockMvc.perform(delete("/faculties/{id}", testId))
             .andExpect(status().isBadRequest());
