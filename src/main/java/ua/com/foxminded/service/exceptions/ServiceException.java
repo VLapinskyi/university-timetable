@@ -2,6 +2,10 @@ package ua.com.foxminded.service.exceptions;
 
 public class ServiceException extends RuntimeException {
     private RuntimeException exception;
+    
+    public ServiceException() {
+
+    }
 
     public ServiceException(String serviceExceptionMessage, RuntimeException exception) {
         super(serviceExceptionMessage);

@@ -6,7 +6,7 @@
 <body>
     <header th:replace="fragments :: header-navigation"> </header>
     <form
-        th:action="@{/search-schedule}"
+        th:action="@{/lessons}"
         th:method="POST"
         th:object="${lesson}">
         <div class="container">

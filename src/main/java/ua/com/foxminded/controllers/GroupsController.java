@@ -20,7 +20,7 @@ import ua.com.foxminded.service.FacultyService;
 import ua.com.foxminded.service.GroupService;
 
 @Controller
-@RequestMapping("/groups")
+@RequestMapping(value = "/groups", produces = "text/html")
 public class GroupsController {
 
     private GroupService groupService;

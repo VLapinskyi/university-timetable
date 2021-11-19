@@ -89,7 +89,7 @@ public class GeneralControllerAspect {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         serviceException.getMessage());
             } else {
-                LOGGER.error("There is some error in service layer when get an object with id {}.", serviceException);
+                LOGGER.error("There is some error in service layer when get an object with id {}.", id, serviceException);
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, serviceException.getMessage());
             }
         }

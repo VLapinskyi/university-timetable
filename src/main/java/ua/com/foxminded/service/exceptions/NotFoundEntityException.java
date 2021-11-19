@@ -2,6 +2,10 @@ package ua.com.foxminded.service.exceptions;
 
 public class NotFoundEntityException extends RuntimeException {
     private RuntimeException exception;
+    
+    public NotFoundEntityException () {
+        
+    }
 
     public NotFoundEntityException(RuntimeException exception, String message) {
         super(message);

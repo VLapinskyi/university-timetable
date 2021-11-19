@@ -19,8 +19,6 @@ import static org.hamcrest.Matchers.is;
 
 import java.util.Arrays;
 
-import javax.persistence.QueryTimeoutException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,16 +50,6 @@ class LecturersControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    private RepositoryException repositoryException = new RepositoryException("repository exception",
-            new QueryTimeoutException("Exception message"));
-    private ServiceException serviceWithRepositoryException = new ServiceException("Service exception", repositoryException);
-
-    private ServiceException serviceWithIllegalArgumentException = new ServiceException("Service exception",
-            new IllegalArgumentException());
-
-    private ServiceException serviceWithConstraintViolationException = new ServiceException("Service exception",
-            new ConstraintViolationException(null));
     
     @BeforeEach
     void setUp() throws Exception {
@@ -218,7 +206,7 @@ class LecturersControllerTest {
 
     @Test
     void sholdReturnError500WhenRepositoryExceptionWhileGetLecturers() throws Exception {
-        when(lecturerService.getAll()).thenThrow(serviceWithRepositoryException);
+        when(lecturerService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/lecturers")).andExpect(status().isInternalServerError());
         verify(lecturerService).getAll();
@@ -236,7 +224,7 @@ class LecturersControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileGetLecturer() throws Exception {
         int id = 2;
 
-        when(lecturerService.getById(id)).thenThrow(serviceWithRepositoryException);
+        when(lecturerService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
         mockMvc.perform(get("/lecturers/{id}", id)).andExpect(status().isInternalServerError());
         verify(lecturerService).getById(id);
@@ -245,7 +233,7 @@ class LecturersControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetLecturer() throws Exception {
         int id = 6;
-        when(lecturerService.getById(id)).thenThrow(serviceWithIllegalArgumentException);
+        when(lecturerService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
         mockMvc.perform(get("/lecturers/{id}", id)).andExpect(status().isBadRequest());
         verify(lecturerService).getById(id);
     }
@@ -268,7 +256,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380459865321");
         lecturer.setEmail("MRomanova@test.com");
         
-        doThrow(serviceWithRepositoryException).when(lecturerService).create(lecturer);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lecturerService).create(lecturer);
         
         mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.FEMALE.toString()))
@@ -286,7 +274,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380234598741");
         lecturer.setEmail("RKolomiiets@test.com");
         
-        doThrow(serviceWithConstraintViolationException).when(lecturerService).create(lecturer);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lecturerService).create(lecturer);
         
         mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.MALE.toString()))
@@ -304,7 +292,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380216598741");
         lecturer.setEmail("SMazur@test.com");
         
-        doThrow(serviceWithIllegalArgumentException).when(lecturerService).create(lecturer);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lecturerService).create(lecturer);
         
         mockMvc.perform(post("/lecturers").flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.MALE.toString()))
@@ -335,7 +323,7 @@ class LecturersControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileEdit() throws Exception {
         int testId = 13;
         
-        doThrow(serviceWithRepositoryException).when(lecturerService).getById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lecturerService).getById(testId);
         
         mockMvc.perform(get("/lecturers/{id}/edit", testId))
         .andExpect(status().isInternalServerError());
@@ -367,7 +355,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380984563214");
         lecturer.setEmail("VKolisnichenko@test.com");
         
-        doThrow(serviceWithRepositoryException).when(lecturerService).update(lecturer);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lecturerService).update(lecturer);
         
         mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.MALE.toString()))
@@ -388,7 +376,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380956352741");
         lecturer.setEmail("MBurlaka@test.com");
         
-        doThrow(serviceWithConstraintViolationException).when(lecturerService).update(lecturer);
+        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(lecturerService).update(lecturer);
         
         mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.MALE.toString()))
@@ -409,7 +397,7 @@ class LecturersControllerTest {
         lecturer.setPhoneNumber("+380974563214");
         lecturer.setEmail("OOstapovets@test.com");
         
-        doThrow(serviceWithIllegalArgumentException).when(lecturerService).update(lecturer);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lecturerService).update(lecturer);
         
         mockMvc.perform(patch("/lecturers/{id}", testId).flashAttr("lecturer", lecturer)
                 .param("gender-value", Gender.MALE.toString()))
@@ -443,7 +431,7 @@ class LecturersControllerTest {
     void shouldReturnError500WhenRepositoryExceptionWhileDelete() throws Exception {
         int testId = 12;
         
-        doThrow(serviceWithRepositoryException).when(lecturerService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(lecturerService).deleteById(testId);
         
         mockMvc.perform(delete("/lecturers/{id}", testId))
         .andExpect(status().isInternalServerError());
@@ -454,7 +442,7 @@ class LecturersControllerTest {
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileDelete() throws Exception {
         int testId = 43;
-        doThrow(serviceWithIllegalArgumentException).when(lecturerService).deleteById(testId);
+        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(lecturerService).deleteById(testId);
         
         mockMvc.perform(delete("/lecturers/{id}", testId))
         .andExpect(status().isBadRequest());

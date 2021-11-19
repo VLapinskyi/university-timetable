@@ -20,6 +20,8 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "groups")
 public class Group {
@@ -44,6 +46,7 @@ public class Group {
     @OneToMany(cascade = CascadeType.ALL,
             mappedBy = "group")
     @Size(max = 32, message = "Group can have no more than 32 students")
+    @JsonIgnore
     private List<Student> students;
     
     public Group() {
