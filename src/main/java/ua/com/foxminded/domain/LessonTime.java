@@ -11,6 +11,8 @@ import javax.persistence.Table;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import ua.com.foxminded.domain.validation.CheckLessonTime;
 
 @CheckLessonTime
@@ -26,10 +28,12 @@ public class LessonTime {
 
     @Column(name = "start_time")
     @NotNull(message = "LessonTime's startTime can't be null")
+    @Schema(example = "hh:mm:ss")
     private LocalTime startTime;
 
     @Column(name = "end_time")
     @NotNull(message = "LessonTime's endTime can't be null")
+    @Schema(example = "hh:mm:ss")
     private LocalTime endTime;
     
     public LessonTime() {

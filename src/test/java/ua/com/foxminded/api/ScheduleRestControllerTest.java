@@ -127,7 +127,7 @@ class ScheduleRestControllerTest {
     }
 
     @Test
-    void shouldgetLecturerWeekLessons() throws Exception {
+    void shouldGetLecturerWeekLessons() throws Exception {
         int lecturerId = 1;
 
         Lecturer lecturer = new Lecturer();
@@ -188,9 +188,8 @@ class ScheduleRestControllerTest {
 
         when(lessonService.getLecturerWeekLessons(lecturerId)).thenReturn(lecturerWeekLessons);
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/week-lessons/find-for-lecturer")
                 .param("lecturer-id", Integer.toString(lecturerId))
-                .param("period", "week")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -270,7 +269,7 @@ class ScheduleRestControllerTest {
 
         when(lessonService.getLecturerMonthLessons(lecturerId, month)).thenReturn(lecturerMonthLessons);
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/month-lessons/find-for-lecturer")
                 .param("lecturer-id", Integer.toString(lecturerId))
                 .param("month-value", month.toString())
                 .contentType(MediaType.APPLICATION_JSON))
@@ -346,9 +345,8 @@ class ScheduleRestControllerTest {
         
         String expectedResult = objectMapper.writeValueAsString(groupWeekLessons);
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/week-lessons/find-for-group")
                 .param("group-id", Integer.toString(groupId))
-                .param("period", "week")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -433,7 +431,7 @@ class ScheduleRestControllerTest {
 
         when(lessonService.getGroupMonthLessons(groupId, month)).thenReturn(groupMonthLessons);
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/month-lessons/find-for-group")
                 .param("group-id", Integer.toString(groupId))
                 .param("month-value", month.toString())
                 .contentType(MediaType.APPLICATION_JSON))
@@ -601,9 +599,8 @@ class ScheduleRestControllerTest {
 
         when(lessonService.getLecturerWeekLessons(lecturerId)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/week-lessons/find-for-lecturer")
                 .param("lecturer-id", Integer.toString(lecturerId))
-                .param("period", "week")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isInternalServerError());        
                 
@@ -615,9 +612,8 @@ class ScheduleRestControllerTest {
         int groupId = 3;
         when(lessonService.getGroupWeekLessons(groupId)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/week-lessons/find-for-group")
                 .param("group-id", Integer.toString(groupId))
-                .param("period", "week")
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
         
@@ -637,7 +633,7 @@ class ScheduleRestControllerTest {
 
         when(lessonService.getGroupMonthLessons(groupId, month)).thenThrow(ServiceException.class);
 
-        mockMvc.perform(get("/lessons")
+        mockMvc.perform(get("/month-lessons/find-for-group")
                 .param("group-id", Integer.toString(groupId))
                 .param("month-value", monthValue)
                 .contentType(MediaType.APPLICATION_JSON))
