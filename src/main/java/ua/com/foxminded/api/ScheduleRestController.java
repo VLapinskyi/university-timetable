@@ -17,6 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.domain.Lecturer;
 import ua.com.foxminded.domain.Lesson;
@@ -26,6 +32,7 @@ import ua.com.foxminded.service.LecturerService;
 import ua.com.foxminded.service.LessonService;
 import ua.com.foxminded.service.LessonTimeService;
 
+@Tag(name = "schedule", description = "This controller operates with schedule's information.")
 @RestController
 @RequestMapping(produces = "application/json")
 public class ScheduleRestController {
@@ -44,61 +51,79 @@ public class ScheduleRestController {
         this.lessonTimeService = lessonTimeService;
     }
 
-    @GetMapping(path = "/lessons", params = {"lecturer-id", "period=week" })
-    public Map<DayOfWeek, List<Lesson>> getLecturerWeekSchedule(@RequestParam("lecturer-id") int lecturerId) {
+    @Operation(summary = "Get week lessons for a lecturer.")
+    @GetMapping("/week-lessons/find-for-lecturer")
+    public Map<DayOfWeek, List<Lesson>> getLecturerWeekSchedule(@Parameter(description = "Id of a lecturer") @RequestParam("lecturer-id") int lecturerId) {
         return lessonService.getLecturerWeekLessons(lecturerId);
     }
 
-    @GetMapping(path = "/lessons", params = {"lecturer-id", "month-value" })
-    public Map<LocalDate, List<Lesson>> getLecturerMonthSchedule(@RequestParam("lecturer-id") int lecturerId,
-            @RequestParam("month-value") String monthValue) {
+    @Operation(summary = "Get month lessons for a lecturer.")
+    @GetMapping("/month-lessons/find-for-lecturer")
+    public Map<LocalDate, List<Lesson>> getLecturerMonthSchedule(@Parameter(description = "Id of a lecturer") @RequestParam("lecturer-id") int lecturerId,
+            @Parameter(description = "Month value should be like \"yyyy-mm\"", schema = @Schema(pattern = "\\d\\d\\d\\d-\\d\\d")) @RequestParam("month-value") String monthValue) {
 
         YearMonth month = YearMonth.parse(monthValue);
         return lessonService.getLecturerMonthLessons(lecturerId, month);
     }
 
-    @GetMapping(path = "/lessons", params = { "group-id", "period=week" })
-    public Map<DayOfWeek, List<Lesson>> getGroupWeekSchedule(@RequestParam("group-id") int groupId) {
+    @Operation(summary = "Get week lessons for a group.")
+    @GetMapping("/week-lessons/find-for-group")
+    public Map<DayOfWeek, List<Lesson>> getGroupWeekSchedule(@Parameter(description = "Id of a group") @RequestParam("group-id") int groupId) {
         
         return lessonService.getGroupWeekLessons(groupId);
     }
-    @GetMapping(path = "/lessons", params = { "group-id", "month-value" })
-    public Map<LocalDate, List<Lesson>> getGroupMonthSchedule(@RequestParam("group-id") int groupId,
-            @RequestParam("month-value") String monthValue) {
+    
+    @Operation(summary = "Get month lessons for a group.")
+    @GetMapping("/month-lessons/find-for-group")
+    public Map<LocalDate, List<Lesson>> getGroupMonthSchedule(@Parameter(description = "Id of a group") @RequestParam("group-id") int groupId,
+            @Parameter(description = "Month value should be like \"yyyy-mm\"", schema = @Schema(pattern = "\\d\\d\\d\\d-\\d\\d")) @RequestParam("month-value") String monthValue) {
         
         YearMonth month = YearMonth.parse(monthValue);
         return lessonService.getGroupMonthLessons(groupId, month);
     }
 
+    @Operation(summary = "Get all lesson-time-parameters.")
     @GetMapping("/lesson-time-parameters")
     public List<LessonTime> getLessonTimeParameters() {
         
         return lessonTimeService.getAll();
     }
 
+    @Operation(summary = "Create a lesson-time-paratemeter.")
     @PostMapping("/lesson-time-parameters")
-    public LessonTime createLessonTimeParameter(@RequestBody LessonTime lessonTime) {
+    public LessonTime createLessonTimeParameter(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Provide for creating a lesson-time-parameter start time and end time without id.", 
+            content = @Content(examples = @ExampleObject(value = "{\"startTime\": \"hh:mm:ss\", \"endTime\": \"hh:mm:ss\"}")))
+            @RequestBody LessonTime lessonTime) {
         lessonTimeService.create(lessonTime);
         return lessonTime;
     }
 
+    @Operation(summary = "Update a lesson-time-parameter.")
     @PatchMapping("/lesson-time-parameters/{id}")
-    public LessonTime updateLessonTimeParameter(@RequestBody LessonTime lessonTime) {
+    public LessonTime updateLessonTimeParameter(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Provide for a lesson-time-parameter with some id new information.")
+            @RequestBody LessonTime lessonTime) {
         lessonTimeService.update(lessonTime);
         return lessonTime;
     }
 
+    @Operation(summary = "Delete a lesson-time-parameter by its id.")
     @DeleteMapping("/lesson-time-parameters/{id}")
-    public String deleteLessonTimeParameter(@PathVariable("id") int id) {
+    public String deleteLessonTimeParameter(@Parameter(description = "Id of a lesson-time-parameter to be deleted") @PathVariable("id") int id) {
         lessonTimeService.deleteById(id);
         return "LessonTime with id: " + id + " was deleted.";
     }
 
+    @Operation(summary = "Update a lesson.")
     @PatchMapping("/lessons/{id}")
-    public Lesson updateLesson(@RequestBody Lesson lesson, @RequestParam Map<String, String> allParams) {
-        LessonTime lessonTime = lessonTimeService.getById(Integer.parseInt(allParams.get("lesson-time-id")));
-        Lecturer lecturer = lecturerService.getById(Integer.parseInt(allParams.get("lecturer-id")));
-        Group group = groupService.getById(Integer.parseInt(allParams.get("group-id")));
+    public Lesson updateLesson(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Provide for a lesson with some id new information.",
+            content = @Content(examples = @ExampleObject(value = "{\"id\": 0, \"name\": \"string\", \"audience\": \"string\", \"day\": \"string\"}")))
+            @RequestBody Lesson lesson,
+            @Parameter(description = "Provide for a lesson an id of an actual lesson-time-parameter") @RequestParam("lesson-time-id") int lessonTimeId,
+            @Parameter(description = "Provide for a lesson an id of an actual lecturer") @RequestParam("lecturer-id") int lecturerId,
+            @Parameter(description = "Provide for a lesson an id of an actual group") @RequestParam("group-id") int groupId) {
+        LessonTime lessonTime = lessonTimeService.getById(lessonTimeId);
+        Lecturer lecturer = lecturerService.getById(lecturerId);
+        Group group = groupService.getById(groupId);
 
         lesson.setLessonTime(lessonTime);
         lesson.setLecturer(lecturer);
@@ -108,11 +133,17 @@ public class ScheduleRestController {
         return lesson;
     }
 
+    @Operation(summary = "Create a lesson.")
     @PostMapping("/lessons")
-    public Lesson createLesson(@RequestBody Lesson lesson, @RequestParam Map<String, String> allParams) {
-        LessonTime lessonTime = lessonTimeService.getById(Integer.parseInt(allParams.get("lesson-time-id")));
-        Group group = groupService.getById(Integer.parseInt(allParams.get("group-id")));
-        Lecturer lecturer = lecturerService.getById(Integer.parseInt(allParams.get("lecturer-id")));
+    public Lesson createLesson(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Provide for a lesson with an information information without lesson-id.",
+            content = @Content(examples = @ExampleObject(value = "{\"name\": \"string\", \"audience\": \"string\", \"day\": \"string\"}")))
+            @RequestBody Lesson lesson,
+            @Parameter(description = "Provide for a lesson an id of an actual lesson-time-parameter") @RequestParam("lesson-time-id") int lessonTimeId,
+            @Parameter(description = "Provide for a lesson an id of an actual lecturer") @RequestParam("lecturer-id") int lecturerId,
+            @Parameter(description = "Provide for a lesson an id of an actual group") @RequestParam("group-id") int groupId){
+        LessonTime lessonTime = lessonTimeService.getById(lessonTimeId);
+        Group group = groupService.getById(groupId);
+        Lecturer lecturer = lecturerService.getById(lecturerId);
 
         lesson.setLessonTime(lessonTime);
         lesson.setGroup(group);
@@ -122,8 +153,9 @@ public class ScheduleRestController {
         return lesson;
     }
 
+    @Operation(summary = "Delete a lesson by its id.")
     @DeleteMapping("/lessons/{id}")
-    public String deleteLesson(@PathVariable("id") int id) {
+    public String deleteLesson(@Parameter(description = "Id of a lesson to be deleted") @PathVariable("id") int id) {
         lessonService.deleteById(id);
         return "Lesson with id: " + id + " was deleted.";
     }
