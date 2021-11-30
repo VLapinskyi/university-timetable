@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+                     
+    <people id = "2" role = "Student" first_name = "Illia" last_name = "Misiats"  gender = "MALE"
+        phone_number = "+380323659872" email = "illiamisiats@gmail.com" student_group_id = "1" />
+    <people id = "3" role = "Student" first_name = "Mykhailo" last_name = "Mazur"  gender = "MALE"
+        phone_number = "+380327485963" email = "m.mazur@test.com" student_group_id = "2" />
+    
+    <people id = "4" role = "Lecturer" first_name = "Olena" last_name = "Skladenko"  gender = "FEMALE"
+        phone_number = "+380991111111" email = "oskladenko@gmail.com" />
+    <people id = "5" role = "Lecturer" first_name = "Ivan" last_name = "Ivanov"  gender = "MALE"
+        phone_number = "+380459865321" email = "IIvanov@test.com" />
+    <people id = "6" role = "Lecturer" first_name = "Vasyl" last_name = "Dudchenko"  gender = "MALE"
+        phone_number = "+380457895263" email = "vdudchenko@test.com" />
+    
+</dataset>

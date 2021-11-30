@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <faculties name = "TestFaculty1"/>
+    <faculties name = "TestFaculty2"/>
+    <faculties name = "TestFaculty3"/>
+    
+    <groups name = "TestGroup1" faculty_id = "1" />
+    <groups name = "TestGroup2" faculty_id = "2" />
+    <groups name = "TestGroup3" faculty_id = "1" />
+    
+    <lesson_times start_time = "09:00:00" end_time = "10:30:00" />
+    <lesson_times start_time = "10:45:00" end_time = "12:15:00" />
+    <lesson_times start_time = "12:30:00" end_time = "14:00:00" />
+    
+    <people role = "Student" first_name = "Daria" last_name = "Hrynchuk"  gender = "FEMALE"
+        phone_number = "+380992222222" email = "hrynchuk@gmail.com" student_group_id = "1" />
+    <people role = "Student" first_name = "Illia" last_name = "Misiats"  gender = "MALE"
+        phone_number = "+380323659872" email = "illiamisiats@gmail.com" student_group_id = "1" />
+    <people role = "Student" first_name = "Mykhailo" last_name = "Mazur"  gender = "MALE"
+        phone_number = "+380327485963" email = "m.mazur@test.com" student_group_id = "2" />
+        
+    <people role = "Lecturer" first_name = "Olena" last_name = "Skladenko"  gender = "FEMALE"
+        phone_number = "+380991111111" email = "oskladenko@gmail.com" />
+    <people role = "Lecturer" first_name = "Ihor" last_name = "Zakharchuk"  gender = "MALE"
+        phone_number = "+380125263741" email = "i.zakharchuk@gmail.com" />
+    <people role = "Lecturer" first_name = "Vasyl" last_name = "Dudchenko"  gender = "MALE"
+        phone_number = "+380457895263" email = "vdudchenko@test.com" />
+        
+    <lessons name = "Ukranian" lecturer_id = "4" group_id = "1" audience = "101"
+        week_day = "SUNDAY" lesson_time_id = "1" />
+    <lessons name = "Music" lecturer_id = "5" group_id = "3" audience = "102"
+        week_day = "TUESDAY" lesson_time_id = "1" />
+    <lessons name = "Physical Exercises" lecturer_id = "6" group_id = "1" audience = "103"
+        week_day = "WEDNESDAY" lesson_time_id = "3" />
+    <lessons name = "Physical Exercises" lecturer_id = "6" group_id = "2" audience = "103"
+        week_day = "WEDNESDAY" lesson_time_id = "2" />
+
+</dataset>

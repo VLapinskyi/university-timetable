@@ -1,4 +1,4 @@
-package ua.com.foxminded.api;
+package ua.com.foxminded.api.system;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,104 +10,86 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.List;
-
-import java.util.ArrayList;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.database.rider.core.api.configuration.DBUnit;
+import com.github.database.rider.core.api.dataset.DataSet;
+import com.github.database.rider.core.api.dataset.ExpectedDataSet;
+import com.github.database.rider.junit5.api.DBRider;
 
-import javax.validation.ConstraintViolationException;
-
-import ua.com.foxminded.api.aspects.GeneralRestControllerAspect;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Group;
 import ua.com.foxminded.repositories.exceptions.RepositoryException;
-import ua.com.foxminded.service.FacultyService;
 import ua.com.foxminded.service.GroupService;
 import ua.com.foxminded.service.exceptions.ServiceException;
 
-@WebMvcTest(GroupsRestController.class)
-@Import({AopAutoConfiguration.class, GeneralRestControllerAspect.class})
-class GroupsRestControllerTest {
+@SpringBootTest
+@DBRider
+@DBUnit(cacheConnection = false, leakHunter = true)
+@TestPropertySource("/application-test.properties")
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
+class GroupsRestControllerSystemTest {
 
+    private final String testData = "/datasets/test-data.xml";
+    private final String rootFolderDataSets = "/datasets/groups/";
+    
     @Autowired
-    private GroupsRestController groupsRestController;
+    private WebApplicationContext context;
 
-    @MockBean
+    private MockMvc mockMvc;
+    
+    @SpyBean
+    @Autowired
     private GroupService groupService;
-
-    @MockBean
-    private FacultyService facultyService;
     
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private MockMvc mockMvc;
 
     private Faculty faculty = new Faculty();
     private Faculty anotherFaculty = new Faculty();
 
     @BeforeEach
     void setUp() throws Exception {
-        ReflectionTestUtils.setField(groupsRestController, "groupService", groupService);
-        ReflectionTestUtils.setField(groupsRestController, "facultyService", facultyService);
-
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
         faculty.setId(1);
-        faculty.setName("Faculty");
+        faculty.setName("TestFaculty1");
 
         anotherFaculty.setId(2);
-        anotherFaculty.setName("Another Faculty");
+        anotherFaculty.setName("TestFaculty2");
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
+    @ExpectedDataSet(rootFolderDataSets + "all-groups.xml")
     void shouldGetGroups() throws Exception {
-        Group firstGroup = new Group();
-        firstGroup.setId(1);
-        firstGroup.setName("First group");
-        firstGroup.setFaculty(faculty);
-
-        Group secondGroup = new Group();
-        secondGroup.setId(2);
-        secondGroup.setName("Second group");
-        secondGroup.setFaculty(faculty);
-        
-        List<Group> groups = new ArrayList<>(Arrays.asList(firstGroup, secondGroup));
-
-        when(groupService.getAll()).thenReturn(groups);
-        
-        String expectedResult = objectMapper.writeValueAsString(groups);
-
         mockMvc.perform(get("/groups"))
             .andExpect(status().isOk())
             .andExpect(content()
-                    .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andExpect(content().json(expectedResult));
+                    .contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
 
         verify(groupService).getAll();
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldGetGroup() throws Exception {
         int id = 2;
         Group group = new Group();
         group.setId(id);
-        group.setName("Group");
-        group.setFaculty(faculty);
-
-        when(groupService.getById(id)).thenReturn(group);
+        group.setName("TestGroup2");
+        group.setFaculty(anotherFaculty);
         
         String expectedResult = objectMapper.writeValueAsString(group);
 
@@ -122,17 +104,18 @@ class GroupsRestControllerTest {
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
+    @ExpectedDataSet(rootFolderDataSets + "after-creating.xml")
     void shouldCreateGroup() throws Exception {
         int facultyId = 1;
 
         Group testGroup = new Group();
-        testGroup.setName("Test group");
+        testGroup.setName("Test Group");
 
         Group expectedGroup = new Group();
-        expectedGroup.setName("Test group");
+        expectedGroup.setId(4);
+        expectedGroup.setName("Test Group");
         expectedGroup.setFaculty(faculty);
-
-        when(facultyService.getById(facultyId)).thenReturn(faculty);
         
         String testJson = objectMapper.writeValueAsString(testGroup);
         String expectedJson = objectMapper.writeValueAsString(expectedGroup);
@@ -145,85 +128,56 @@ class GroupsRestControllerTest {
             .andExpect(content().json(expectedJson))
             .andExpect(status().isOk());
 
-        verify(facultyService).getById(facultyId);
         verify(groupService).create(expectedGroup);
 
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
+    @ExpectedDataSet(rootFolderDataSets + "after-updating.xml")
     void shouldUpdateGroup() throws Exception {
-        int groupId = 12;
+        int groupId = 2;
         Group testGroup = new Group();
         testGroup.setId(groupId);
-        testGroup.setName("Test group");
+        testGroup.setName("Test Group");
         testGroup.setFaculty(faculty);
-
-        Group expectedGroup = new Group();
-        expectedGroup.setId(groupId);
-        expectedGroup.setName("Test group");
-        expectedGroup.setFaculty(anotherFaculty);
-
-        when(facultyService.getById(anotherFaculty.getId())).thenReturn(anotherFaculty);
         
         String testJson = objectMapper.writeValueAsString(testGroup);
-        String expectedJsong = objectMapper.writeValueAsString(expectedGroup);
 
         mockMvc.perform(patch("/groups/{id}", groupId)
-                .content(testJson).param("faculty-id", Integer.toString(anotherFaculty.getId()))
+                .content(testJson).param("faculty-id", Integer.toString(faculty.getId()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(content().json(expectedJsong))
+        .andExpect(content().json(testJson))
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
                 
-
-        verify(facultyService).getById(anotherFaculty.getId());
-        verify(groupService).update(expectedGroup);
+        verify(groupService).update(testGroup);
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true, disableConstraints = true)
+    @ExpectedDataSet(rootFolderDataSets + "after-deleting.xml")
     void shouldDeleteGroup() throws Exception {
-        int groupId = 4;
+        int groupId = 1;
         
         String expectedResult = "Group with id: " + groupId + " was deleted.";
 
-        mockMvc.perform(delete("/groups/{id}", groupId)
+        mockMvc.perform(delete("/groups/{id}", Integer.toString(groupId))
                 .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().string(expectedResult));
      
 
         verify(groupService).deleteById(groupId);
-    }
+    }   
 
     @Test
-    void shouldReturnError500WhenRepositoryExceptionWhileGetGroups() throws Exception {
-        when(groupService.getAll()).thenThrow(new ServiceException("Service exception", new RepositoryException()));
-
-        mockMvc.perform(get("/groups")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isInternalServerError());
-        
-        verify(groupService).getAll();
-    }
-
-    @Test
-    void shouldReturnError404WhenServiceExceptionWhileGetGroups() throws Exception {
-        when(groupService.getAll()).thenThrow(ServiceException.class);
-
-        mockMvc.perform(get("/groups")
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
-        
-        verify(groupService).getAll();
-    }    
-
-    @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError500WhenRepositoryExceptionWhileGetGroup() throws Exception {
-        int id = 4;
+        int id = 2;
 
-        when(groupService.getById(id)).thenThrow(new ServiceException("Service exception", new RepositoryException()));
-
+        when(groupService.getById(id)).thenThrow(new ServiceException("message", new RepositoryException()));
+        
         mockMvc.perform(get("/groups/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isInternalServerError());
@@ -233,37 +187,31 @@ class GroupsRestControllerTest {
 
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileGetGroup() throws Exception {
-        int id = 1;
-        when(groupService.getById(id)).thenThrow(new ServiceException("Service exception", new IllegalArgumentException()));
+        int id = -1;
         
         mockMvc.perform(get("/groups/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
         
-        verify(groupService).getById(id);
     }
 
     @Test
     void shouldReturnError404WhenEntityIsNotFoundWhileGetGroup() throws Exception {
         int id = 2;
-
-        when(groupService.getById(id)).thenThrow(ServiceException.class);
         
         mockMvc.perform(get("/groups/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
-        
-        verify(groupService).getById(id);
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError500WhenRepositoryExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName("Test group");
         testGroup.setFaculty(faculty);
         
-        when(facultyService.getById(faculty.getId())).thenReturn(faculty);
-        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).getById(faculty.getId());
+        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).create(testGroup);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -271,18 +219,14 @@ class GroupsRestControllerTest {
                 .content(testJson).param("faculty-id", Integer.toString(faculty.getId()))
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isInternalServerError());
-        
-        verify(facultyService).getById(faculty.getId());
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError400WhenConstrantViolationExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName(" Wrong name");
         testGroup.setFaculty(anotherFaculty);
-
-        when(facultyService.getById(anotherFaculty.getId())).thenReturn(anotherFaculty);
-        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(groupService).create(testGroup);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -290,21 +234,12 @@ class GroupsRestControllerTest {
                 .content(testJson).param("faculty-id", Integer.toString(anotherFaculty.getId()))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
-
-        verify(facultyService).getById(anotherFaculty.getId());
-        verify(groupService).create(testGroup);
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError400WhenIllegalArgumentExceptionWhileCreateGroup() throws Exception {
-        int wrongId = 5;
-        Group testGroup = new Group();
-        testGroup.setName("Test group");
-        testGroup.setFaculty(faculty);
-        testGroup.setId(wrongId);
-
-        when(facultyService.getById(faculty.getId())).thenReturn(faculty);
-        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).create(testGroup);
+        Group testGroup = null;
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -315,12 +250,12 @@ class GroupsRestControllerTest {
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError500WhenServiceExceptionWhileCreateGroup() throws Exception {
         Group testGroup = new Group();
         testGroup.setName("Test group");
         testGroup.setFaculty(anotherFaculty);
         
-        when(facultyService.getById(anotherFaculty.getId())).thenReturn(anotherFaculty);
         doThrow(ServiceException.class).when(groupService).create(testGroup);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
@@ -332,36 +267,32 @@ class GroupsRestControllerTest {
     }
 
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError500WhenRepositoryExceptionWhileUpdateGroup() throws Exception {
-        int groupId = 5;
-        int facultyId = anotherFaculty.getId();
-        Group testGroup = new Group();
-        testGroup.setId(groupId);
-        testGroup.setName("Test group");
-        testGroup.setFaculty(faculty);
-
-        doThrow(new ServiceException("Service exception", new RepositoryException())).when(facultyService).getById(facultyId);
-
-        String testJson = objectMapper.writeValueAsString(testGroup);
-        
-        mockMvc.perform(patch("/groups/{id}", groupId)
-                .content(testJson).param("faculty-id", Integer.toString(facultyId))
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().isInternalServerError());
-
-        verify(facultyService).getById(facultyId);
-    }
-
-    @Test
-    void shouldReturnError400WhenConstraintViolationExceptionWhileUpdate() throws Exception {
         int groupId = 2;
-        int facultyId = faculty.getId();
+        int wrongFacultyId = 5;
         Group testGroup = new Group();
         testGroup.setId(groupId);
         testGroup.setName("Test group");
         testGroup.setFaculty(anotherFaculty);
 
-        doThrow(new ServiceException("Service exception", new ConstraintViolationException(null))).when(facultyService).getById(facultyId);
+        String testJson = objectMapper.writeValueAsString(testGroup);
+        
+        mockMvc.perform(patch("/groups/{id}", groupId)
+                .content(testJson).param("faculty-id", Integer.toString(wrongFacultyId))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @DataSet(value = testData, cleanBefore = true)
+    void shouldReturnError400WhenConstraintViolationExceptionWhileUpdate() throws Exception {
+        int groupId = 2;
+        int facultyId = faculty.getId();
+        Group testGroup = new Group();
+        testGroup.setId(groupId);
+        testGroup.setName("     Test group");
+        testGroup.setFaculty(anotherFaculty);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -369,20 +300,14 @@ class GroupsRestControllerTest {
                 .content(testJson).param("faculty-id", Integer.toString(facultyId))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
-
-        verify(facultyService).getById(facultyId);
     }
     
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError400WhenIllegalArgumentExceptionWhileUpdate() throws Exception {
-        int groupId = 30;
+        int groupId = 2;
         int facultyId = anotherFaculty.getId();
-        Group testGroup = new Group();
-        testGroup.setId(groupId);
-        testGroup.setName("Test group");
-        testGroup.setFaculty(faculty);
-
-        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(facultyService).getById(facultyId);
+        Group testGroup = null;
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -391,19 +316,19 @@ class GroupsRestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
 
-        verify(facultyService).getById(facultyId);
     }
     
     @Test
+    @DataSet(value = testData, cleanBefore = true)
     void shouldReturnError500WhenServiceExceptionWhileUpdate() throws Exception {
-        int groupId = 41;
+        int groupId = 1;
         int facultyId = anotherFaculty.getId();
         Group testGroup = new Group();
         testGroup.setId(groupId);
         testGroup.setName("Test group");
-        testGroup.setFaculty(faculty);
+        testGroup.setFaculty(anotherFaculty);
 
-        doThrow(ServiceException.class).when(facultyService).getById(facultyId);
+        doThrow(ServiceException.class).when(groupService).update(testGroup);
 
         String testJson = objectMapper.writeValueAsString(testGroup);
         
@@ -412,14 +337,12 @@ class GroupsRestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isInternalServerError());
 
-        verify(facultyService).getById(facultyId);
+        verify(groupService).update(testGroup);
     }
     
     @Test
     void shouldReturnError500WhenRepositoryExceptionWhileDeleteGroup() throws Exception {
         int testId = 2;
-        
-        doThrow(new ServiceException("Service exception", new RepositoryException())).when(groupService).deleteById(testId);
         
         mockMvc.perform(delete("/groups/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -430,15 +353,11 @@ class GroupsRestControllerTest {
     
     @Test
     void shouldReturnError400WhenIllegalArgumentExceptionWhileDeleteGroup() throws Exception {
-        int testId = 7;
-        
-        doThrow(new ServiceException("Service exception", new IllegalArgumentException())).when(groupService).deleteById(testId);
+        int testId = -7;
         
         mockMvc.perform(delete("/groups/{id}", testId)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
-        
-        verify(groupService).deleteById(testId);
     }
     
     @Test

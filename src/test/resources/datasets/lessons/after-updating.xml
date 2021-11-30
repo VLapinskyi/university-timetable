@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    
+     <lessons id = "1" name = "Ukranian" lecturer_id = "4" group_id = "1" audience = "101"
+        week_day = "SUNDAY" lesson_time_id = "1" />
+    <lessons id = "2" name = "Music" lecturer_id = "5" group_id = "3" audience = "102"
+        week_day = "TUESDAY" lesson_time_id = "1" />
+    <lessons id = "3" name = "Physical Exercises" lecturer_id = "6" group_id = "1" audience = "103"
+        week_day = "WEDNESDAY" lesson_time_id = "3" />
+    <lessons id = "4" name = "Physical Exercises" lecturer_id = "6" group_id = "2" audience = "103"
+        week_day = "FRIDAY" lesson_time_id = "2" />
+    
+</dataset>

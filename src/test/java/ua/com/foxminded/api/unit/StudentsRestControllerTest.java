@@ -1,4 +1,4 @@
-package ua.com.foxminded.api;
+package ua.com.foxminded.api.unit;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.validation.ConstraintViolationException;
 
+import ua.com.foxminded.api.StudentsRestController;
 import ua.com.foxminded.api.aspects.GeneralRestControllerAspect;
 import ua.com.foxminded.domain.Faculty;
 import ua.com.foxminded.domain.Gender;

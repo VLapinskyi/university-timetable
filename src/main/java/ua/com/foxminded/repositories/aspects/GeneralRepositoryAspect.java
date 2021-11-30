@@ -19,29 +19,29 @@ import ua.com.foxminded.repositories.exceptions.RepositoryException;
 public class GeneralRepositoryAspect {
     private final Logger logger = LoggerFactory.getLogger(GeneralRepositoryAspect.class);
 
-    @Pointcut("execution (* ua.com.foxminded.repositories.interfaces.*.save(*))")
+    @Pointcut("execution (* org.springframework.data.repository.CrudRepository+.save(*))")
     private void saveMethods() {
     }
 
-    @Pointcut("execution (java.util.List ua.com.foxminded.repositories.interfaces.*.findAll())")
+    @Pointcut("execution (* org.springframework.data.jpa.repository.JpaRepository+.findAll())")
     private void findAllMethods() {
     }
 
-    @Pointcut("execution (* ua.com.foxminded.repositories.interfaces.*.findById(Integer))")
+    @Pointcut("execution (* org.springframework.data.repository.CrudRepository+.findById(*))")
     private void findByIdMethods() {
     }
 
-    @Pointcut("execution (void ua.com.foxminded.repositories.interfaces.*.deleteById(Integer))")
+    @Pointcut("execution (void org.springframework.data.repository.CrudRepository+.deleteById(*))")
     private void deleteByIdMethods() {
     }
 
     @Around("saveMethods()")
     void aroundCreateAdvice(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object object = proceedingJoinPoint.getArgs()[0];
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Try to save/update an object: {}.", object);
-        }
+    
+            if (logger.isDebugEnabled()) {
+                logger.debug("Try to save/update an object: {}.", object);
+            }
 
         try {
             proceedingJoinPoint.proceed();
@@ -72,7 +72,6 @@ public class GeneralRepositoryAspect {
                 }
             }
         }
-
         return targetMethod;
     }
 
@@ -85,8 +84,10 @@ public class GeneralRepositoryAspect {
 
         try {
             Optional<Object> targetMethod = (Optional<Object>) proceedingJoinPoint.proceed();
+            
+            System.out.println(targetMethod);
 
-            if(targetMethod.isEmpty()) {
+            if(!targetMethod.isPresent()) {
                 throw new NullPointerException("There is no object in the database with pointed id.");
             }
 
