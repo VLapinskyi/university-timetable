@@ -3,9 +3,5 @@
     
      <lessons name = "Ukranian" lecturer_id = "4" group_id = "1" audience = "101"
         week_day = "SUNDAY" lesson_time_id = "1" />
-    <lessons name = "Music" lecturer_id = "5" group_id = "3" audience = "102"
-        week_day = "TUESDAY" lesson_time_id = "1" />
-    <lessons name = "Physical Exercises" lecturer_id = "6" group_id = "1" audience = "103"
-        week_day = "WEDNESDAY" lesson_time_id = "3" />
     
 </dataset>

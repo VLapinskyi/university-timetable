@@ -57,6 +57,7 @@ import ua.com.foxminded.service.exceptions.ServiceException;
 class ScheduleRestControllerSystemTest {
 
     private final String testData = "/datasets/test-data.xml";
+    private final String scheduleTestData = "/datasets/lessons/schedule-test-data.xml";
 
     @SpyBean
     @Autowired
@@ -68,15 +69,11 @@ class ScheduleRestControllerSystemTest {
 
     private Group firstGroup;
     private Group secondGroup;
-    private Group thirdGroup;
     private Lecturer firstLecturer;
     private Lecturer secondLecturer;
-    private Lecturer thirdLecturer;
     private LessonTime firstLessonTime;
-    private LessonTime secondLessonTime;
-    private LessonTime thirdLessonTime;
 
-    List<Lesson> lessons = new ArrayList<>();
+    private List<Lesson> lessons;
 
     @Autowired
     private WebApplicationContext context;
@@ -88,93 +85,21 @@ class ScheduleRestControllerSystemTest {
 
     @BeforeEach
     void init() throws Exception {
-
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 
-        Faculty firstFaculty = new Faculty();
-        firstFaculty.setId(1);
-        firstFaculty.setName("TestFaculty1");
+        firstGroup = createFirstGroup();
+        secondGroup = createSecondGroup();
+        
+        firstLecturer = createFirstLecturer();
+        secondLecturer = createSecondLecturer();
 
-        Faculty secondFaculty = new Faculty();
-        secondFaculty.setId(2);
-        secondFaculty.setName("TestFaculty2");
+        firstLessonTime = createFirstLessonTime();
 
-        firstGroup = new Group();
-        firstGroup.setId(1);
-        firstGroup.setName("TestGroup1");
-        firstGroup.setFaculty(firstFaculty);
-
-        secondGroup = new Group();
-        secondGroup.setId(2);
-        secondGroup.setName("TestGroup2");
-        secondGroup.setFaculty(secondFaculty);
-
-        thirdGroup = new Group();
-        thirdGroup.setId(3);
-        thirdGroup.setName("TestGroup3");
-        thirdGroup.setFaculty(firstFaculty);
-
-        firstLecturer = new Lecturer();
-        firstLecturer.setId(4);
-        firstLecturer.setFirstName("Olena");
-        firstLecturer.setLastName("Skladenko");
-        firstLecturer.setGender(Gender.FEMALE);
-        firstLecturer.setPhoneNumber("+380991111111");
-        firstLecturer.setEmail("oskladenko@gmail.com");
-
-        secondLecturer = new Lecturer();
-        secondLecturer.setId(5);
-        secondLecturer.setFirstName("Ihor");
-        secondLecturer.setLastName("Zakharchuk");
-        secondLecturer.setGender(Gender.MALE);
-        secondLecturer.setPhoneNumber("+380125263741");
-        secondLecturer.setEmail("i.zakharchuk@gmail.com");
-
-        thirdLecturer = new Lecturer();
-        thirdLecturer.setId(6);
-        thirdLecturer.setFirstName("Vasyl");
-        thirdLecturer.setLastName("Dudchenko");
-        thirdLecturer.setGender(Gender.MALE);
-        thirdLecturer.setPhoneNumber("+380457895263");
-        thirdLecturer.setEmail("vdudchenko@test.com");
-
-        firstLessonTime = new LessonTime();
-        firstLessonTime.setId(1);
-        firstLessonTime.setStartTime(LocalTime.of(9, 0));
-        firstLessonTime.setEndTime(LocalTime.of(10, 30));
-
-        secondLessonTime = new LessonTime();
-        secondLessonTime.setId(2);
-        secondLessonTime.setStartTime(LocalTime.of(10, 45));
-        secondLessonTime.setEndTime(LocalTime.of(12, 15));
-
-        thirdLessonTime = new LessonTime();
-        thirdLessonTime.setId(3);
-        thirdLessonTime.setStartTime(LocalTime.of(12, 30));
-        thirdLessonTime.setEndTime(LocalTime.of(14, 0));
-
-        List<String> lessonsNames = new ArrayList<>(Arrays.asList("Ukranian", "Music", "Physical Exercises", "Physical Exercises"));
-        List<Lecturer> lessonLecturers = new ArrayList<>(Arrays.asList(firstLecturer, secondLecturer, thirdLecturer, thirdLecturer));
-        List<Group> lessonGroups = new ArrayList<>(Arrays.asList(firstGroup, thirdGroup, firstGroup, secondGroup));
-        List<String> lessonAudiences = new ArrayList<>(Arrays.asList("101", "102", "103", "103"));
-        List<DayOfWeek> lessonDays = new ArrayList<>(Arrays.asList(DayOfWeek.SUNDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.WEDNESDAY));
-        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(firstLessonTime, firstLessonTime, thirdLessonTime, secondLessonTime));
-
-        for (int i = 0; i < 4; i++) {
-            Lesson lesson = new Lesson();
-            lesson.setId(i + 1);
-            lesson.setName(lessonsNames.get(i));
-            lesson.setLecturer(lessonLecturers.get(i));
-            lesson.setGroup(lessonGroups.get(i));
-            lesson.setAudience(lessonAudiences.get(i));
-            lesson.setDay(lessonDays.get(i));
-            lesson.setLessonTime(lessonTimes.get(i));
-            lessons.add(lesson);
-        }
+        lessons = createLessons();
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldGetLecturerWeekLessons() throws Exception {
         int lecturerId = 5;
 
@@ -194,7 +119,7 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldGetLecturerMonthLessons() throws Exception {
         int lecturerId = 5;
 
@@ -226,12 +151,12 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldGetGroupWeekLessons() throws Exception {
         int groupId = 2;
 
         Map<DayOfWeek, List<Lesson>> groupWeekLessons = new HashMap<>();
-        groupWeekLessons.put(lessons.get(3).getDay(), Arrays.asList(lessons.get(3)));
+        groupWeekLessons.put(lessons.get(1).getDay(), Arrays.asList(lessons.get(1)));
 
         String expectedResult = objectMapper.writeValueAsString(groupWeekLessons);
 
@@ -246,7 +171,7 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldGetGroupMonthLessons() throws Exception {
         int groupId = 1;
         Map<LocalDate, List<Lesson>> groupMonthLessons = new HashMap<>();
@@ -336,7 +261,7 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     @ExpectedDataSet("/datasets/lessons/after-creating.xml")
     void shouldCreateLesson() throws Exception {
         Lesson lesson = new Lesson();
@@ -345,13 +270,13 @@ class ScheduleRestControllerSystemTest {
         lesson.setDay(DayOfWeek.FRIDAY);
         lesson.setGroup(firstGroup);
         lesson.setLecturer(firstLecturer);
-        lesson.setLessonTime(secondLessonTime);
+        lesson.setLessonTime(firstLessonTime);
         
         String testJson = objectMapper.writeValueAsString(lesson);
 
         mockMvc.perform(post("/lessons")
                 .content(testJson)
-                .param("lesson-time-id", Integer.toString(secondLessonTime.getId()))
+                .param("lesson-time-id", Integer.toString(firstLessonTime.getId()))
                 .param("group-id", Integer.toString(firstGroup.getId()))
                 .param("lecturer-id", Integer.toString(lesson.getLecturer().getId()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -361,10 +286,10 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     @ExpectedDataSet("/datasets/lessons/after-updating.xml")
     void shouldUpdateLesson() throws Exception {
-        Lesson lesson = lessons.get(3);
+        Lesson lesson = lessons.get(1);
         lesson.setDay(DayOfWeek.FRIDAY);
 
         String testJson = objectMapper.writeValueAsString(lesson);
@@ -381,10 +306,10 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true, disableConstraints = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true, disableConstraints = true)
     @ExpectedDataSet("/datasets/lessons/after-deleting.xml")
     void shouldDeleteLesson() throws Exception {
-        int testId = 4;
+        int testId = 2;
 
         String expectedResult = "Lesson with id: " + testId + " was deleted.";
 
@@ -547,7 +472,7 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldReturnError400WhenConstraintViolationExceptionWhileCreateLesson() throws Exception {
         Lesson lesson = new Lesson();
         lesson.setName(" Test lesson");
@@ -569,7 +494,7 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldReturnError400WhenIllegalArgumentExceptionWhileCreateLesson() throws Exception {
         Lesson lesson = new Lesson();
         lesson.setId(-3);
@@ -599,13 +524,13 @@ class ScheduleRestControllerSystemTest {
         lesson.setDay(DayOfWeek.THURSDAY);
         lesson.setGroup(secondGroup);
         lesson.setLecturer(secondLecturer);
-        lesson.setLessonTime(secondLessonTime);
+        lesson.setLessonTime(firstLessonTime);
 
         String testJson = objectMapper.writeValueAsString(lesson);
 
         mockMvc.perform(post("/lessons")
                 .content(testJson)
-                .param("lesson-time-id", Integer.toString(secondLessonTime.getId()))
+                .param("lesson-time-id", Integer.toString(firstLessonTime.getId()))
                 .param("group-id", Integer.toString(secondGroup.getId()))
                 .param("lecturer-id", Integer.toString(secondLecturer.getId()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -622,13 +547,13 @@ class ScheduleRestControllerSystemTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setGroup(secondGroup);
         lesson.setLecturer(secondLecturer);
-        lesson.setLessonTime(secondLessonTime);
+        lesson.setLessonTime(firstLessonTime);
 
         String testJson = objectMapper.writeValueAsString(lesson);
 
         mockMvc.perform(patch("/lessons/{id}", lessonId)
                 .content(testJson)
-                .param("lesson-time-id", Integer.toString(secondLessonTime.getId()))
+                .param("lesson-time-id", Integer.toString(firstLessonTime.getId()))
                 .param("group-id", Integer.toString(secondGroup.getId()))
                 .param("lecturer-id", Integer.toString(secondLecturer.getId()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -636,7 +561,7 @@ class ScheduleRestControllerSystemTest {
     }
 
     @Test
-    @DataSet(value = testData, cleanBefore = true)
+    @DataSet(value = scheduleTestData, cleanBefore = true)
     void shouldReturnError400WhenConstraintViolationExceptionWhileUpdateLesson() throws Exception {
         int lessonId = 2;
         Lesson lesson = new Lesson();
@@ -685,13 +610,13 @@ class ScheduleRestControllerSystemTest {
         lesson.setDay(DayOfWeek.MONDAY);
         lesson.setGroup(secondGroup);
         lesson.setLecturer(secondLecturer);
-        lesson.setLessonTime(secondLessonTime);
+        lesson.setLessonTime(firstLessonTime);
 
         String testJson = objectMapper.writeValueAsString(lesson);
 
         mockMvc.perform(patch("/lessons/{id}", lessonId)
                 .content(testJson)
-                .param("lesson-time-id", Integer.toString(secondLessonTime.getId()))
+                .param("lesson-time-id", Integer.toString(firstLessonTime.getId()))
                 .param("group-id", Integer.toString(secondGroup.getId()))
                 .param("lecturer-id", Integer.toString(secondLecturer.getId()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -730,5 +655,87 @@ class ScheduleRestControllerSystemTest {
         .andExpect(status().isInternalServerError());
 
         verify(lessonService).deleteById(testId);
+    }
+    
+    private Group createFirstGroup () {
+        Faculty faculty = new Faculty();
+        faculty.setId(1);
+        faculty.setName("TestFaculty1");
+
+        Group group = new Group();
+        group.setId(1);
+        group.setName("TestGroup1");
+        group.setFaculty(faculty);
+        
+        return group;
+    }
+    
+    private Group createSecondGroup () {
+        Faculty faculty = new Faculty();
+        faculty.setId(1);
+        faculty.setName("TestFaculty1");
+
+        Group group = new Group();
+        group.setId(2);
+        group.setName("TestGroup2");
+        group.setFaculty(faculty);
+        
+        return group;
+    }
+    
+    private Lecturer createFirstLecturer() {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(4);
+        lecturer.setFirstName("Olena");
+        lecturer.setLastName("Skladenko");
+        lecturer.setGender(Gender.FEMALE);
+        lecturer.setPhoneNumber("+380991111111");
+        lecturer.setEmail("oskladenko@gmail.com");
+        
+        return lecturer;
+    }
+    
+    private Lecturer createSecondLecturer() {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(5);
+        lecturer.setFirstName("Ihor");
+        lecturer.setLastName("Zakharchuk");
+        lecturer.setGender(Gender.MALE);
+        lecturer.setPhoneNumber("+380125263741");
+        lecturer.setEmail("i.zakharchuk@gmail.com");
+        return lecturer;
+    }
+    
+    private LessonTime createFirstLessonTime() {
+        LessonTime lessonTime = new LessonTime();
+        lessonTime.setId(1);
+        lessonTime.setStartTime(LocalTime.of(9, 0));
+        lessonTime.setEndTime(LocalTime.of(10, 30));
+        
+        return lessonTime;
+    }
+    
+    private List<Lesson> createLessons() {
+        List<Lesson> lessons = new ArrayList<>();
+        
+        List<String> lessonsNames = new ArrayList<>(Arrays.asList("Ukranian", "Music"));
+        List<Lecturer> lessonLecturers = new ArrayList<>(Arrays.asList(firstLecturer, secondLecturer));
+        List<Group> lessonGroups = new ArrayList<>(Arrays.asList(firstGroup, secondGroup));
+        List<String> lessonAudiences = new ArrayList<>(Arrays.asList("101", "102"));
+        List<DayOfWeek> lessonDays = new ArrayList<>(Arrays.asList(DayOfWeek.SUNDAY, DayOfWeek.TUESDAY));
+        List<LessonTime> lessonTimes = new ArrayList<>(Arrays.asList(firstLessonTime, firstLessonTime));
+
+        for (int i = 0; i < 2; i++) {
+            Lesson lesson = new Lesson();
+            lesson.setId(i + 1);
+            lesson.setName(lessonsNames.get(i));
+            lesson.setLecturer(lessonLecturers.get(i));
+            lesson.setGroup(lessonGroups.get(i));
+            lesson.setAudience(lessonAudiences.get(i));
+            lesson.setDay(lessonDays.get(i));
+            lesson.setLessonTime(lessonTimes.get(i));
+            lessons.add(lesson);
+        }
+        return lessons;
     }
 }
