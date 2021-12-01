@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+
+    <people id = "1" role = "Lecturer" first_name = "Petro" last_name = "Petrov"  gender = "MALE"
+        phone_number = "+380967845123" email = "ppetrov@test.com" />
+    
+</dataset>

@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <faculties name = "TestFaculty1"/>
+    
+    <groups name = "TestGroup1" faculty_id = "1" />
+    <groups name = "TestGroup2" faculty_id = "1" />
+    
+    <lesson_times start_time = "09:00:00" end_time = "10:30:00" />
+    
+    <people role = "Student" first_name = "Daria" last_name = "Hrynchuk"  gender = "FEMALE"
+        phone_number = "+380992222222" email = "hrynchuk@gmail.com" student_group_id = "1" />
+    <people role = "Student" first_name = "Illia" last_name = "Misiats"  gender = "MALE"
+        phone_number = "+380323659872" email = "illiamisiats@gmail.com" student_group_id = "1" />
+    <people role = "Student" first_name = "Mykhailo" last_name = "Mazur"  gender = "MALE"
+        phone_number = "+380327485963" email = "m.mazur@test.com" student_group_id = "2" />
+        
+    <people role = "Lecturer" first_name = "Olena" last_name = "Skladenko"  gender = "FEMALE"
+        phone_number = "+380991111111" email = "oskladenko@gmail.com" />
+    <people role = "Lecturer" first_name = "Ihor" last_name = "Zakharchuk"  gender = "MALE"
+        phone_number = "+380125263741" email = "i.zakharchuk@gmail.com" />
+        
+    <lessons name = "Ukranian" lecturer_id = "4" group_id = "1" audience = "101"
+        week_day = "SUNDAY" lesson_time_id = "1" />
+    <lessons name = "Music" lecturer_id = "5" group_id = "2" audience = "102"
+        week_day = "TUESDAY" lesson_time_id = "1" />
+
+</dataset>

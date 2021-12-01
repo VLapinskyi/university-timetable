@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    
+     <lessons name = "Ukranian" lecturer_id = "4" group_id = "1" audience = "101"
+        week_day = "SUNDAY" lesson_time_id = "1" />
+    
+</dataset>

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <faculties id = "1" name = "TestFaculty1"/>
+    <faculties id = "2" name = "Test Faculty"/>
+    <faculties id = "3" name = "TestFaculty3"/>
+</dataset>

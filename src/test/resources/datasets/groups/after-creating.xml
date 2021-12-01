@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+
+    <groups id = "1" name = "TestGroup1" faculty_id = "1" />
+    <groups id = "2" name = "TestGroup2" faculty_id = "2" />
+    <groups id = "3" name = "TestGroup3" faculty_id = "1" />
+    <groups id = "4" name = "Test Group" faculty_id = "1" />
+    
+</dataset>

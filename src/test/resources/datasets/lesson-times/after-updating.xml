@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    
+    <lesson_times id = "1" start_time = "09:00:00" end_time = "11:00:00" />
+    <lesson_times id = "2" start_time = "10:45:00" end_time = "12:15:00" />
+    <lesson_times id = "3" start_time = "12:30:00" end_time = "14:00:00" />
+    
+</dataset>
