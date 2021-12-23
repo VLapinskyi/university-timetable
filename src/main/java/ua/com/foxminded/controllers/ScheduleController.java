@@ -132,7 +132,7 @@ public class ScheduleController {
         LessonTime lessonTime = lessonTimeService.getById(id);
         model.addAttribute("pageTitle", "Edit lesson time parameter");
         model.addAttribute("lessonTime", lessonTime);
-        return "/schedule/lesson-time-parameters/edit";
+        return "schedule/lesson-time-parameters/edit";
     }
 
     @PatchMapping("/lesson-time-parameters/{id}")
